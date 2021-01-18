@@ -1,0 +1,24 @@
+package com.biorecorder.data.frame.impl;
+
+import com.biorecorder.data.sequence.#E#Sequence;
+
+class #E#Min extends #E#AggFunction {
+    private #e# min;
+
+    @Override
+    public int add(#E#Sequence sequence, int from, int length) {
+        if(count == 0) {
+            min = sequence.get(from);
+        }
+        for (int i = 0; i < length; i++) {
+            min = (#e#)Math.min(min, sequence.get(from + i));
+        }
+        count +=length;
+        return count;
+    }
+
+    @Override
+    protected #e# getValue1() {
+        return min;
+    }
+}

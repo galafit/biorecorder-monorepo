@@ -1,0 +1,21 @@
+package com.biorecorder.data.frame.impl;
+
+import com.biorecorder.data.sequence.#E#Sequence;
+
+class #E#First extends #E#AggFunction {
+    private #e# first;
+
+    @Override
+    public int add(#E#Sequence sequence, int from, int length) {
+        if(count == 0) {
+            first = sequence.get(from);
+        }
+        count +=length;
+        return count;
+    }
+
+    @Override
+    protected #e# getValue1() {
+        return first;
+    }
+}

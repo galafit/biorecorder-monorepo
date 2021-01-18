@@ -1,0 +1,24 @@
+package com.biorecorder.data.frame.impl;
+
+import com.biorecorder.data.sequence.#E#Sequence;
+
+class #E#Max extends #E#AggFunction {
+    private #e# max;
+
+    @Override
+    public int add(#E#Sequence sequence, int from, int length) {
+        if(count == 0) {
+            max = sequence.get(from);
+        }
+        for (int i = 0; i < length; i++) {
+            max = (#e#)Math.max(max, sequence.get(from + i));
+        }
+        count +=length;
+        return count;
+    }
+
+    @Override
+    protected #e# getValue1() {
+        return max;
+    }
+}
