@@ -1,7 +1,7 @@
 package com.biorecorder.bdfrecorder;
 
-import com.biorecorder.multisignal.recordformat.DataHeader;
-import com.biorecorder.multisignal.recordformat.DataRecordStream;
+import com.biorecorder.multisignal.edflib.DataHeader;
+import com.biorecorder.multisignal.edflib.DataRecordStream;
 import com.biorecorder.multisignal.edflib.EdfWriter;
 import com.biorecorder.multisignal.recordfilter.RecordsJoiner;
 import com.biorecorder.multisignal.recordfilter.SignalFrequencyReducer;

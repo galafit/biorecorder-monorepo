@@ -1,4 +1,4 @@
-package com.biorecorder.multisignal.recordformat;
+package com.biorecorder.multisignal.edflib;
 
 /**
  * Created by galafit on 28/7/18.

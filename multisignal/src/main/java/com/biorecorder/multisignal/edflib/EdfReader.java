@@ -1,7 +1,5 @@
 package com.biorecorder.multisignal.edflib;
 
-import com.biorecorder.multisignal.recordformat.DataHeader;
-
 import java.io.*;
 
 // TODO make it  partially thread safe like EdfWriter!!!
@@ -45,7 +43,7 @@ public class EdfReader {
         fileInputStream = new FileInputStream(file);
         HeaderRecord headerRecord = new HeaderRecord(file);
         header = headerRecord.getHeaderInfo();
-        numberOfBytesInHeaderRecord = headerRecord.getNumberOfBytes();
+        numberOfBytesInHeaderRecord = headerRecord.getNumberOfBytesInHeaderRecord();
         samplesPositionList = new long[header.numberOfSignals()];
         recordSize = header.getRecordSize();
     }
@@ -155,7 +153,7 @@ public class EdfReader {
 
 
     private int readSamples(int signal, int n, int[] digBuffer, double[] physBuffer) throws IOException {
-        int bytesPerSample = header.getFormatVersion().getNumberOfBytesPerSample();
+        int bytesPerSample = header.getNumberOfBytesPerSample();
         int samplesPerRecord = header.getNumberOfSamplesInEachDataRecord(signal);
 
         long recordNumber = samplesPositionList[signal] / samplesPerRecord;
@@ -218,7 +216,7 @@ public class EdfReader {
      * @throws IOException if an I/O error occurs
      */
     public int readDataRecords(int n, int[] buffer) throws IOException {
-        int bytesPerSample = header.getFormatVersion().getNumberOfBytesPerSample();
+        int bytesPerSample = header.getNumberOfBytesPerSample();
         long fileReadPosition = numberOfBytesInHeaderRecord +
                 recordSize * recordPosition * bytesPerSample;
         fileInputStream.getChannel().position(fileReadPosition);
@@ -279,7 +277,7 @@ public class EdfReader {
      * @return total number of DataRecords in the file
      */
     public long numberOfRecords() {
-        return (file.length() - numberOfBytesInHeaderRecord) / (recordSize * header.getFormatVersion().getNumberOfBytesPerSample());
+        return (file.length() - numberOfBytesInHeaderRecord) / (recordSize * header.getNumberOfBytesPerSample());
     }
 
     /**

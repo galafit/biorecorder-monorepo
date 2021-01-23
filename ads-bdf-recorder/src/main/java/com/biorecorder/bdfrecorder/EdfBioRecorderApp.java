@@ -1,8 +1,8 @@
 package com.biorecorder.bdfrecorder;
 
 import com.biorecorder.digitalfilter.MovingAverageFilter;
-import com.biorecorder.multisignal.recordformat.DataRecordStream;
-import com.biorecorder.multisignal.recordformat.DataHeader;
+import com.biorecorder.multisignal.edflib.DataRecordStream;
+import com.biorecorder.multisignal.edflib.DataHeader;
 import com.biorecorder.bdfrecorder.recorder.*;
 import com.sun.istack.internal.Nullable;
 import org.apache.commons.logging.Log;

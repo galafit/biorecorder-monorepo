@@ -1,4 +1,4 @@
-package com.biorecorder.multisignal.recordformat;
+package com.biorecorder.multisignal.edflib;
 
 import java.text.DateFormat;
 import java.text.MessageFormat;
@@ -57,6 +57,7 @@ public class DataHeader {
     private FormatVersion versionFormat;
     protected double durationOfDataRecord = 1; // sec
     protected ArrayList<Signal> signals = new ArrayList<Signal>();
+    protected final int numberOfBytesInHeaderRecord;
 
     /**
      * This constructor creates an instance of RecordsHeader
@@ -74,6 +75,7 @@ public class DataHeader {
         for (int i = 0; i < numberOfSignals; i++) {
             addSignal();
         }
+        numberOfBytesInHeaderRecord = 256 + (signals.size() * 256);
     }
 
 
@@ -93,7 +95,14 @@ public class DataHeader {
         for (int i = 0; i < recordsHeader.numberOfSignals(); i++) {
             signals.add(new Signal(recordsHeader.signals.get(i)));
         }
+        numberOfBytesInHeaderRecord = recordsHeader.numberOfBytesInHeaderRecord;
+
     }
+
+    public int getNumberOfBytesInHeaderRecord() {
+        return numberOfBytesInHeaderRecord;
+    }
+
 
     /**
      * Return the number of measuring channels (signals).
@@ -270,6 +279,9 @@ public class DataHeader {
         this.numberOfDataRecords = numberOfDataRecords;
     }
 
+    public int littleEndianBytesToInt(byte[] byteArray, int offset) {
+        return EndianBitConverter.littleEndianBytesToInt(byteArray, offset, versionFormat.getNumberOfBytesPerSample());
+    }
 
     /*****************************************************************
      *                   Signals Info                                *
@@ -526,6 +538,10 @@ public class DataHeader {
      */
     public FormatVersion getFormatVersion() {
         return versionFormat;
+    }
+
+    public int getNumberOfBytesPerSample() {
+        return versionFormat.getNumberOfBytesPerSample();
     }
 
 

@@ -2,8 +2,8 @@ package com.biorecorder.bdfrecorder.recorder;
 
 import com.biorecorder.ads.*;
 import com.biorecorder.digitalfilter.DigitalFilter;
-import com.biorecorder.multisignal.recordformat.DataHeader;
-import com.biorecorder.multisignal.recordformat.DataRecordStream;
+import com.biorecorder.multisignal.edflib.DataHeader;
+import com.biorecorder.multisignal.edflib.DataRecordStream;
 import com.biorecorder.multisignal.recordfilter.*;
 
 import java.util.ArrayList;

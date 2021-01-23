@@ -1,7 +1,7 @@
 package com.biorecorder.bdfrecorder;
 
-import com.biorecorder.multisignal.recordformat.DataHeader;
-import com.biorecorder.multisignal.recordformat.DataRecordStream;
+import com.biorecorder.multisignal.edflib.DataHeader;
+import com.biorecorder.multisignal.edflib.DataRecordStream;
 import edu.ucsd.sccn.LSL;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

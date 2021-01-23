@@ -2,9 +2,9 @@ package com.biorecorder.multisignal.recordfilter;
 
 import com.biorecorder.digitalfilter.DigitalFilter;
 import com.biorecorder.digitalfilter.MovingAverageFilter;
-import com.biorecorder.multisignal.recordformat.DataHeader;
-import com.biorecorder.multisignal.recordformat.DataRecordStream;
-import com.biorecorder.multisignal.recordformat.FormatVersion;
+import com.biorecorder.multisignal.edflib.DataHeader;
+import com.biorecorder.multisignal.edflib.DataRecordStream;
+import com.biorecorder.multisignal.edflib.FormatVersion;
 
 import java.util.ArrayList;
 import java.util.HashMap;

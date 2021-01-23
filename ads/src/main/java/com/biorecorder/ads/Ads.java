@@ -4,8 +4,8 @@ package com.biorecorder.ads;
 import com.biorecorder.comport.Comport;
 import com.biorecorder.comport.ComportFactory;
 import com.biorecorder.comport.ComportRuntimeException;
-import com.biorecorder.multisignal.recordformat.DataHeader;
-import com.biorecorder.multisignal.recordformat.FormatVersion;
+import com.biorecorder.multisignal.edflib.DataHeader;
+import com.biorecorder.multisignal.edflib.FormatVersion;
 import com.sun.istack.internal.Nullable;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -79,7 +79,6 @@ public class Ads {
     private volatile long lastEventTime;
     private volatile boolean isDataReceived;
     private volatile AdsType adsType;
-
 
     // we use AtomicReference to do atomic "compare and set"
     // from different threads: the main thread

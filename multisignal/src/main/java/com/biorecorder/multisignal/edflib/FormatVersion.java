@@ -1,4 +1,4 @@
-package com.biorecorder.multisignal.recordformat;
+package com.biorecorder.multisignal.edflib;
 
 public enum FormatVersion {
     EDF_16BIT(2),
@@ -11,7 +11,7 @@ public enum FormatVersion {
         this.numberOfBytesPerSample = numberOfBytesPerSample;
     }
 
-    public  int getNumberOfBytesPerSample() {
+    public int getNumberOfBytesPerSample() {
         return numberOfBytesPerSample;
     }
 }

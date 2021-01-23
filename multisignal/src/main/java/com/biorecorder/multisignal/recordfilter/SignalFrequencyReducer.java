@@ -1,8 +1,8 @@
 package com.biorecorder.multisignal.recordfilter;
 
-import com.biorecorder.multisignal.recordformat.DataHeader;
-import com.biorecorder.multisignal.recordformat.DataRecordStream;
-import com.biorecorder.multisignal.recordformat.FormatVersion;
+import com.biorecorder.multisignal.edflib.DataHeader;
+import com.biorecorder.multisignal.edflib.DataRecordStream;
+import com.biorecorder.multisignal.edflib.FormatVersion;
 
 import java.util.HashMap;
 import java.util.Map;

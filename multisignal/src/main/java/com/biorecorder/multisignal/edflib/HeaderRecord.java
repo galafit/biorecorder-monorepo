@@ -1,8 +1,5 @@
 package com.biorecorder.multisignal.edflib;
 
-import com.biorecorder.multisignal.recordformat.FormatVersion;
-import com.biorecorder.multisignal.recordformat.DataHeader;
-
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -116,7 +113,7 @@ public class HeaderRecord {
         return buffer;
     }
 
-    public int getNumberOfBytes() {
+    public int getNumberOfBytesInHeaderRecord() {
         return getNumberOfBytesInHeaderRecord(numberOfSignals);
     }
 

@@ -1,16 +1,10 @@
 package com.biorecorder.multisignal.edflib;
 
-import com.biorecorder.multisignal.recordformat.FormatVersion;
-import com.biorecorder.multisignal.recordformat.DataHeader;
-import com.biorecorder.multisignal.recordformat.DataRecordStream;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Random;
 
 /**
@@ -301,7 +295,7 @@ public class EdfWriter implements DataRecordStream {
                 writeHeaderToFile();
             }
             sampleCount += length;
-            int numberOfBytesPerSample = header.getFormatVersion().getNumberOfBytesPerSample();
+            int numberOfBytesPerSample = header.getNumberOfBytesPerSample();
             byte[] byteArray = new byte[numberOfBytesPerSample * length];
             EndianBitConverter.intArrayToLittleEndianByteArray(samples, 0, byteArray, 0, length, numberOfBytesPerSample);
             try {

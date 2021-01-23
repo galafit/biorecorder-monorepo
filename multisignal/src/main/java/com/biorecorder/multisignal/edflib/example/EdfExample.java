@@ -2,7 +2,7 @@ package com.biorecorder.multisignal.edflib.example;
 
 import com.biorecorder.multisignal.edflib.EdfReader;
 import com.biorecorder.multisignal.edflib.EdfWriter;
-import com.biorecorder.multisignal.recordformat.DataHeader;
+import com.biorecorder.multisignal.edflib.DataHeader;
 
 import java.io.File;
 import java.io.FileInputStream;
