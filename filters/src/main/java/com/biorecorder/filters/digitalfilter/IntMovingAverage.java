@@ -1,26 +1,27 @@
-package com.biorecorder.digitalfilter;
+package com.biorecorder.filters.digitalfilter;
 
 /**
- * Created by galafit on 30/3/18.
+ * MovingAverage (LowPass) filter
  */
-public class MovingAverageFilter implements DigitalFilter {
-    private final CircularFifoBuffer fifoBuffer;
-    private final int bufferSize;
-    private double sum;
+public class IntMovingAverage extends IntAbstractStatefulFilter {
+    private long sum;
 
-    public MovingAverageFilter(int numberOfAveragingPoints) {
-        fifoBuffer = new CircularFifoBuffer(numberOfAveragingPoints);
-        bufferSize = numberOfAveragingPoints;
+    public IntMovingAverage(int numberOfAveragingPoints) {
+        super(numberOfAveragingPoints);
     }
 
-    public double filteredValue(double value) {
-        fifoBuffer.add(value);
+    public IntMovingAverage(double frequency, double cutOffFrequency) {
+        this((int) (frequency / cutOffFrequency));
+    }
+
+
+    public int filteredValue(int value) {
         sum += value;
-        double avg = sum / fifoBuffer.size();
-        if(fifoBuffer.size() == bufferSize) {
-            sum -= fifoBuffer.get();
+        if(bufferSize() == bufferMaxSize()) {
+            sum -= getFromBuffer();
         }
-        return avg;
+        addToBuffer(value);
+        return  (int) (sum / bufferSize());
     }
 
     /**
@@ -29,11 +30,11 @@ public class MovingAverageFilter implements DigitalFilter {
     public static void main(String[] args) {
         int[] arr = {1, 2, 3, 4, 5, 6, 7, 8, 9};
         int numberOfAveragingPoints = 3;
-        MovingAverageFilter filter = new MovingAverageFilter(numberOfAveragingPoints);
+        IntMovingAverage filter = new IntMovingAverage(numberOfAveragingPoints);
         boolean isTestOk = true;
         for (int i = 0; i < arr.length; i++) {
-            double filteredValue = filter.filteredValue(arr[i]);
-            double expectedValue = 0;
+            int filteredValue = filter.filteredValue(arr[i]);
+            int expectedValue = 0;
             int n = Math.min(i, numberOfAveragingPoints - 1) + 1;
             for (int j = 0; j < n; j++) {
                 expectedValue += arr[i - j];

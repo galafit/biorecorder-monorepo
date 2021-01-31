@@ -138,7 +138,7 @@ public class HeaderRecord {
         headerBuilder.append(adjustLength(Integer.toString(getNumberOfBytesInHeaderRecord(edfHeader.numberOfSignals())), NUMBER_OF_BYTES_IN_HEADER_LENGTH));
         headerBuilder.append(adjustLength(versionFields.getFirstReserved(), RESERVED_LENGTH));
         headerBuilder.append(adjustLength(Integer.toString(edfHeader.getNumberOfDataRecords()), NUMBER_Of_DATARECORDS_LENGTH));
-        headerBuilder.append(adjustLength(double2String(edfHeader.getDurationOfDataRecord()), DURATION_OF_DATARECORD_LENGTH));
+        headerBuilder.append(adjustLength(double2String(edfHeader.getDurationOfDataRecordSec()), DURATION_OF_DATARECORD_LENGTH));
         headerBuilder.append(adjustLength(Integer.toString(edfHeader.numberOfSignals()), NUMBER_OF_SIGNALS_LENGTH));
 
         StringBuilder labels = new StringBuilder();

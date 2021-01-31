@@ -132,7 +132,7 @@ public class EdfStream implements DataRecordStream {
                 SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
                 StringBuilder stringBuilder = new StringBuilder();
                 stringBuilder.append("Start recording time = "  + dateFormat.format(new Date(fileHeader.getRecordingStartTimeMs())) + "\n");
-                stringBuilder.append("Duration of data records(sec) = " + fileHeader.getDurationOfDataRecord()+ "\n");
+                stringBuilder.append("Duration of data records(sec) = " + fileHeader.getDurationOfDataRecordSec()+ "\n");
                 stringBuilder.append("Number of data records = " + fileHeader.getNumberOfDataRecords());
 
                 writingInfo = stringBuilder.toString();

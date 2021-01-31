@@ -51,11 +51,12 @@ import java.util.Date;
 public class DataHeader {
     private String patientIdentification = "Default patient";
     private String recordingIdentification = "Default record";
-    private long recordingStartTime = 0;
+    private long recordingStartTimeMs = 0;
     private int numberOfDataRecords = -1;
+    private static final int SECOND_MS = 1000;
 
     private FormatVersion versionFormat;
-    protected double durationOfDataRecord = 1; // sec
+    protected double durationOfDataRecordSec = 1; // seconds
     protected ArrayList<Signal> signals = new ArrayList<Signal>();
     protected final int numberOfBytesInHeaderRecord;
 
@@ -85,12 +86,12 @@ public class DataHeader {
      * @param recordsHeader HeaderMetadata instance that will be copied
      */
     public DataHeader(DataHeader recordsHeader) {
-        durationOfDataRecord = recordsHeader.durationOfDataRecord;
+        durationOfDataRecordSec = recordsHeader.durationOfDataRecordSec;
         versionFormat = recordsHeader.versionFormat;
         patientIdentification = recordsHeader.patientIdentification;
         recordingIdentification = recordsHeader.recordingIdentification;
         numberOfDataRecords = recordsHeader.numberOfDataRecords;
-        recordingStartTime = recordsHeader.recordingStartTime;
+        recordingStartTimeMs = recordsHeader.recordingStartTimeMs;
 
         for (int i = 0; i < recordsHeader.numberOfSignals(); i++) {
             signals.add(new Signal(recordsHeader.signals.get(i)));
@@ -120,8 +121,18 @@ public class DataHeader {
      *
      * @return duration of data record in seconds
      */
-    public double getDurationOfDataRecord() {
-        return durationOfDataRecord;
+    public double getDurationOfDataRecordSec() {
+        return durationOfDataRecordSec;
+    }
+
+    /**
+     * Gets the measuring time interval or duration of data records
+     * in milliseconds. 
+     *
+     * @return duration of data record in milliseconds
+     */
+    public int getDurationOfDataRecordMs() {
+        return (int) (durationOfDataRecordSec * SECOND_MS);
     }
 
 
@@ -137,7 +148,7 @@ public class DataHeader {
             String errMsg = MessageFormat.format("Duration of data record is invalid: {0}. Expected {1}", durationOfDataRecord, "> 0");
             throw new IllegalArgumentException(errMsg);
         }
-        this.durationOfDataRecord = durationOfDataRecord;
+        this.durationOfDataRecordSec = durationOfDataRecord;
     }
 
     /**
@@ -187,7 +198,7 @@ public class DataHeader {
      * and midnight, January 1, 1970 UTC.
      */
     public long getRecordingStartTimeMs() {
-        return recordingStartTime;
+        return recordingStartTimeMs;
     }
 
 
@@ -232,7 +243,7 @@ public class DataHeader {
         Calendar calendar = Calendar.getInstance();
         // in java month indexing from 0
         calendar.set(year, month - 1, day, hour, minute, second);
-        this.recordingStartTime = calendar.getTimeInMillis();
+        this.recordingStartTimeMs = calendar.getTimeInMillis();
     }
 
     /**
@@ -250,7 +261,7 @@ public class DataHeader {
             String errMsg = "Invalid startRecording time: " + recordingStartTime + " Expected >= 0";
             throw new IllegalArgumentException(errMsg);
         }
-        this.recordingStartTime = recordingStartTime;
+        this.recordingStartTimeMs = recordingStartTime;
     }
 
     /**
@@ -293,6 +304,7 @@ public class DataHeader {
      * @return label of the signal
      */
     public String getLabel(int signalNumber) {
+       
         return signals.get(signalNumber).getLabel();
     }
 
@@ -303,6 +315,7 @@ public class DataHeader {
      * @return String describing getTransducer (electrodes) used for measuring
      */
     public String getTransducer(int signalNumber) {
+       
         return signals.get(signalNumber).getTransducer();
     }
 
@@ -314,6 +327,7 @@ public class DataHeader {
      * @return String describing filters that were applied
      */
     public String getPrefiltering(int signalNumber) {
+       
         return signals.get(signalNumber).getPrefiltering();
     }
 
@@ -326,6 +340,7 @@ public class DataHeader {
      * signal that can occur in data records
      */
     public int getDigitalMin(int signalNumber) {
+       
         return signals.get(signalNumber).getDigitalMin();
     }
 
@@ -338,6 +353,7 @@ public class DataHeader {
      * signal that can occur in data records
      */
     public int getDigitalMax(int signalNumber) {
+       
         return signals.get(signalNumber).getDigitalMax();
     }
 
@@ -351,6 +367,7 @@ public class DataHeader {
      * that corresponds to its digital minimum
      */
     public double getPhysicalMin(int signalNumber) {
+       
         return signals.get(signalNumber).getPhysicalMin();
     }
 
@@ -364,6 +381,7 @@ public class DataHeader {
      * that corresponds to its digital  maximum
      */
     public double getPhysicalMax(int signalNumber) {
+       
         return signals.get(signalNumber).getPhysicalMax();
     }
 
@@ -374,6 +392,7 @@ public class DataHeader {
      * @return String describing units of physical values of the signal ("uV", "BPM", "mA", "Degr.", etc.)
      */
     public String getPhysicalDimension(int signalNumber) {
+       
         return signals.get(signalNumber).getPhysicalDimension();
     }
 
@@ -392,6 +411,7 @@ public class DataHeader {
      */
 
     public int getNumberOfSamplesInEachDataRecord(int signalNumber) {
+       
         return signals.get(signalNumber).getNumberOfSamplesInEachDataRecord();
     }
 
@@ -416,6 +436,7 @@ public class DataHeader {
      *                                  <br>digitalMin >= digitalMax
      */
     public void setDigitalRange(int signalNumber, int digitalMin, int digitalMax) throws IllegalArgumentException {
+       
         if (versionFormat == FormatVersion.EDF_16BIT && digitalMin < -32768) {
             String errMsg = MessageFormat.format("Signal {0}. Invalid digital min: {1}.  Expected: {2}", signalNumber, digitalMin, ">= -32768");
             throw new IllegalArgumentException(errMsg);
@@ -457,6 +478,7 @@ public class DataHeader {
      * @throws IllegalArgumentException if physicalMin >= physicalMax
      */
     public void setPhysicalRange(int signalNumber, double physicalMin, double physicalMax) throws IllegalArgumentException {
+       
         if (physicalMax <= physicalMin) {
             String errMsg = MessageFormat.format("Signal {0}. Physical min-max range is invalid. Min = {1}, Max = {2}. Expected: {3}", signalNumber, physicalMin, physicalMax, "max > min");
             throw new IllegalArgumentException(errMsg);
@@ -473,6 +495,7 @@ public class DataHeader {
      * @param physicalDimension physical dimension of the signal ("uV", "BPM", "mA", "Degr.", etc.)
      */
     public void setPhysicalDimension(int signalNumber, String physicalDimension) {
+       
         signals.get(signalNumber).setPhysicalDimension(physicalDimension);
     }
 
@@ -484,6 +507,7 @@ public class DataHeader {
      * @param transducer   string describing getTransducer (electrodes) used for measuring
      */
     public void setTransducer(int signalNumber, String transducer) {
+       
         signals.get(signalNumber).setTransducer(transducer);
     }
 
@@ -494,6 +518,7 @@ public class DataHeader {
      * @param prefiltering string describing filters that were applied to the signal
      */
     public void setPrefiltering(int signalNumber, String prefiltering) {
+       
         signals.get(signalNumber).setPrefiltering(prefiltering);
     }
 
@@ -506,6 +531,7 @@ public class DataHeader {
      * @param label        getLabel of the signal
      */
     public void setLabel(int signalNumber, String label) {
+       
         signals.get(signalNumber).setLabel(label);
     }
 
@@ -543,7 +569,7 @@ public class DataHeader {
     public int getNumberOfBytesPerSample() {
         return versionFormat.getNumberOfBytesPerSample();
     }
-
+    
 
     /**
      * Add new signal.
@@ -599,10 +625,9 @@ public class DataHeader {
             String errMsg = MessageFormat.format("Signal {0}. Sample frequency is invalid: {1}. Expected {2}", signalNumber, sampleFrequency, "> 0");
             throw new IllegalArgumentException(errMsg);
         }
-        Long numberOfSamplesInEachDataRecord = Math.round(sampleFrequency * durationOfDataRecord);
+        Long numberOfSamplesInEachDataRecord = Math.round(sampleFrequency * durationOfDataRecordSec);
         setNumberOfSamplesInEachDataRecord(signalNumber, numberOfSamplesInEachDataRecord.intValue());
     }
-
 
     /**
      * Helper method.
@@ -612,8 +637,20 @@ public class DataHeader {
      * @return frequency of the samples (number of samples per second) belonging to the signal with the given number
      */
     public double getSampleFrequency(int signalNumber) {
-        return getNumberOfSamplesInEachDataRecord(signalNumber) / getDurationOfDataRecord();
+        return getNumberOfSamplesInEachDataRecord(signalNumber) / getDurationOfDataRecordSec();
     }
+
+    /**
+     * Helper method.
+     * Get the time interval in milliseconds between samples belonging to the signal.
+     *
+     * @param signalNumber number of the signal(channel). Numeration starts from 0
+     * @return signal samples time interval in milliseconds
+     */
+    public int getSampleIntervalMs(int signalNumber) {
+        return (int) (durationOfDataRecordSec * SECOND_MS / signals.get(signalNumber).numberOfSamplesInEachDataRecord);
+    }
+
 
     /**
      * Helper method. Calculates and gets the number of samples from all signals
@@ -629,7 +666,6 @@ public class DataHeader {
         return recordSize;
     }
 
-
     /**
      * Helper method.
      * Convert physical value of the signal to digital one on the base
@@ -640,7 +676,6 @@ public class DataHeader {
      */
     public int physicalValueToDigital(int signalNumber, double physValue) {
         return signals.get(signalNumber).physToDig(physValue);
-
     }
 
     /**
@@ -656,6 +691,30 @@ public class DataHeader {
     }
 
     /**
+     * @param timeMs
+     * @return the record number that begin recording or was recording at the given time
+     */
+    public int getRecord(long timeMs) {
+        if(timeMs < recordingStartTimeMs) {
+            return -1;
+        }
+        return (int) Math.floor((timeMs - recordingStartTimeMs) / getDurationOfDataRecordMs());
+    }
+
+    /**
+     * @param timeMs
+     * @return the sample of data record belonging to the given signalNumber that begin recording or was recording at the given time
+     * @throws IllegalArgumentException if signalNumber >= numberOfSignals
+     */
+    public int getSampleInRecord(int signalNumber, long timeMs) throws IllegalArgumentException  {
+        if(timeMs < recordingStartTimeMs) {
+            return -1;
+        }
+        long samples = (long) Math.floor((timeMs - recordingStartTimeMs) / getSampleIntervalMs(signalNumber));
+        return (int) (samples % getNumberOfSamplesInEachDataRecord(signalNumber));
+    }
+
+    /**
      * Helper method.
      * Get Gain of the signal:
      * <br>digValue = (physValue / calculateGain) - Offset;
@@ -664,7 +723,7 @@ public class DataHeader {
      * @param signalNumber number of the signal(channel). Numeration starts from 0
      * @return Gain of the signal
      */
-    public double gain(int signalNumber) {
+    public double getSignalGain(int signalNumber) {
         return signals.get(signalNumber).getGain();
     }
 
@@ -677,7 +736,7 @@ public class DataHeader {
      * @param signalNumber number of the signal(channel). Numeration starts from 0
      * @return Offset of the signal
      */
-    public double offset(int signalNumber) {
+    public int getSignalOffset(int signalNumber) {
         return signals.get(signalNumber).getOffset();
     }
 
@@ -692,7 +751,7 @@ public class DataHeader {
         private double physicalMax = Integer.MAX_VALUE;
         private String physicalDimension = "";  // uV or Ohm
         private double gain;
-        private double offset;
+        private int offset;
 
         Signal(Signal signal) {
             numberOfSamplesInEachDataRecord = signal.numberOfSamplesInEachDataRecord;
@@ -774,8 +833,8 @@ public class DataHeader {
          *
          * @return Offset = getPhysicalMax / calculateGain() - getDigitalMax;
          */
-        public double calculateOffset() {
-            return (physicalMax / gain) - digitalMax;
+        public int calculateOffset() {
+            return (int)((physicalMax / gain) - digitalMax);
         }
 
 
@@ -816,7 +875,7 @@ public class DataHeader {
             return gain;
         }
 
-        public double getOffset() {
+        public int getOffset() {
             return offset;
         }
     }
@@ -832,7 +891,7 @@ public class DataHeader {
         sb.append("\nStart date and time = " + timeStamp + " (" + getRecordingStartTimeMs() + " ms)");
         sb.append("\nPatient identification = " + getPatientIdentification());
         sb.append("\nRecording identification = " + getRecordingIdentification());
-        sb.append("\nDuration of data records = " + getDurationOfDataRecord());
+        sb.append("\nDuration of data records = " + getDurationOfDataRecordSec());
         sb.append("\nNumber of signals = " + numberOfSignals());
         for (int i = 0; i < numberOfSignals(); i++) {
             sb.append("\n  " + i + " label: " + getLabel(i)

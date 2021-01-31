@@ -28,7 +28,7 @@ class SignalHub implements DataListener {
     }
 
     @Override
-    public void onDataReceived(int data) {
+    public void onDataReceived(double data) {
         for (int i = 0; i < filters.size(); i++) {
             filters.get(i).onDataReceived(data);
         }

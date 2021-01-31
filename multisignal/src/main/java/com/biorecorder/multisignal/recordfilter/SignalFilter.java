@@ -1,7 +1,7 @@
 package com.biorecorder.multisignal.recordfilter;
 
-import com.biorecorder.digitalfilter.DigitalFilter;
-import com.biorecorder.digitalfilter.MovingAverageFilter;
+import com.biorecorder.filters.digitalfilter.IntDigitalFilter;
+import com.biorecorder.filters.digitalfilter.IntMovingAverage;
 import com.biorecorder.multisignal.edflib.DataHeader;
 import com.biorecorder.multisignal.edflib.DataRecordStream;
 import com.biorecorder.multisignal.edflib.FormatVersion;
@@ -17,7 +17,7 @@ import java.util.Map;
  */
 public class SignalFilter extends FilterRecordStream {
     private Map<Integer, List<NamedFilter>> filters = new HashMap<Integer, List<NamedFilter>>();
-    private double[] offsets; // gain and offsets to convert dig value to phys one
+    private int[] offsets; // gain and offsets to convert dig value to phys one
 
     public SignalFilter(DataRecordStream outStream) {
         super(outStream);
@@ -26,9 +26,9 @@ public class SignalFilter extends FilterRecordStream {
     @Override
     public void setHeader(DataHeader header) {
         super.setHeader(header);
-        offsets = new double[header.numberOfSignals()];
+        offsets = new int[header.numberOfSignals()];
         for (int i = 0; i < offsets.length; i++) {
-            offsets[i] = header.offset(i);
+            offsets[i] = header.getSignalOffset(i);
         }
     }
 
@@ -41,7 +41,7 @@ public class SignalFilter extends FilterRecordStream {
      * @param signalNumber number of the signal to whose samples
      *                     the filter should be applied to. Numbering starts from 0.
      */
-    public void addSignalFilter(int signalNumber, DigitalFilter signalFilter, String filterName) {
+    public void addSignalFilter(int signalNumber, IntDigitalFilter signalFilter, String filterName) {
         List<NamedFilter> signalFilters = filters.get(signalNumber);
         if(signalFilters == null) {
             signalFilters = new ArrayList<NamedFilter>();
@@ -93,8 +93,8 @@ public class SignalFilter extends FilterRecordStream {
             List<NamedFilter> signalFilters = filters.get(signalNumber);
             if(signalFilters != null) {
                 // for filtering we use (digValue + offset) that is proportional physValue !!!
-                double digValue = inputRecord[i] + offsets[signalNumber];
-                for (DigitalFilter filter : signalFilters) {
+                int digValue = inputRecord[i] + offsets[signalNumber];
+                for (IntDigitalFilter filter : signalFilters) {
                     digValue = filter.filteredValue(digValue);
                 }
                 outRecord[i] = (int)(digValue - offsets[signalNumber]);
@@ -106,17 +106,22 @@ public class SignalFilter extends FilterRecordStream {
         outStream.writeDataRecord(outRecord);
     }
 
-    class NamedFilter implements DigitalFilter {
-        private DigitalFilter filter;
+    class NamedFilter implements IntDigitalFilter {
+        private IntDigitalFilter filter;
         private String filterName;
 
-        public NamedFilter(DigitalFilter filter, String filterName) {
+        public NamedFilter(IntDigitalFilter filter, String filterName) {
             this.filter = filter;
             this.filterName = filterName;
         }
 
         @Override
-        public double filteredValue(double inputValue) {
+        public int getFilterLength() {
+            return filter.getFilterLength();
+        }
+
+        @Override
+        public int filteredValue(int inputValue) {
             return filter.filteredValue(inputValue);
         }
 
@@ -150,7 +155,7 @@ public class SignalFilter extends FilterRecordStream {
         expectedRecords.add(expectedDataRecord2);
 
         SignalFilter recordFilter = new SignalFilter(new TestStream(expectedRecords));
-        recordFilter.addSignalFilter(1, new MovingAverageFilter(2), "movAvg:2");
+        recordFilter.addSignalFilter(1, new IntMovingAverage(2), "movAvg:2");
         recordFilter.setHeader(dataConfig);
 
         // send 4 records and get 4 resultant records

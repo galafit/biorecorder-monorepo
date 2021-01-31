@@ -38,7 +38,7 @@ public class RecordsJoiner extends FilterRecordStream {
     @Override
     public DataHeader getOutConfig() {
         DataHeader outConfig = new DataHeader(inConfig);
-        outConfig.setDurationOfDataRecord(inConfig.getDurationOfDataRecord() * numberOfRecordsToJoin);
+        outConfig.setDurationOfDataRecord(inConfig.getDurationOfDataRecordSec() * numberOfRecordsToJoin);
         for (int i = 0; i < outConfig.numberOfSignals(); i++) {
             outConfig.setNumberOfSamplesInEachDataRecord(i, inConfig.getNumberOfSamplesInEachDataRecord(i) * numberOfRecordsToJoin);
         }

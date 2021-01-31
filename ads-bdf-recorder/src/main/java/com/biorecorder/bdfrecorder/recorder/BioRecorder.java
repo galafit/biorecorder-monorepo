@@ -1,7 +1,7 @@
 package com.biorecorder.bdfrecorder.recorder;
 
 import com.biorecorder.ads.*;
-import com.biorecorder.digitalfilter.DigitalFilter;
+import com.biorecorder.filters.digitalfilter.IntDigitalFilter;
 import com.biorecorder.multisignal.edflib.DataHeader;
 import com.biorecorder.multisignal.edflib.DataRecordStream;
 import com.biorecorder.multisignal.recordfilter.*;
@@ -64,7 +64,7 @@ public class BioRecorder {
 
     }
 
-    public void addChannelFilter(int channelNumber, DigitalFilter filter, String filterName) {
+    public void addChannelFilter(int channelNumber, IntDigitalFilter filter, String filterName) {
         List<NamedDigitalFilter> channelFilters = filters.get(channelNumber);
         if (channelFilters == null) {
             channelFilters = new ArrayList();
@@ -486,17 +486,22 @@ public class BioRecorder {
     }
 
 
-    class NamedDigitalFilter implements DigitalFilter {
-        private DigitalFilter filter;
+    class NamedDigitalFilter implements IntDigitalFilter {
+        private IntDigitalFilter filter;
         private String filterName;
 
-        public NamedDigitalFilter(DigitalFilter filter, String filterName) {
+        public NamedDigitalFilter(IntDigitalFilter filter, String filterName) {
             this.filter = filter;
             this.filterName = filterName;
         }
 
         @Override
-        public double filteredValue(double v) {
+        public int getFilterLength() {
+            return filter.getFilterLength();
+        }
+
+        @Override
+        public int filteredValue(int v) {
             return filter.filteredValue(v);
         }
 

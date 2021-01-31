@@ -1,31 +1,34 @@
-package com.biorecorder.digitalfilter;
+package com.biorecorder.filters;
 
-public class CircularFifoBuffer {
+/**
+ * Made on the base of BoundedFifoBuffer from apache.org.commons
+ */
+public class IntCircularFifoBuffer {
 
-    private final double[] elements;
+    private final int[] elements;
     private int start = 0;
     private int end = 0;
     private boolean full = false;
     private final int maxElements;
     /**
-     * Constructs a new <code>BoundedFifoBuffer</code> big enough to hold
+     * Constructs a new <code>IntCircularFifoBuffer</code> big enough to hold
      * 32 elements.
      */
-    public CircularFifoBuffer() {
+    public IntCircularFifoBuffer() {
         this(32);
     }
     /**
-     * Constructs a new <code>BoundedFifoBuffer</code> big enough to hold
+     * Constructs a new <code>IntCircularFifoBuffer</code> big enough to hold
      * the specified number of elements.
      *
      * @param size  the maximum number of elements for this fifo
      * @throws IllegalArgumentException  if the size is less than 1
      */
-    public CircularFifoBuffer(int size) {
+    public IntCircularFifoBuffer(int size) {
         if (size <= 0) {
             throw new IllegalArgumentException("The size must be greater than 0");
         }
-        elements = new double[size];
+        elements = new int[size];
         maxElements = elements.length;
     }
    
@@ -83,7 +86,7 @@ public class CircularFifoBuffer {
     /**
      * Adds the given element to this buffer.
      */
-    public boolean add(double element) {
+    public boolean add(int element) {
         if (isFull()) {
             remove();
         }
@@ -101,7 +104,7 @@ public class CircularFifoBuffer {
      *
      * @return the least recently inserted element
      */
-    public double get() {
+    public int get() {
         if (isEmpty()) {
             throw new IllegalStateException("The buffer is already empty");
         }
@@ -153,11 +156,11 @@ public class CircularFifoBuffer {
      */
     public static void main(String[] args) {
         int bufferSize = 3;
-        CircularFifoBuffer buffer = new CircularFifoBuffer(bufferSize);
+        IntCircularFifoBuffer buffer = new IntCircularFifoBuffer(bufferSize);
         boolean isTestOk = true;
         for (int i = 1; i < 10; i++) {
             buffer.add(i);
-            double expected = (i <= bufferSize) ? 1 : i - bufferSize + 1;
+            int expected = (i <= bufferSize) ? 1 : i - bufferSize + 1;
             if(expected != buffer.get()) {
                 System.out.println(i + "  Get from buffer: "+ buffer.get() + " Expected: "+ expected);
                 isTestOk = false;

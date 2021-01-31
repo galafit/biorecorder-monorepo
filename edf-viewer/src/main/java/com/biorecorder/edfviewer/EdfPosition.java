@@ -3,7 +3,6 @@ package com.biorecorder.edfviewer;
 import com.biorecorder.multisignal.edflib.DataHeader;
 
 class EdfPosition {
-    private static final int SECOND_MS = 1000;
     private final DataHeader header;
     private final int recordLength;
     private long sampleCounter;
@@ -23,31 +22,17 @@ class EdfPosition {
         sampleCounter = record * recordLength;
     }
 
-    /**
-     * @param timeMs
-     * @return the record number that begin recording or was recording at the given time
-     */
-    public int getRecord(long timeMs) {
-        if(timeMs < header.getRecordingStartTimeMs()) {
-            return -1;
-        }
-        return (int) Math.floor((timeMs - header.getRecordingStartTimeMs()) / (header.getDurationOfDataRecord() * SECOND_MS));
+    public int getCurrentRecord() {
+        return record;
     }
 
-    /**
-     * @param timeMs
-     * @return the sample of data record belonging to the given signal that begin recording or was recording at the given time
-     * @throws IllegalArgumentException if signal >= numberOfSignals
-     */
-    public int getSampleInRecord(int signal, long timeMs) throws IllegalArgumentException  {
-        if(signal >= header.numberOfSignals()) {
-            String errMsg = "Number of signals: " + header.numberOfSignals()+ ", signal: " + signal;
-            throw new IllegalArgumentException(errMsg);
-        }
-        long samples = (long) Math.floor(header.getSampleFrequency(signal) * (timeMs - header.getRecordingStartTimeMs()) / SECOND_MS);
-        return (int) (samples % header.getNumberOfSamplesInEachDataRecord(signal));
+    public int getCurrentSignal() {
+        return signal;
     }
 
+    public int getCurrentSampleInRecord() {
+        return sampleInRecord;
+    }
 
     public long getBytePosition() {
         return sampleCounter * header.getNumberOfBytesPerSample() + header.getNumberOfBytesInHeaderRecord();
@@ -80,10 +65,6 @@ class EdfPosition {
             record++;
         }
         return samplesToSkip;
-    }
-
-    public int getNumberOfSamplesInEachDataRecord (int signal) {
-        return header.getNumberOfSamplesInEachDataRecord(signal);
     }
 
 

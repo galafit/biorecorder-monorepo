@@ -7,7 +7,7 @@ import com.biorecorder.multisignal.edflib.DataHeader;
 import java.io.*;
 
 public class BufferedEdfReader {
-    private final DataHeader header;
+    private DataHeader header;
     private final RandomAccessFile fileInputStream;
     private final File file;
 
@@ -47,7 +47,7 @@ public class BufferedEdfReader {
         return false;
     }
 
-    public int nextSample() throws IOException, EOFException {
+    public int nextDigitalSample() throws IOException, EOFException {
         if(isBufferEmpty()) {
             if(loadDataToBuffer() <= 0) {
                 throw new EOFException("End of file");
@@ -59,14 +59,30 @@ public class BufferedEdfReader {
         return value;
     }
 
+    public double nextPhysSample() throws IOException, EOFException {
+        int digValue = nextDigitalSample();
+        return header.digitalValueToPhysical(edfPosition.getCurrentSignal(), digValue);
+    }
+
+    public DataHeader getHeader() {
+        return new DataHeader(header);
+    }
+
+    public int getCurrentSignal() {
+        return edfPosition.getCurrentSignal();
+    }
+
+    public int getCurrentSampleInRecord() {
+        return edfPosition.getCurrentSampleInRecord();
+    }
+    
     public int getNumberOfSignals() {
          return header.numberOfSignals();
     }
 
-    public int getNumberOfSamplesInEachDataRecord(int signal) {
-        return header.getNumberOfSamplesInEachDataRecord(signal);
+    public int getCurrentRecord() {
+        return edfPosition.getCurrentRecord();
     }
-
 
     public void skipCurrentSignalSamples() {
         offset += edfPosition.skipCurrentSignalSamples();
@@ -81,15 +97,6 @@ public class BufferedEdfReader {
         edfPosition.setPosition(record);
         clearBuffer();
     }
-
-    public int getRecord(long timeMs) {
-        return edfPosition.getRecord(timeMs);
-    }
-
-    public int getSampleInRecord(int signal, long timeMs) throws IllegalArgumentException  {
-        return edfPosition.getSampleInRecord(signal, timeMs);
-    }
-
 
     public void close() throws IOException {
         fileInputStream.close();

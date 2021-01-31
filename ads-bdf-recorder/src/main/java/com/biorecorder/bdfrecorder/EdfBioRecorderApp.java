@@ -1,6 +1,6 @@
 package com.biorecorder.bdfrecorder;
 
-import com.biorecorder.digitalfilter.MovingAverageFilter;
+import com.biorecorder.filters.digitalfilter.IntMovingAverage;
 import com.biorecorder.multisignal.edflib.DataRecordStream;
 import com.biorecorder.multisignal.edflib.DataHeader;
 import com.biorecorder.bdfrecorder.recorder.*;
@@ -206,7 +206,7 @@ public class EdfBioRecorderApp {
                     // Apply MovingAverage filter to the channel to reduce 50Hz noise
                     int numberOfAveragingPoints = recorderConfig.getChannelSampleRate(i) / 50;
                     if (numberOfAveragingPoints > 1) {
-                        bioRecorder.addChannelFilter(i, new MovingAverageFilter(numberOfAveragingPoints), "MovAvg:" + numberOfAveragingPoints);
+                        bioRecorder.addChannelFilter(i, new IntMovingAverage(numberOfAveragingPoints), "MovAvg:" + numberOfAveragingPoints);
                     }
                 }
             }

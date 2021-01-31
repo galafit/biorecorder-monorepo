@@ -84,7 +84,7 @@ public class LslStream implements DataRecordStream {
         }
 
 
-        int maxFrequency = (int)Math.round(maxNumberOfSamplesInRecord / header.getDurationOfDataRecord());
+        int maxFrequency = (int)Math.round(maxNumberOfSamplesInRecord / header.getDurationOfDataRecordSec());
         info = new LSL.StreamInfo("BioSemi", "EEG", header.numberOfSignals(), maxFrequency, LSL.ChannelFormat.float32, "myuid324457");
         outlet = new LSL.StreamOutlet(info);
 
