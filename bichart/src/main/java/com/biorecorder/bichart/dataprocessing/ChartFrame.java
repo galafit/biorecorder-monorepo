@@ -1,6 +1,6 @@
-package com.biorecorder.bichart.data;
+package com.biorecorder.bichart.dataprocessing;
 
-
+import com.biorecorder.bichart.ChartData;
 import com.biorecorder.bichart.graphics.Range;
 import com.biorecorder.data.frame.TimeInterval;
 
@@ -8,7 +8,7 @@ import com.biorecorder.data.frame.TimeInterval;
  * Simplified analogue of data table which
  * in fact is simply a collection of columns
  */
-public interface ChartData {
+public interface ChartFrame extends ChartData {
     boolean isDataAppendMode();
 
     int rowCount();
@@ -31,28 +31,27 @@ public interface ChartData {
 
     int bisect( double value, int[] sorter);
 
-    ChartData view(int fromRowNumber, int length);
-
-    ChartData view(int fromRowNumber);
-
-    ChartData slice(int fromRowNumber, int length);
-
-    ChartData slice(int fromRowNumber);
-
-    ChartData concat(ChartData data);
-
     int[] sortedIndices(int sortColumn);
+
+    ChartFrame view(int fromRowNumber, int length);
+
+    ChartFrame view(int fromRowNumber);
+
+    ChartFrame slice(int fromRowNumber, int length);
+
+    ChartFrame slice(int fromRowNumber);
+
+    ChartFrame concat(ChartFrame data);
 
     void setColumnGroupApproximation(int columnNumber, GroupApproximation groupApproximation);
 
     GroupApproximation getColumnGroupApproximation(int columnNumber);
 
-    ChartData resampleByEqualPointsNumber(int points);
+    ChartFrame resampleByEqualPointsNumber(int points);
 
-    ChartData resampleByEqualInterval(int columnNumber, double interval);
+    ChartFrame resampleByEqualInterval(int columnNumber, double interval);
 
-    ChartData resampleByEqualTimeInterval(int columnNumber, TimeInterval timeInterval);
+    ChartFrame resampleByEqualTimeInterval(int columnNumber, TimeInterval timeInterval);
 
     void appendData();
 }
-

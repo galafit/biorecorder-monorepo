@@ -3,7 +3,7 @@ package com.biorecorder.bichart.examples;
 import com.biorecorder.bichart.*;
 import com.biorecorder.bichart.axis.XAxisPosition;
 import com.biorecorder.bichart.axis.YAxisPosition;
-import com.biorecorder.bichart.data.XYData;
+import com.biorecorder.bichart.dataprocessing.XYData;
 import com.biorecorder.bichart.themes.WhiteTheme;
 import com.biorecorder.bichart.traces.LineTracePainter;
 import com.biorecorder.data.frame.SquareFunction;
@@ -85,8 +85,8 @@ public class ChartTest extends JFrame {
         timeData.addYColumn("y", list1);
 
         chart = new Chart();
-        chart.setTitle("Ghbdtn как дела? все хорошо как поживаете вы олрдлорлор лорор лорлор");
-        chart.setConfig(WhiteTheme.getChartConfig());
+        chart.setTitle("как дела? все хорошо как поживаете вы олрдлорлор лорор лорлор");
+       // chart.setConfig(WhiteTheme.getChartConfig());
         //chart.addTraces(new LineTrace(regularData), true);
         chart.addTraces(unsortedData, new LineTracePainter(), true, XAxisPosition.TOP, YAxisPosition.RIGHT);
         chart.addStack();
@@ -102,35 +102,6 @@ public class ChartTest extends JFrame {
         addKeyListener(chartPanel);
         setLocationRelativeTo(null);
         setVisible(true);
-
-        Thread t = new Thread(new Runnable() {
-            int interval = 100;
-            @Override
-            public void run() {
-                for (int count = 0; count < 10; count++) {
-                    try {
-                        Thread.sleep(interval);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-
-                    int value = 0;
-                    if(list1.size() > 0) {
-                        value = list1.get(list1.size() - 1);
-                    }
-                    for (int i = 1; i < 2; i++) {
-                        value += 1;
-                        list1.add(value);
-                        labels.add("lab_"+value);
-                    }
-
-                    chart.appendData();
-                    chartPanel.repaint();
-                }
-                System.out.println(list1.size());
-            }
-        });
-       // t.start();
     }
 
     public static void main(String[] args) {

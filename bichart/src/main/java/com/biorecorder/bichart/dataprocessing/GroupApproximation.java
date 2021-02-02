@@ -1,4 +1,4 @@
-package com.biorecorder.bichart.data;
+package com.biorecorder.bichart.dataprocessing;
 
 /**
  * Created by galafit on 23/5/19.

@@ -1,5 +1,6 @@
-package com.biorecorder.bichart.data;
+package com.biorecorder.bichart.dataprocessing;
 
+import com.biorecorder.bichart.ChartData;
 import com.biorecorder.bichart.graphics.Range;
 
 /**

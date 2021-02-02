@@ -16,7 +16,7 @@ public class LegendConfig {
     private int borderWidth = 1;
     private BColor backgroundColor = BColor.WHITE;
     private Insets buttonsMargin;
-    private boolean isAttachedToStacks = false;
+    private boolean isAttachedToStacks = true;
 
     private int interItemSpace = 0;
     private int interLineSpace = 1;

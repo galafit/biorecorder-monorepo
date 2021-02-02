@@ -3,8 +3,7 @@ package com.biorecorder.bichart;
 import com.biorecorder.bichart.axis.AxisConfig;
 import com.biorecorder.bichart.axis.XAxisPosition;
 import com.biorecorder.bichart.axis.YAxisPosition;
-import com.biorecorder.bichart.data.ChartData;
-import com.biorecorder.bichart.data.DataProcessingConfig;
+import com.biorecorder.bichart.dataprocessing.DataProcessingConfig;
 import com.biorecorder.bichart.graphics.*;
 import com.biorecorder.bichart.scales.Scale;
 import com.biorecorder.bichart.themes.DarkTheme;
@@ -64,10 +63,10 @@ public class NavigableChart {
          if (!isAutoScaleEnabled) {
             isChartAutoscaleNeedDisable = true;
         }
-        chart = new Chart(config.getChartConfig(), chartDataProcessingConfig);
+        chart = new Chart(config.getChartConfig());
         DataProcessingConfig copyProcessingConfig = new DataProcessingConfig(navigatorDataProcessingConfig);
         copyProcessingConfig.setGroupAll(true);
-        navigator = new Chart(config.getNavigatorConfig(), copyProcessingConfig);
+        navigator = new Chart(config.getNavigatorConfig());
     }
 
     private void autoScaleChartY() {
@@ -242,14 +241,12 @@ public class NavigableChart {
             int chartWeight = chart.getStacksSumWeight();
             int navigatorWeight = navigator.getStacksSumWeight();
             navigatorHeight = height1 * navigatorWeight / (chartWeight + navigatorWeight);
-
         }
 
         int chartHeight = height1 - navigatorHeight;
 
         chartArea = new BRectangle(left, top, width1, chartHeight);
         navigatorArea = new BRectangle(left, height - navigatorHeight, width1, navigatorHeight);
-
         chart.setSize(chartArea.width, chartArea.height);
         navigator.setSize(navigatorArea.width, navigatorArea.height);
     }
@@ -453,8 +450,11 @@ public class NavigableChart {
 
         canvas.setColor(config.getBackgroundColor());
         canvas.fillRect(0, 0, width, height);
-        navigator.draw(canvas);
         chart.draw(canvas);
+        canvas.save();
+        canvas.translate(navigatorArea.x, navigatorArea.y);
+        navigator.draw(canvas);
+        canvas.restore();
         for (XAxisPosition key : scrolls.keySet()) {
             drawScroll(canvas, scrolls.get(key));
         }
@@ -496,12 +496,6 @@ public class NavigableChart {
         } else {
             autoScaleChartY();
         }
-    }
-
-    public void appendData() {
-        isScrollsDirty = true;
-        chart.appendData();
-        navigator.appendData();
     }
 
     public void setSize(int width, int height) {

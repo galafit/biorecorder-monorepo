@@ -3,8 +3,6 @@ package com.biorecorder.bichart;
 import com.biorecorder.bichart.axis.*;
 import com.biorecorder.bichart.button.ButtonGroup;
 import com.biorecorder.bichart.button.SwitchButton;
-import com.biorecorder.bichart.data.ChartData;
-import com.biorecorder.bichart.data.DataProcessingConfig;
 import com.biorecorder.bichart.graphics.*;
 import com.biorecorder.bichart.scales.CategoryScale;
 import com.biorecorder.bichart.scales.LinearScale;
@@ -46,24 +44,14 @@ public class Chart {
     private Tooltip tooltip;
 
     private DataPainterTracePoint hoverPoint;
-    private DataProcessingConfig dataProcessingConfig;
 
     private boolean isDirty = true;
 
     public Chart() {
-        this(new DataProcessingConfig());
+        this(DarkTheme.getChartConfig());
     }
 
     public Chart(ChartConfig config) {
-        this(config, new DataProcessingConfig());
-    }
-
-    public Chart(DataProcessingConfig dataProcessingConfig) {
-        this(DarkTheme.getChartConfig(), dataProcessingConfig);
-    }
-
-    public Chart(ChartConfig config, DataProcessingConfig dataProcessingConfig) {
-        this.dataProcessingConfig = new DataProcessingConfig(dataProcessingConfig);
         this.config = new ChartConfig(config);
 
         AxisWrapper bottomAxis = new AxisWrapper(new Axis(new LinearScale(), config.getXAxisConfig(), XAxisPosition.BOTTOM));
@@ -133,7 +121,7 @@ public class Chart {
                         int traceCount = dataPainter.traceCount();
                         for (int trace = 0; trace < traceCount; trace++) {
                             if (getTraceYIndex(dataPainter, trace) == yIndex) {
-                                tracesYMinMax = Range.join(tracesYMinMax, dataPainter.traceYMinMax(trace, xAxisList.get(dataPainter.getXIndex()).getScale()));
+                                tracesYMinMax = Range.join(tracesYMinMax, dataPainter.traceYMinMax(trace));
                             }
                         }
                     }
@@ -640,6 +628,9 @@ public class Chart {
      * ==================================================
      */
     public void draw(BCanvas canvas) {
+        if(isDirty) {
+            update(canvas.getRenderContext());
+        }
         if (width == 0 || height == 0) {
             return;
         }
@@ -663,7 +654,6 @@ public class Chart {
             BRectangle stackArea = new BRectangle(graphArea.x, (int) yAxis.getEnd(), graphArea.width, (int) yAxis.length());
             int bottomAxisIndex = getXIndex(XAxisPosition.BOTTOM);
             int topAxisIndex = getXIndex(XAxisPosition.TOP);
-            ;
             AxisWrapper bottomAxis = xAxisList.get(bottomAxisIndex);
             AxisWrapper topAxis = xAxisList.get(topAxisIndex);
             if (!bottomAxis.isUsed() && !topAxis.isUsed()) {
@@ -703,6 +693,7 @@ public class Chart {
                 axis.drawAxis(canvas, graphArea);
             }
         }
+
         // draw Y axes
         for (AxisWrapper axis : yAxisList) {
             if (axis.isUsed()) {
@@ -736,13 +727,6 @@ public class Chart {
         return yAxisList.size() / 2;
     }
 
-
-    public void appendData() {
-        for (DataPainter dataPainter : dataPainters) {
-            dataPainter.appendData();
-        }
-        isDirty = true;
-    }
 
     public String[] getTraceNames() {
         List<String> names = new ArrayList<>();
@@ -929,7 +913,7 @@ public class Chart {
      * add trace to the stack with the given number
      */
     public void addTraces(ChartData data, TracePainter tracePainter, boolean isSplit, int stack, XAxisPosition xPosition, YAxisPosition yPosition) throws IllegalArgumentException {
-        DataPainter dataPainter = new DataPainter(data, tracePainter, isSplit, dataProcessingConfig, getXIndex(xPosition), getYIndex(stack, yPosition));
+        DataPainter dataPainter = new DataPainter(data, tracePainter, isSplit, getXIndex(xPosition), getYIndex(stack, yPosition));
         if (dataPainter.traceCount() < 1) {
             String errMsg = "Number of trace traces: " + dataPainter.traceCount() + ". Please specify valid trace data";
             throw new IllegalArgumentException(errMsg);

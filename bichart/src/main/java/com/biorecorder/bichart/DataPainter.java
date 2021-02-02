@@ -1,8 +1,5 @@
 package com.biorecorder.bichart;
 
-import com.biorecorder.bichart.data.ChartData;
-import com.biorecorder.bichart.data.DataProcessingConfig;
-import com.biorecorder.bichart.data.GroupApproximation;
 import com.biorecorder.bichart.graphics.*;
 import com.biorecorder.bichart.scales.Scale;
 import com.biorecorder.bichart.traces.NamedValue;
@@ -11,37 +8,24 @@ import com.biorecorder.bichart.traces.TraceType;
 import com.biorecorder.data.sequence.StringSequence;
 import com.sun.istack.internal.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
 
-
-/**
- * TODO implement XY search nearest point (QuadTree)
- */
 class DataPainter {
+    private ChartData data;
     private int xIndex;
     private int yStartIndex;
-    private GroupApproximation[] defaultApproximations = {GroupApproximation.OPEN, GroupApproximation.AVERAGE};
 
     private boolean isSplit;
-    private DataManager dataManager;
     private TracePainter tracePainter;
-    private NearestSearchType nearestSearchType;
     private int traceCount;
     private String[] traceNames;
     private BColor[] traceColors;
     private boolean[] tracesVisibleMask;
     private int hiddenTraceCount = 0;
+    private int[] sortedIndices;
 
-    DataPainter(ChartData data1, TracePainter tracePainter, boolean isSplit, DataProcessingConfig dataProcessingConfig1, int xAxisIndex, int yAxesStartIndex) {
-        ChartData data = data1.view(0);
-        DataProcessingConfig dataProcessingConfig = new DataProcessingConfig(dataProcessingConfig1);
 
-        if (tracePainter.traceType() == TraceType.LINEAR) {
-            nearestSearchType = NearestSearchType.X;
-        } else {
-            nearestSearchType = NearestSearchType.XY;
-        }
+    DataPainter(ChartData data1, TracePainter tracePainter, boolean isSplit, int xAxisIndex, int yAxesStartIndex) {
+        data = data1;
         this.isSplit = isSplit;
         this.xIndex = xAxisIndex;
         this.yStartIndex = yAxesStartIndex;
@@ -54,33 +38,106 @@ class DataPainter {
             tracesVisibleMask[trace] = true;
         }
 
-        // set approximations
-        GroupApproximation[] approximations = tracePainter.groupApproximations();
-        if (approximations == null || approximations.length > 0) {
-            approximations = defaultApproximations;
+        this.tracePainter = tracePainter;
+    }
+
+
+
+    private int nearestIndex(double xValue) {
+        // "lazy" sorting solo when "nearest" is called
+        if (sortedIndices == null) {
+            sortedIndices = data.sortedIndices(0);
         }
-        if (approximations.length < data.columnCount()) {
-            // we need it in the case of RANGE and OHLC approximations
-            // if data is already grouped and so is multi-dimensional
-            List<GroupApproximation> deployedApproximations = new ArrayList<>();
-            for (int i = 0; i < approximations.length; i++) {
-                GroupApproximation[] deployedApprox_i = approximations[i].getAsArray();
-                for (GroupApproximation approx : deployedApprox_i) {
-                    deployedApproximations.add(approx);
+        int nearest = data.bisect(xValue, sortedIndices);
+
+        if (nearest >= data.rowCount()) {
+            nearest = data.rowCount() - 1;
+        }
+
+        int nearest_prev = nearest;
+        if (nearest > 0) {
+            nearest_prev = nearest - 1;
+        }
+
+        if (sortedIndices != null) {
+            nearest = sortedIndices[nearest];
+            nearest_prev = sortedIndices[nearest_prev];
+        }
+        if (nearest != nearest_prev) {
+            if (Math.abs(data.value(nearest_prev, 0) - xValue) < Math.abs(data.value(nearest, 0) - xValue)) {
+                nearest = nearest_prev;
+            }
+        }
+        return nearest;
+    }
+
+    @Nullable
+    NearestTracePoint nearest(int x, int y, int trace, Scale xScale, Scale yScale) {
+        double argumentValue;
+        argumentValue = xScale.invert(x);
+
+        int pointIndex = nearestIndex(argumentValue);
+        if (pointIndex < 0) {
+            return null;
+        }
+        int distance = distanceSqw(pointIndex, trace, x, y, xScale, yScale);
+        if (distance >= 0) {
+            return new NearestTracePoint(new DataPainterTracePoint(this, trace, pointIndex), distance);
+        } else {
+            return null;
+        }
+    }
+
+    @Nullable
+    NearestTracePoint nearest(int x, int y, Scale xScale, Scale[] yScales) {
+        double argumentValue = xScale.invert(x);
+        int pointIndex = nearestIndex(argumentValue);
+        if (pointIndex < 0) {
+            return null;
+        }
+        int minDistance = -1;
+        int closestTrace = -1;
+        for (int trace = 0; trace < traceCount; trace++) {
+            if(tracesVisibleMask[trace]) {
+                int distance = distanceSqw(pointIndex, trace, x, y, xScale, yScales[trace]);
+                if (distance == 0) {
+                    return new NearestTracePoint(new DataPainterTracePoint(this, trace, pointIndex), 0);
+                } else if (distance > 0) {
+                    if (minDistance < 0 || minDistance > distance) {
+                        minDistance = distance;
+                        closestTrace = trace;
+                    }
                 }
             }
         }
-        for (int column = 0; column < data.columnCount(); column++) {
-            if (data.getColumnGroupApproximation(column) == null) {
-                data.setColumnGroupApproximation(column, approximations[Math.min(column, approximations.length - 1)]);
-            }
+        if (closestTrace >= 0) {
+            return new NearestTracePoint(new DataPainterTracePoint(this, closestTrace, pointIndex), minDistance);
         }
-        this.tracePainter = tracePainter;
-        dataManager = new DataManager(data, dataProcessingConfig);
+        return null;
     }
 
+    double getBestExtent(int drawingAreaWidth) {
+        int markSize = tracePainter.markWidth();
+        if (data.rowCount() > 1) {
+            if (markSize <= 0) {
+                markSize = 1;
+            }
+            double traceExtent = getDataAvgStep(data) * drawingAreaWidth / markSize;
+            if(tracePainter.traceType() == TraceType.SCATTER) {
+                traceExtent = Math.sqrt(traceExtent);
+            }
+            return traceExtent;
+        }
+        return -1;
+    }
+
+    double getDataAvgStep(ChartData data) {
+        int dataSize = data.rowCount();
+        return (data.value(dataSize - 1, 0) - data.value(0, 0)) / (dataSize - 1);
+    }
+
+
     public @Nullable StringSequence getXLabels() {
-        ChartData data = dataManager.getData();
         if (!data.isNumberColumn(0)) {
             return new StringSequence() {
                 @Override
@@ -125,76 +182,22 @@ class DataPainter {
         }
     }
 
-    void appendData() {
-        dataManager.appendData();
-    }
-
-    double getBestExtent(int drawingAreaWidth) {
-        return dataManager.getBestExtent(drawingAreaWidth, tracePainter.markWidth(), tracePainter.traceType());
-    }
-
-    Range traceYMinMax(int trace, Scale xScale) {
+    Range traceYMinMax(int trace) {
         checkTraceNumber(trace);
-        return tracePainter.traceYMinMax(getProcessedData(xScale), trace);
+        return tracePainter.traceYMinMax(data, trace);
     }
 
     Range xMinMax() {
-        return tracePainter.xMinMax(dataManager.getData());
+        return tracePainter.xMinMax(data);
     }
 
     int traceCount() {
         return traceCount - hiddenTraceCount;
     }
 
-
-    @Nullable
-    NearestTracePoint nearest(int x, int y, int trace, Scale xScale, Scale yScale) {
-        double argumentValue;
-        argumentValue = xScale.invert(x);
-
-        int pointIndex = dataManager.nearest(argumentValue);
-        if (pointIndex < 0) {
-            return null;
-        }
-        int distance = distanceSqw(pointIndex, trace, x, y, xScale, yScale);
-        if (distance >= 0) {
-            return new NearestTracePoint(new DataPainterTracePoint(this, trace, pointIndex), distance);
-        } else {
-            return null;
-        }
-    }
-
-    @Nullable
-    NearestTracePoint nearest(int x, int y, Scale xScale, Scale[] yScales) {
-        double argumentValue = xScale.invert(x);
-        int pointIndex = dataManager.nearest(argumentValue);
-        if (pointIndex < 0) {
-            return null;
-        }
-        int minDistance = -1;
-        int closestTrace = -1;
-        for (int trace = 0; trace < traceCount; trace++) {
-            if(tracesVisibleMask[trace]) {
-                int distance = distanceSqw(pointIndex, trace, x, y, xScale, yScales[trace]);
-                if (distance == 0) {
-                    return new NearestTracePoint(new DataPainterTracePoint(this, trace, pointIndex), 0);
-                } else if (distance > 0) {
-                    if (minDistance < 0 || minDistance > distance) {
-                        minDistance = distance;
-                        closestTrace = trace;
-                    }
-                }
-            }
-        }
-        if (closestTrace >= 0) {
-            return new NearestTracePoint(new DataPainterTracePoint(this, closestTrace, pointIndex), minDistance);
-        }
-        return null;
-    }
-
     Tooltip createTooltip(TooltipConfig tooltipConfig, int hoverPointIndex, int hoverTrace, Scale xScale, Scale[] yScales) {
         int tooltipYPosition = 0;
-        double xValue = getProcessedData(xScale).value(hoverPointIndex, 0);
+        double xValue = data.value(hoverPointIndex, 0);
         int xPosition = (int)xScale.scale(xValue);
         Tooltip tooltip = new Tooltip(tooltipConfig, xPosition, tooltipYPosition);
         tooltip.setHeader(null, null, xScale.formatDomainValue(xValue));
@@ -210,7 +213,7 @@ class DataPainter {
         }
         for (int trace = traceStart; trace <= traceEnd; trace++) {
             Scale yScale = yScales[trace];
-            NamedValue[] traceValues = tracePainter.tracePointValues(getProcessedData(xScale), hoverPointIndex, trace, xScale, yScale);
+            NamedValue[] traceValues = tracePainter.tracePointValues(data, hoverPointIndex, trace, xScale, yScale);
 
             if (traceValues.length == 1) {
                 tooltip.addLine(getTraceColor(trace), getTraceName(trace), traceValues[0].getValue());
@@ -220,7 +223,7 @@ class DataPainter {
                     tooltip.addLine(null, traceValue.getValueName(), traceValue.getValue());
                 }
             }
-            BPoint crosshairPosition = tracePainter.tracePointCrosshair(getProcessedData(xScale), hoverPointIndex, trace, xScale, yScale);
+            BPoint crosshairPosition = tracePainter.tracePointCrosshair(data, hoverPointIndex, trace, xScale, yScale);
             tooltip.addYCrosshair(yStartIndex + trace, crosshairPosition.getY());
         }
         return tooltip;
@@ -247,20 +250,13 @@ class DataPainter {
 
     void drawTrace(BCanvas canvas, int trace, Scale xScale, Scale yScale) {
         if(tracesVisibleMask[trace]) {
-            tracePainter.drawTrace(canvas, getProcessedData(xScale), trace, getTraceColor(trace), traceCount(), isSplit, xScale, yScale);
+            tracePainter.drawTrace(canvas, data, trace, getTraceColor(trace), traceCount(), isSplit, xScale, yScale);
         }
-    }
-
-    private ChartData getProcessedData(Scale xScale) {
-        if(tracePainter.traceType() == TraceType.SCATTER) {
-            dataManager.getData();
-        }
-        return dataManager.getProcessedData(xScale, tracePainter.markWidth());
     }
 
     private int distanceSqw(int pointIndex, int trace, int x, int y, Scale xScale, Scale yScale) {
         checkTraceNumber(trace);
-        BRectangle hoverRect = tracePainter.tracePointHoverArea(getProcessedData(xScale), pointIndex, trace, xScale, yScale);
+        BRectangle hoverRect = tracePainter.tracePointHoverArea(data, pointIndex, trace, xScale, yScale);
         if (hoverRect.width > 0 && hoverRect.height > 0) {
             if (hoverRect.contains(x, y)) {
                 return 0;

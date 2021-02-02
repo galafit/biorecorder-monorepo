@@ -1,7 +1,7 @@
 package com.biorecorder.bichart;
 
-import com.biorecorder.bichart.data.ChartData;
-import com.biorecorder.bichart.data.DataProcessingConfig;
+import com.biorecorder.bichart.dataprocessing.ChartFrame;
+import com.biorecorder.bichart.dataprocessing.DataProcessingConfig;
 import com.biorecorder.bichart.graphics.Range;
 import com.biorecorder.bichart.scales.Scale;
 import com.biorecorder.bichart.scales.TimeScale;
@@ -20,12 +20,12 @@ class DataManager {
     private static final int GROUPING_STABILITY = 20; // percents
     private static final int ARGUMENT_COLUMN = 0;
 
-    private final ChartData data;
+    private final ChartFrame data;
     private DataProcessingConfig processingConfig;
     private boolean isEqualFrequencyGrouping; // group by equal points number or equal "height"
 
-    private ChartData processedData;
-    private List<ChartData> groupedDataList = new ArrayList<>(1);
+    private ChartFrame processedData;
+    private List<ChartFrame> groupedDataList = new ArrayList<>(1);
     private Scale prevScale;
     private int prevPixelsPerDataPoint = -1;
     private int prevDataSize = -1;
@@ -34,7 +34,7 @@ class DataManager {
     private int[] sorter;
     private boolean isSorterNeedUpdate = true;
 
-    public DataManager(ChartData data, DataProcessingConfig dataProcessingConfig) {
+    public DataManager(ChartFrame data, DataProcessingConfig dataProcessingConfig) {
         this.data = data;
         this.processingConfig = dataProcessingConfig;
         switch (processingConfig.getGroupingType()) {
@@ -64,7 +64,7 @@ class DataManager {
 
     public int nearest(double xValue) {
         // "lazy" sorting solo when "nearest" is called
-        ChartData data;
+        ChartFrame data;
         if (processedData != null) {
             data = processedData;
         } else {
@@ -119,11 +119,11 @@ class DataManager {
         return true;
     }
 
-    public ChartData getData() {
+    public ChartFrame getData() {
         return data;
     }
 
-    public ChartData getProcessedData(Scale xScale, int markSize) {
+    public ChartFrame getProcessedData(Scale xScale, int markSize) {
         if (!isDataProcessingEnabled()) { // No processing
             processedData = null;
             return data;
@@ -291,7 +291,7 @@ class DataManager {
     }
 
 
-    public ChartData processData(Scale argumentScale, int pixelsPerDataPoint) {
+    public ChartFrame processData(Scale argumentScale, int pixelsPerDataPoint) {
         if (data.rowCount() <= 1) {
             return data;
         }
@@ -345,7 +345,7 @@ class DataManager {
 
         if (groupingInterval != null) {
             cropShoulder *= roundPoints(groupingInterval.getIntervalLength());
-            ChartData groupedData = findIfAlreadyGrouped(groupingInterval);
+            ChartFrame groupedData = findIfAlreadyGrouped(groupingInterval);
             if (groupedData != null) {
                 processedData = groupedData;
                 cropShoulder = processingConfig.getCropShoulder();
@@ -410,9 +410,9 @@ class DataManager {
         return groupInterval * processingConfig.getGroupingStep() / dataStep < 1;
     }
 
-    private ChartData findIfAlreadyGrouped(IntervalInfo intervalInfo) {
+    private ChartFrame findIfAlreadyGrouped(IntervalInfo intervalInfo) {
         if (intervalInfo.getIntervalIndex() < 0) {
-            ChartData groupedData = groupedDataList.get(0);
+            ChartFrame groupedData = groupedDataList.get(0);
             if (groupedData != null && groupedData.rowCount() > 1) {
                 double groupedDataStep = getDataAvgStep(groupedData);
                 if (!isNextStepGrouping(groupedDataStep, intervalInfo.getIntervalLength()) && !isPrevStepGrouping(groupedDataStep, intervalInfo.getIntervalLength())) {
@@ -429,7 +429,7 @@ class DataManager {
     }
 
 
-    private ChartData groupAll(IntervalInfo intervalInfo) {
+    private ChartFrame groupAll(IntervalInfo intervalInfo) {
         if (intervalInfo.getIntervalIndex() < 0) {
             return groupAllIfIntervalsNotSpecified(intervalInfo.getInterval());
         } else {
@@ -437,9 +437,9 @@ class DataManager {
         }
     }
 
-    private ChartData groupAllIfIntervalsNotSpecified(GroupInterval groupInterval) {
-        ChartData groupedDataNew = null;
-        ChartData groupedData = groupedDataList.get(0);
+    private ChartFrame groupAllIfIntervalsNotSpecified(GroupInterval groupInterval) {
+        ChartFrame groupedDataNew = null;
+        ChartFrame groupedData = groupedDataList.get(0);
         if (groupedData != null && groupedData.rowCount() > 1) {
             // calculate new grouping interval on the base of already grouped data
             double groupedDataStep = getDataAvgStep(groupedData);
@@ -469,8 +469,8 @@ class DataManager {
     }
 
 
-    private ChartData groupAllIfIntervalsSpecified(int groupIntervalIndex) {
-        ChartData groupedData = groupedDataList.get(groupIntervalIndex);
+    private ChartFrame groupAllIfIntervalsSpecified(int groupIntervalIndex) {
+        ChartFrame groupedData = groupedDataList.get(groupIntervalIndex);
         if(groupedData != null) {
             return groupedData;
         }
@@ -480,7 +480,7 @@ class DataManager {
         if(isEqualFrequencyGrouping) {
             // try to use for grouping already grouped data
             for (int i = groupIntervalIndex - 1; i >= 0 ; i--) {
-                ChartData groupedData_i = groupedDataList.get(i);
+                ChartFrame groupedData_i = groupedDataList.get(i);
                 if(groupedData_i != null) {
                     int pointsInGroup_i = roundPoints(groupIntervalToPoints(data, groupInterval.intervalLength()));
                     if (pointsInGroup % pointsInGroup_i == 0) {
@@ -517,24 +517,24 @@ class DataManager {
 
     }
 
-    private ChartData regroup(ChartData groupedData, int pointsInGroupOnGroupedData) {
+    private ChartFrame regroup(ChartFrame groupedData, int pointsInGroupOnGroupedData) {
         double groupIntervalRound = pointsNumberToGroupInterval(groupedData, pointsInGroupOnGroupedData);
-        ChartData reGroupedData = groupedData.resampleByEqualPointsNumber(pointsInGroupOnGroupedData);
+        ChartFrame reGroupedData = groupedData.resampleByEqualPointsNumber(pointsInGroupOnGroupedData);
         int slicedDataLength;
         if(reGroupedData.isDataAppendMode()) {
             slicedDataLength = reGroupedData.rowCount();
         } else {
             slicedDataLength = reGroupedData.rowCount() - 1;
         }
-        ChartData slicedGroupedData = reGroupedData.slice(0, slicedDataLength);
+        ChartFrame slicedGroupedData = reGroupedData.slice(0, slicedDataLength);
         int pointsInGroupInOriginalData = roundPoints(groupIntervalToPoints(data, groupIntervalRound));
-        ChartData data = group(this.data.view(slicedDataLength * pointsInGroupInOriginalData), new NumberGroupInterval(groupIntervalRound));
-        ChartData resultantData = slicedGroupedData.concat(data);
+        ChartFrame data = group(this.data.view(slicedDataLength * pointsInGroupInOriginalData), new NumberGroupInterval(groupIntervalRound));
+        ChartFrame resultantData = slicedGroupedData.concat(data);
         return resultantData;
     }
 
-    private ChartData group(ChartData data, GroupInterval groupInterval) {
-        ChartData groupedData;
+    private ChartFrame group(ChartFrame data, GroupInterval groupInterval) {
+        ChartFrame groupedData;
         if (isEqualFrequencyGrouping) { // group by equal points number
             int points = roundPoints(groupIntervalToPoints(data, groupInterval.intervalLength()));
             if (points > 1) {
@@ -580,11 +580,11 @@ class DataManager {
     }
 
 
-    private double pointsNumberToGroupInterval(ChartData data, double pointsInGroup) {
+    private double pointsNumberToGroupInterval(ChartFrame data, double pointsInGroup) {
         return pointsInGroup * getDataAvgStep(data);
     }
 
-    private double groupIntervalToPoints(ChartData data, double groupInterval) {
+    private double groupIntervalToPoints(ChartFrame data, double groupInterval) {
         return groupInterval / getDataAvgStep(data);
     }
 
@@ -600,7 +600,7 @@ class DataManager {
         return intPoints;
     }
 
-    double getDataAvgStep(ChartData data) {
+    double getDataAvgStep(ChartFrame data) {
         int dataSize = data.rowCount();
         return (data.value(dataSize - 1, 0) - data.value(0, 0)) / (dataSize - 1);
     }

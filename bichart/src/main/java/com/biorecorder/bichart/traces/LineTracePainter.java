@@ -1,9 +1,9 @@
 package com.biorecorder.bichart.traces;
 
 
-import com.biorecorder.bichart.data.ChartData;
-import com.biorecorder.bichart.data.XYViewer;
-import com.biorecorder.bichart.data.GroupApproximation;
+import com.biorecorder.bichart.ChartData;
+import com.biorecorder.bichart.dataprocessing.XYViewer;
+import com.biorecorder.bichart.dataprocessing.GroupApproximation;
 import com.biorecorder.bichart.graphics.*;
 import com.biorecorder.bichart.scales.Scale;
 

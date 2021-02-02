@@ -234,7 +234,6 @@ public class InteractiveNavigableChart implements InteractiveDrawable {
 
     @Override
     public boolean update(RenderContext renderContext) {
-        chart.appendData();
         return true;
     }
 }

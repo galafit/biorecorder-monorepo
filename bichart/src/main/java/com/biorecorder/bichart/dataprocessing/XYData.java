@@ -1,4 +1,4 @@
-package com.biorecorder.bichart.data;
+package com.biorecorder.bichart.dataprocessing;
 
 import com.biorecorder.bichart.graphics.Range;
 import com.biorecorder.data.frame.*;
@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * Created by galafit on 21/1/19.
  */
-public class XYData implements ChartData {
+public class XYData implements ChartFrame {
     private DataFrame dataFrame;
     private String xColumnName = "x";
 
@@ -300,18 +300,18 @@ public class XYData implements ChartData {
     }
 
     @Override
-    public ChartData slice(int fromRowNumber, int length) {
+    public ChartFrame slice(int fromRowNumber, int length) {
         return new XYData(dataFrame.slice(fromRowNumber, length));
     }
 
     @Override
-    public ChartData slice(int fromRowNumber) {
+    public ChartFrame slice(int fromRowNumber) {
         return new XYData(dataFrame.slice(fromRowNumber));
     }
 
 
     @Override
-    public ChartData concat(ChartData data) {
+    public ChartFrame concat(ChartFrame data) {
         if(data instanceof XYData) {
             return new XYData(dataFrame.concat(((XYData)data).dataFrame));
         }
@@ -319,28 +319,28 @@ public class XYData implements ChartData {
     }
 
     @Override
-    public ChartData view(int fromRowNumber) {
+    public ChartFrame view(int fromRowNumber) {
         return new XYData(dataFrame.view(fromRowNumber));
     }
 
 
     @Override
-    public ChartData view(int fromRowNumber, int length) {
+    public ChartFrame view(int fromRowNumber, int length) {
         return new XYData(dataFrame.view(fromRowNumber, length));
     }
 
     @Override
-    public ChartData resampleByEqualPointsNumber(int points) {
+    public ChartFrame resampleByEqualPointsNumber(int points) {
         return new XYData(dataFrame.resampleByEqualPointsNumber(points, true));
     }
 
     @Override
-    public ChartData resampleByEqualInterval(int columnNumber, double interval) {
+    public ChartFrame resampleByEqualInterval(int columnNumber, double interval) {
         return new XYData(dataFrame.resampleByEqualInterval(columnNumber, interval, true));
     }
 
     @Override
-    public ChartData resampleByEqualTimeInterval(int columnNumber, TimeInterval timeInterval) {
+    public ChartFrame resampleByEqualTimeInterval(int columnNumber, TimeInterval timeInterval) {
         return new XYData(dataFrame.resampleByEqualTimeInterval(columnNumber, timeInterval, true));
     }
 

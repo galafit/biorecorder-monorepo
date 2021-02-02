@@ -1,4 +1,4 @@
-package com.biorecorder.bichart.data;
+package com.biorecorder.bichart.dataprocessing;
 
 import java.util.Arrays;
 
