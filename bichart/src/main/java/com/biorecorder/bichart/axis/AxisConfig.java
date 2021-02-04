@@ -44,7 +44,6 @@ public class AxisConfig {
     private int minorTickMarkInsideSize = 0; // px
     private int minorTickMarkOutsideSize = 0; // px
     private int minorTickIntervalCount = 0; // number of minor intervals in one major interval
-    private boolean isRoundingEnabled = false;
     private boolean isTickLabelOutside = true;
 
     private BColor crosshairLineColor = BColor.GRAY;
@@ -84,7 +83,6 @@ public class AxisConfig {
         minorTickMarkInsideSize = axisConfig.minorTickMarkInsideSize;
         minorTickMarkColor = axisConfig.minorTickMarkColor;
         minorTickIntervalCount = axisConfig.minorTickIntervalCount;
-        isRoundingEnabled = axisConfig.isRoundingEnabled;
 
         titlePadding = axisConfig.titlePadding;
         titleTextStyle = axisConfig.titleTextStyle;
@@ -123,14 +121,6 @@ public class AxisConfig {
 
     public void setCrosshairLineDashStyle(DashStyle crosshairLineDashStyle) {
         this.crosshairLineDashStyle = crosshairLineDashStyle;
-    }
-
-    public boolean isRoundingEnabled() {
-        return isRoundingEnabled;
-    }
-
-    public void setRoundingEnabled(boolean roundingEnabled) {
-        isRoundingEnabled = roundingEnabled;
     }
 
     public void setTickInterval(double tickInterval) {

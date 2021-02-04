@@ -238,11 +238,11 @@ public class Chart {
             gap = 0;
         }
 
-        double end = areaY;
+        int end = areaY;
         for (int stack = 0; stack < stackCount; stack++) {
             int yAxisWeight = stackWeights.get(stack);
-            double axisHeight = 1.0 * height * yAxisWeight / weightSum;
-            double start = end + axisHeight;
+            int axisHeight = height * yAxisWeight / weightSum;
+            int start = end + axisHeight;
            /* if(stack == stackCount - 1) {
                 // for integer calculation sum yAxis intervalLength can be != areaHeight
                 // so we fix that
