@@ -53,7 +53,6 @@ public class DarkTheme {
         AxisConfig yAxisConfig = new AxisConfig();
         yAxisConfig.setColors(AXIS_COLOR, TEXT_COLOR, GRID_COLOR, GRID_COLOR);
         yAxisConfig.setTickMarkSize(Y_MARK_SIZE, 0);
-        yAxisConfig.setRoundingEnabled(isYRoundingEnabled);
         yAxisConfig.setCrosshairLineColor(CROSSHAIR_COLOR);
         yAxisConfig.setAxisLineWidth(0);
         //yAxisConfig.setMinorTickIntervalCount(3);
@@ -87,7 +86,6 @@ public class DarkTheme {
         navigatorConfig.setDefaultStackWeight(NAVIGATOR_STACK_WEIGHT);
         navigatorConfig.setStackGap(0);
         navigatorConfig.getYAxisConfig().setTickLabelOutside(false);
-        navigatorConfig.getYAxisConfig().setRoundingEnabled(true);
         navigatorConfig.setPrimaryYPosition(YAxisPosition.RIGHT);
         navigatorConfig.setPrimaryXPosition(XAxisPosition.BOTTOM);
 

@@ -26,4 +26,6 @@ interface Orientation {
       BText createTitle(String title, TextMetric tm, int start, int end, int width);
 
       boolean contains(int point, int start, int end);
+
+      boolean isVertical();
 }

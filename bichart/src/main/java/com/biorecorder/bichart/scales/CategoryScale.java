@@ -15,9 +15,10 @@ public class CategoryScale extends LinearScale {
         this.labels = labels;
     }
 
-    public CategoryScale() {
-
-    }
+ /*   @Override
+    public boolean setMinMax(double min, double max) {
+        return super.setMinMax(normalizeMin(min), normalizeMax(max));
+    }*/
 
     public CategoryScale(List<String> labels1) {
         this.labels = new StringSequence() {
@@ -34,7 +35,7 @@ public class CategoryScale extends LinearScale {
     }
 
 
-    public double normalizeMin(double min) {
+    private double normalizeMin(double min) {
         long minLong = (long) min;
         if(Math.abs(minLong - min) < 0.5) {
             min = minLong - 0.5;
@@ -42,14 +43,13 @@ public class CategoryScale extends LinearScale {
         return min;
     }
 
-    public double normalizeMax(double max) {
+    private double normalizeMax(double max) {
         long maxLong = (long) max;
         if(Math.abs(maxLong - max) < 0.5) {
             max = maxLong + 0.5;
         }
         return max;
     }
-
 
     public StringSequence getLabels() {
         return labels;

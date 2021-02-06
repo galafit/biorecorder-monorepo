@@ -21,8 +21,6 @@ public class AxisConfig {
     private TextStyle titleTextStyle = new TextStyle(TextStyle.DEFAULT, TextStyle.NORMAL, 12);
     private BColor titleColor = BColor.GRAY;
 
-    private double tickInterval = -1; // in axis domain units (If <= 0 will not be taken into account)
-
     private int tickMarkInsideSize = 0; // px
     private int tickMarkOutsideSize = 3; // px
     private int tickMarkWidth = 1; // px
@@ -74,7 +72,6 @@ public class AxisConfig {
         tickMarkColor = axisConfig.tickMarkColor;
         tickLabelColor = axisConfig.tickLabelColor;
         tickLabelTextStyle = axisConfig.tickLabelTextStyle;
-        tickInterval = axisConfig.tickInterval;
         tickLabelPrefixAndSuffix = axisConfig.tickLabelPrefixAndSuffix;
         isTickLabelCentered = axisConfig.isTickLabelCentered;
 
@@ -123,9 +120,6 @@ public class AxisConfig {
         this.crosshairLineDashStyle = crosshairLineDashStyle;
     }
 
-    public void setTickInterval(double tickInterval) {
-        this.tickInterval = tickInterval;
-    }
 
     public void setTickLabelPrefixAndSuffix(@Nullable String prefix, @Nullable String suffix) {
         tickLabelPrefixAndSuffix = new TickLabelFormat(prefix, suffix);
@@ -139,9 +133,6 @@ public class AxisConfig {
         isTickLabelCentered = tickLabelCentered;
     }
 
-    public double getTickInterval() {
-        return tickInterval;
-    }
 
     public TickLabelFormat getTickLabelPrefixAndSuffix() {
         return tickLabelPrefixAndSuffix;

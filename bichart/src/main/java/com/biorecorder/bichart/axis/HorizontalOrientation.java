@@ -71,6 +71,11 @@ abstract class HorizontalOrientation implements Orientation {
         return point <= end && point >= start;
     }
 
+    @Override
+    public boolean isVertical() {
+        return false;
+    }
+
     protected abstract int getLabelY(AxisConfig config);
 
     protected abstract TextAnchor getLabelVTextAnchor(AxisConfig config);

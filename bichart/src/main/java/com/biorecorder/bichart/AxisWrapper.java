@@ -7,28 +7,49 @@ import com.biorecorder.bichart.graphics.BRectangle;
 import com.biorecorder.bichart.graphics.RenderContext;
 import com.biorecorder.bichart.scales.Scale;
 
-/**
- * This class do axis rounding and add isUsed property.
- * <p>
- * Implement axis rounding when methods:
- * drawAxis or drawGrid or getWidthOut is invoked !!!
- */
+
 class AxisWrapper {
     private Axis axis;
     private boolean isUsed = false;
+    private boolean isStartEndOnTick;
+
 
     public AxisWrapper(Axis axis) {
         this.axis = axis;
+        isStartEndOnTick = axis.isStartEndOnTick();
+    }
+
+    private void deactivateRounding() {
+        axis.setStartEndOnTick(false);
+    }
+
+    private void activateRounding() {
+        axis.setStartEndOnTick(isStartEndOnTick);
+    }
+
+    public void addSizeChangeListener(SizeChangeListener l) {
+        axis.addSizeChangeListener(l);
+    }
+
+    public boolean isStartEndOnTick() {
+        return isStartEndOnTick;
+    }
+
+    public void setStartEndOnTick(boolean startEndOnTick) {
+        isStartEndOnTick = startEndOnTick;
+    }
+
+    public double getTickInterval() {
+        return axis.getTickInterval();
+    }
+
+    public void setTickInterval(double tickInterval) {
+        axis.setTickInterval(tickInterval);
     }
 
     public double getBestExtent(RenderContext renderContext, int length) {
         return axis.getBestExtent(renderContext, length);
     }
-
-    public boolean isRoundingEnabled() {
-        return axis.isStartEndOnTick();
-    }
-
 
     public AxisConfig getConfig() {
         return axis.getConfig();
@@ -55,10 +76,6 @@ class AxisWrapper {
         return axis.formatDomainValue(value);
     }
 
-    public boolean isTickLabelOutside() {
-        return axis.isTickLabelOutside();
-    }
-
     public String getTitle() {
         return axis.getTitle();
     }
@@ -71,25 +88,35 @@ class AxisWrapper {
         return axis.getScale();
     }
 
-
     public void setConfig(AxisConfig config) {
         axis.setConfig(config);
     }
 
-    public Scale zoom(double zoomFactor) {
-       return axis.zoom(zoomFactor);
+
+    public void zoom(double zoomFactor) {
+        if (zoomFactor <= 0) {
+            String errMsg = "Zoom factor = " + zoomFactor + "  Expected > 0";
+            throw new IllegalArgumentException(errMsg);
+        }
+        Scale zoomedScale = axis.getScale().copy();
+
+        double start = getStart();
+        double end = getEnd();
+        double zoomedLength = (end - start) * zoomFactor;
+        double zoomedEnd = start + zoomedLength;
+        zoomedScale.setStartEnd(start, zoomedEnd);
+        double maxNew = zoomedScale.invert(end);
+        setMinMax(getMin(), maxNew, false);
     }
 
+    public void translate(int translation) {
+        Scale translatedScale = axis.getScale().copy();
 
-    public Scale translate(int translation) {
-       return axis.translate(translation);
-    }
-
-    /**
-     * return true if axis min or max actually will be changed
-     */
-    public boolean setMinMax(double min, double max) {
-        return axis.setMinMax(min, max);
+        double start = getStart();
+        double end = getEnd();
+        double minNew = translatedScale.invert(start + translation);
+        double maxNew = translatedScale.invert(end + translation);
+        setMinMax(minNew, maxNew, false);
     }
 
     /**
@@ -97,6 +124,18 @@ class AxisWrapper {
      */
     public boolean setStartEnd(int start, int end) {
         return axis.setStartEnd(start, end);
+    }
+
+    /**
+     * return true if axis min or max actually will be changed
+     */
+    public boolean setMinMax(double min, double max, boolean isAutoscale) {
+        if(isAutoscale) {
+            activateRounding();
+        } else {
+            deactivateRounding();
+        }
+        return axis.setMinMax(min, max);
     }
 
     public double getMin() {
@@ -119,11 +158,8 @@ class AxisWrapper {
         return isUsed;
     }
 
-    /**
-     * this method DO AXIS ROUNDING
-     */
-    public int getWidth() {
-        return axis.getWidthOut();
+    public int getWidth(RenderContext renderContext) {
+        return axis.getWidthOut(renderContext);
     }
 
     public void drawCrosshair(BCanvas canvas, BRectangle area, int position) {

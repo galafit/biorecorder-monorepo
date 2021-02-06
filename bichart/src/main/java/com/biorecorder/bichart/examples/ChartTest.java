@@ -92,7 +92,8 @@ public class ChartTest extends JFrame {
         chart.addStack();
         chart.addTraces(noRegularData, new LineTracePainter(), true);
         chart.addTraces(regularData, new LineTracePainter(), false, XAxisPosition.BOTTOM, YAxisPosition.RIGHT);
-
+        chart.autoScaleY();
+        chart.autoScaleX();
         chartPanel = new ChartPanel(chart);
 
         chartPanel.setPreferredSize(new Dimension(width, height));

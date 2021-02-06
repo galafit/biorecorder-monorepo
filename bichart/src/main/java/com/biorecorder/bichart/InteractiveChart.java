@@ -167,7 +167,6 @@ public class InteractiveChart implements InteractiveDrawable {
         return false;
     }
 
-
     @Override
     public void draw(BCanvas canvas) {
         chart.draw(canvas);
@@ -176,7 +175,7 @@ public class InteractiveChart implements InteractiveDrawable {
 
     @Override
     public boolean update(RenderContext renderContext) {
-       chart.update(renderContext);
+       chart.revalidate(renderContext);
         return true;
     }
 }

@@ -18,6 +18,7 @@ class AxisPainter {
     private AxisConfig config;
     private Orientation orientation;
     private Scale scale;
+    private double tickInterval;
 
     private List<BText> tickLabels = new ArrayList<>();
     private IntArrayList tickPositions = new IntArrayList();
@@ -25,10 +26,11 @@ class AxisPainter {
     private BText titleText;
     private int widthOut;
 
-    public AxisPainter(Scale scale, AxisConfig axisConfig, Orientation orientation, RenderContext renderContext, String title, boolean isRoundingEnabled) {
+    public AxisPainter(Scale scale, AxisConfig axisConfig, Orientation orientation, RenderContext renderContext, String title, double tickInterval,  boolean isRoundingEnabled) {
         this.scale = scale;
         this.config = axisConfig;
         this.orientation = orientation;
+        this.tickInterval = tickInterval;
         createAxisElements(renderContext, isRoundingEnabled, title);
     }
 
@@ -64,11 +66,6 @@ class AxisPainter {
             }
         }
         return -1;
-    }
-
-
-    public boolean isTickLabelOutside() {
-        return config.isTickLabelOutside();
     }
 
     public double length() {
@@ -151,7 +148,7 @@ class AxisPainter {
     }
 
     private boolean isTickIntervalSpecified() {
-        return config.getTickInterval() > 0;
+        return tickInterval > 0;
     }
 
     private List<Tick> generateTicks(TickProvider tickProvider, boolean isRoundingEnabled) {
@@ -200,7 +197,7 @@ class AxisPainter {
 
         TickProvider tickProvider;
         if (isTickIntervalSpecified()) {
-            tickProvider = scale.getTickProviderByInterval(config.getTickInterval(), config.getTickLabelPrefixAndSuffix());
+            tickProvider = scale.getTickProviderByInterval(tickInterval, config.getTickLabelPrefixAndSuffix());
         } else {
             int tickIntervalCount;
             int fontFactor = 4;

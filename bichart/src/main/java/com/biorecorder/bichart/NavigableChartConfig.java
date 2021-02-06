@@ -37,7 +37,6 @@ public class NavigableChartConfig {
         navigatorConfig.setStackGap(0);
         navigatorConfig.setDefaultStackWeight(2);
         navigatorConfig.getLegendConfig().setBackgroundColor(navigatorBgColor);
-        navigatorConfig.getYAxisConfig().setRoundingEnabled(true);
 
         BColor scrollColor = BColor.GRAY_LIGHT;
         scrollConfig.setColor(scrollColor);

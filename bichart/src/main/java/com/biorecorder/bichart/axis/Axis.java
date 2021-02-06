@@ -1,7 +1,11 @@
 package com.biorecorder.bichart.axis;
 
+import com.biorecorder.bichart.SizeChangeListener;
 import com.biorecorder.bichart.graphics.*;
 import com.biorecorder.bichart.scales.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Axis is visual representation of Scale that generates and draws
@@ -14,9 +18,13 @@ public class Axis {
     private Scale scale;
     private String title;
     private AxisPainter painter;
-    private boolean isStartEndOnTick = false;
     private AxisConfig config;
     private Orientation orientation;
+    
+    private List<SizeChangeListener> listeners = new ArrayList<>(1);
+
+    private boolean isStartEndOnTick = false;
+    private double tickInterval = -1; // in axis domain units (If <= 0 will not be taken into account)
 
     public Axis(Scale scale, AxisConfig axisConfig, XAxisPosition xAxisPosition) {
         this.scale = scale.copy();
@@ -42,20 +50,39 @@ public class Axis {
         }
     }
 
-    public int getWidthOut() {
-        if(painter != null) {
-            return painter.getWidthOut();
-        }
-        return 0;
+    public void addSizeChangeListener(SizeChangeListener l) {
+        listeners.add(l);
     }
 
-    public void invalidate() {
+    public void invalidate(boolean isSizeChanged) {
         painter = null;
+        if (isSizeChanged) {
+            for (SizeChangeListener l : listeners) {
+                l.onSizeChanged();
+            }
+        }
     }
 
     public void setTitle(String title) {
         this.title = title;
-        invalidate();
+        invalidate(true);
+    }
+
+    public double getTickInterval() {
+        return tickInterval;
+    }
+
+    /**
+     * Set axis tick interval in domain units (If tick interval <= 0 will not be taken into account)
+     * @param tickInterval
+     */
+    public void setTickInterval(double tickInterval) {
+        this.tickInterval = tickInterval;
+        boolean sizeChange = false;
+        if(orientation.isVertical() && config.isTickLabelOutside()) {
+            sizeChange = true;
+        }
+        invalidate(sizeChange);
     }
 
     /**
@@ -66,7 +93,7 @@ public class Axis {
      */
     public void setScale(Scale scale) {
         this.scale = scale.copy();
-        invalidate();
+        invalidate(true);
     }
 
     /**
@@ -97,11 +124,7 @@ public class Axis {
     public void setConfig(AxisConfig config) {
         // set a copy to safely change
         this.config = new AxisConfig(config);
-        invalidate();
-    }
-
-    public boolean isTickLabelOutside() {
-        return config.isTickLabelOutside();
+        invalidate(true);
     }
 
     public String getTitle() {
@@ -112,52 +135,15 @@ public class Axis {
         return isStartEndOnTick;
     }
 
-
-    /**
-     * Zoom does not affect the axis scale!
-     * It copies the axis scales and transforms its domain respectively.
-     * Note: zoom affects only max value, min value does not change!!!
-     *
-     * @param zoomFactor
-     * @return new scale with transformed domain
-     */
-    public Scale zoom(double zoomFactor) {
-        if (zoomFactor <= 0) {
-            String errMsg = "Zoom factor = " + zoomFactor + "  Expected > 0";
-            throw new IllegalArgumentException(errMsg);
+    public void setStartEndOnTick(boolean startEndOnTick) {
+        isStartEndOnTick = startEndOnTick;
+        boolean sizeChange = false;
+        if(orientation.isVertical() && config.isTickLabelOutside()) {
+            sizeChange = true;
         }
-        Scale zoomedScale = scale.copy();
-
-        double start = getStart();
-        double end = getEnd();
-
-        double zoomedLength = (end - start) * zoomFactor;
-        double zoomedEnd = start + zoomedLength;
-        zoomedScale.setStartEnd((int)start, (int)zoomedEnd);
-        double maxNew = zoomedScale.invert(end);
-        zoomedScale.setMinMax(getMin(), maxNew);
-        return zoomedScale;
+        invalidate(sizeChange);
     }
-
-
-    /**
-     * Zoom does not affect the axis scale!
-     * It copies the axis scales and transforms its domain respectively.
-     *
-     * @param translation
-     * @return new scale with transformed domain
-     */
-    public Scale translate(int translation) {
-        Scale translatedScale = scale.copy();
-
-        double start = getStart();
-        double end = getEnd();
-        double minNew = translatedScale.invert(start + translation);
-        double maxNew = translatedScale.invert(end + translation);
-        translatedScale.setMinMax(minNew, maxNew);
-        return translatedScale;
-    }
-
+    
     /**
      * Format domain value according to the minMax one "point precision"
      * cutting unnecessary double digits that exceeds that "point precision"
@@ -169,7 +155,11 @@ public class Axis {
     public boolean setMinMax(double min, double max) {
         if(min != scale.getMin() || max != scale.getMax()) {
             scale.setMinMax(min, max);
-            invalidate();
+            boolean sizeChange = false;
+            if(orientation.isVertical() && config.isTickLabelOutside()) {
+                sizeChange = true;
+            }
+            invalidate(sizeChange);
             return true;
         }
         return false;
@@ -178,6 +168,7 @@ public class Axis {
     public boolean setStartEnd(int start, int end) {
         if (start != end && ((int)scale.getStart() != start || (int)scale.getEnd() != end)) {
             scale.setStartEnd(start, end);
+            invalidate(true);
             return true;
         }
         return false;
@@ -214,35 +205,31 @@ public class Axis {
     public double getBestExtent(RenderContext renderContext, int length) {
        return AxisPainter.getBestExtent(renderContext, scale, config, orientation, length);
     }
-
-    private AxisPainter createPainter(BCanvas canvas, boolean rounding) {
-        return  new AxisPainter(scale, config, orientation, canvas.getRenderContext(), title, rounding);
-
+    
+    public void revalidate(RenderContext renderContext) {
+        if(painter == null) {
+            painter = new AxisPainter(scale, config, orientation, renderContext, title, tickInterval, isStartEndOnTick);
+        }
     }
 
-    public void setStartEndOnTick(BCanvas canvas) {
-        painter =  createPainter(canvas, true);
+    public int getWidthOut(RenderContext renderContext) {
+        revalidate(renderContext);
+        return painter.getWidthOut();
     }
 
     public void drawCrosshair(BCanvas canvas, BRectangle area, int position) {
-       if(painter == null) {
-           painter =  createPainter(canvas, false);
-       }
-       painter.drawCrosshair(canvas, area, position);
+        revalidate(canvas.getRenderContext());
+        painter.drawCrosshair(canvas, area, position);
     }
 
     public void drawGrid(BCanvas canvas, BRectangle area) {
-        if(painter == null) {
-            painter =  createPainter(canvas, false);
-        }
+        revalidate(canvas.getRenderContext());
         painter.drawGrid(canvas, area);
 
     }
 
     public void drawAxis(BCanvas canvas, BRectangle area) {
-        if(painter == null) {
-            painter =  createPainter(canvas, false);
-        }
+        revalidate(canvas.getRenderContext());
         painter.drawAxis(canvas, area);
 
     }
