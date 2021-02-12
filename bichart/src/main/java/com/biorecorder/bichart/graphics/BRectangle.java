@@ -1,7 +1,7 @@
 package com.biorecorder.bichart.graphics;
 
 /**
- * Created by galafit on 29/12/17.
+ * x,y - upper left corner
  */
 public class BRectangle {
     public final int x;

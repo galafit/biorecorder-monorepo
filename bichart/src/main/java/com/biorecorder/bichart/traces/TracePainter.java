@@ -14,28 +14,21 @@ import com.sun.istack.internal.Nullable;
 public interface TracePainter {
       /**
        * LineTrace, AreaTrace, ColumnTrace... - TraceType.LINEAR
-       * ScatterTrace, BubblePrice... - TraceType.SCATTER
+       * ScatterTrace, BubbleTrace... - TraceType.SCATTER
        */
       TraceType traceType();
 
-      GroupApproximation[] groupApproximations();
-
-      int traceCount(ChartData data);
-
-      String traceName(ChartData data, int trace);
-
       int markWidth();
 
-      BPoint tracePointCrosshair(ChartData data, int dataIndex, int trace,  Scale xScale, Scale yScale);
+      Range yMinMax(ChartData data);
 
-      BRectangle tracePointHoverArea(ChartData data, int dataIndex, int trace,  Scale xScale, Scale yScale);
+      Range xMinMax(ChartData data);
 
-      @Nullable
-      Range traceYMinMax(ChartData data, int trace);
+      BPoint getCrosshairPoint(ChartData data, int dataIndex, Scale xScale, Scale yScale);
 
-      @Nullable Range xMinMax(ChartData data);
+      BRectangle getHoverArea(ChartData data, int dataIndex, Scale xScale, Scale yScale);
 
-      NamedValue[] tracePointValues(ChartData data, int dataIndex, int trace, Scale xtScale, Scale yScale);
+      String[] getTooltipInfo(ChartData data, int dataIndex, Scale xtScale, Scale yScale);
 
-      void drawTrace(BCanvas canvas, ChartData data, int trace, BColor traceColor, int traceCount, boolean isSplit,  Scale xScale, Scale yScale);
+      void drawTrace(BCanvas canvas, ChartData data, Scale xScale, Scale yScale, BColor traceColor);
 }

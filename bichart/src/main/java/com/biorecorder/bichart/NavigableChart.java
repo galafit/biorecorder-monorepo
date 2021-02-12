@@ -356,10 +356,6 @@ public class NavigableChart {
         return chart.getYAxis(stack, point);
     }
 
-    XAxisPosition getChartXAxis(BPoint point) {
-        return chart.getXAxis(point);
-    }
-
 
     int getNavigatorStack(BPoint point) {
         return chart.getStack(point);
@@ -674,7 +670,7 @@ public class NavigableChart {
     }
 
     public void addChartTrace(ChartData data, TracePainter tracePainter) {
-        chart.addTraces(data, tracePainter);
+        chart.addTrace(data, tracePainter);
         isAreasDirty = true;
         isScrollsDirty = true;
         if(!isAutoScaleEnabled){
@@ -682,8 +678,9 @@ public class NavigableChart {
         }
     }
 
-    public void addChartTrace(ChartData data, TracePainter tracePainter, boolean isSplit) {
-        chart.addTraces(data, tracePainter, isSplit);
+
+    public void addChartTrace(ChartData data, TracePainter tracePainter, XAxisPosition xPosition, YAxisPosition yPosition) {
+        chart.addTrace(data,  tracePainter, xPosition, yPosition);
         isAreasDirty = true;
         isScrollsDirty = true;
         if(!isAutoScaleEnabled){
@@ -691,8 +688,8 @@ public class NavigableChart {
         }
     }
 
-    public void addChartTrace(ChartData data, TracePainter tracePainter, boolean isSplit, XAxisPosition xPosition, YAxisPosition yPosition) {
-        chart.addTraces(data,  tracePainter, isSplit, xPosition, yPosition);
+    public void addChartTrace(ChartData data, TracePainter tracePainter, int stackNumber) {
+        chart.addTrace(data,  tracePainter, stackNumber);
         isAreasDirty = true;
         isScrollsDirty = true;
         if(!isAutoScaleEnabled){
@@ -700,17 +697,8 @@ public class NavigableChart {
         }
     }
 
-    public void addChartTrace(ChartData data, TracePainter tracePainter, boolean isSplit, int stackNumber) {
-        chart.addTraces(data,  tracePainter, isSplit, stackNumber);
-        isAreasDirty = true;
-        isScrollsDirty = true;
-        if(!isAutoScaleEnabled){
-            isChartAutoscaleNeedDisable = true;
-        }
-    }
-
-    public void addChartTrace(ChartData data, TracePainter tracePainter, boolean isSplit, int stackNumber, XAxisPosition xPosition, YAxisPosition yPosition) {
-        chart.addTraces(data,  tracePainter, isSplit, stackNumber, xPosition, yPosition);
+    public void addChartTrace(ChartData data, TracePainter tracePainter,  int stackNumber, XAxisPosition xPosition, YAxisPosition yPosition) {
+        chart.addTrace(data,  tracePainter, stackNumber, xPosition, yPosition);
         isAreasDirty = true;
         isScrollsDirty = true;
         if(!isAutoScaleEnabled){
@@ -770,9 +758,6 @@ public class NavigableChart {
         return chart.getYConfig(stack, yPosition);
     }
 
-    public String[] getChartTraceNames() {
-        return chart.getTraceNames();
-    }
 
     public void setChartTraceColor(int trace, BColor color) {
         chart.setTraceColor(trace, color);
@@ -782,14 +767,6 @@ public class NavigableChart {
         chart.setTraceName(trace, name);
     }
 
-    public int getChartTraceNumberByName(String name) {
-        return chart.getTraceNumberByName(name);
-
-    }
-
-    public int getChartSelectedTraceNumber() {
-        return chart.getSelectedTraceNumber();
-    }
 
     public void setChartYMinMax(int stack, YAxisPosition yPosition, double min, double max) {
         chart.setYMinMax(stack, yPosition, min, max);
@@ -840,19 +817,14 @@ public class NavigableChart {
     }
 
     public void addNavigatorTrace(ChartData data, TracePainter tracePainter) {
-        navigator.addTraces(data,  tracePainter, true);
+        navigator.addTrace(data,  tracePainter);
         isAreasDirty = true;
         isScrollsDirty = true;
     }
 
-    public void addNavigatorTrace(ChartData data, TracePainter tracePainter, boolean isSplit) {
-        navigator.addTraces(data,  tracePainter, isSplit);
-        isAreasDirty = true;
-        isScrollsDirty = true;
-    }
 
-    public void addNavigatorTrace(ChartData data, TracePainter tracePainter, boolean isSplit, int stack) {
-        navigator.addTraces(data,  tracePainter, isSplit, stack);
+    public void addNavigatorTrace(ChartData data, TracePainter tracePainter, int stack) {
+        navigator.addTrace(data,  tracePainter, stack);
         isAreasDirty = true;
         isScrollsDirty = true;
     }
@@ -918,18 +890,6 @@ public class NavigableChart {
         return navigator.getYConfig(stack, yPosition);
     }
 
-    public String[] getNavigatorTraceNames() {
-        return navigator.getTraceNames();
-    }
-
-    public int getNavigatorTraceNumberByName(String name) {
-        return navigator.getTraceNumberByName(name);
-
-    }
-
-    public int getNavigatorSelectedTraceNumber() {
-        return navigator.getSelectedTraceNumber();
-    }
 
     public void setNavigatorYMinMax(int stack, YAxisPosition yPosition, double min, double max) {
         navigator.setYMinMax(stack, yPosition, min, max);

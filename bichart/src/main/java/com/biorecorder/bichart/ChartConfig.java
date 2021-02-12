@@ -93,6 +93,9 @@ public class ChartConfig {
     }
 
     public Insets getSpacing() {
+        if(spacing == null) {
+            return new Insets(autoSpacing);
+        }
         return spacing;
     }
 

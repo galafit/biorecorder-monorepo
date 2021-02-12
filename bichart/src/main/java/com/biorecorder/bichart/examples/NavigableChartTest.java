@@ -58,10 +58,10 @@ public class NavigableChartTest extends JFrame{
 
         chart = new NavigableChart();
 
-        chart.addChartTrace(xyData, new LineTracePainter(), true);
+        chart.addChartTrace(xyData, new LineTracePainter());
         chart.addChartStack();
         chart.addChartTrace(xyData1, new LineTracePainter());
-        chart.addNavigatorTrace(xyData, new LineTracePainter(), true);
+        chart.addNavigatorTrace(xyData, new LineTracePainter());
 
         chartPanel = new ChartPanel(chart);
 

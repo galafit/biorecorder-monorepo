@@ -10,7 +10,6 @@ import com.biorecorder.bichart.graphics.*;
  */
 public class SwitchButton {
     private boolean isSelected;
-    private ButtonGroup group;
     private int borderWidth = 1;
     private int x;
     private int y;
@@ -26,50 +25,13 @@ public class SwitchButton {
             (int)(textStyle.getSize() * 0.2),
             (int)(textStyle.getSize() * 0.2));
     
-    public SwitchButton(String label) {
-        if(label != null) {
-            this.label = label;
-        }
-    }
-
-    public void setGroup(ButtonGroup group) {
-        this.group = group;
-    }
-
-    public void setLabel(String label) {
-        if(label != null) {
-            this.label = label;
-        }
+    public SwitchButton(String label, TextStyle textStyle) {
+        this.label = label;
+        this.textStyle = textStyle;
     }
 
     public void setSelected(boolean isSelected) {
-        if (group != null) {
-            // use the group model instead
-            group.setSelected(this, isSelected);
-        } else {
-            this.isSelected = isSelected;
-        }
-    }
-
-    public boolean isSelected() {
-        if(group != null) {
-            return group.isSelected(this);
-        } else {
-            return isSelected;
-        }
-    }
-
-
-    public void switchState() {
-        if(isSelected()) {
-            setSelected(false);
-        } else {
-            setSelected(true);
-        }
-    }
-
-    public String getLabel() {
-        return label;
+        this.isSelected = isSelected;
     }
 
     public BRectangle getBounds() {
@@ -103,7 +65,7 @@ public class SwitchButton {
         int y0 = y + margin.top() + tm.ascent();
         canvas.drawString(label, x0, y0);
 
-        if(isSelected()) {
+        if(isSelected) {
             // draw border
             canvas.setStroke(borderWidth, DashStyle.SOLID);
             int borderShift = borderWidth/2;

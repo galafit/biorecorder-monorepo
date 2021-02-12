@@ -2,8 +2,6 @@ package com.biorecorder.bichart.traces;
 
 
 import com.biorecorder.bichart.ChartData;
-import com.biorecorder.bichart.dataprocessing.XYViewer;
-import com.biorecorder.bichart.dataprocessing.GroupApproximation;
 import com.biorecorder.bichart.graphics.*;
 import com.biorecorder.bichart.scales.Scale;
 
@@ -26,39 +24,28 @@ public class LineTracePainter implements TracePainter {
         return TraceType.LINEAR;
     }
 
-    @Override
-    public GroupApproximation[] groupApproximations() {
-        GroupApproximation[] approximations = {GroupApproximation.OPEN, GroupApproximation.AVERAGE};
-        return approximations;
-    }
-
-    @Override
-    public String traceName(ChartData data, int trace) {
-       return data.getColumnName(trace + 1);
-    }
-
-    @Override
+   @Override
     public int markWidth() {
         return traceConfig.getMarkSize();
     }
 
     @Override
-    public BPoint tracePointCrosshair(ChartData data, int dataIndex, int trace, Scale xScale, Scale yScale) {
+    public BPoint getCrosshairPoint(ChartData data, int dataIndex,  Scale xScale, Scale yScale) {
         int x = (int) xScale.scale(data.value(dataIndex, 0));
-        int y = (int) yScale.scale(data.value(dataIndex, trace + 1));
+        int y = (int) yScale.scale(data.value(dataIndex, 1));
         return new BPoint(x, y);
     }
 
     @Override
-    public BRectangle tracePointHoverArea(ChartData data, int dataIndex, int trace, Scale xScale, Scale yScale) {
+    public BRectangle getHoverArea(ChartData data, int dataIndex,  Scale xScale, Scale yScale) {
         int x = (int) xScale.scale(data.value(dataIndex, 0));
-        int y = (int) yScale.scale(data.value(dataIndex, trace + 1));
+        int y = (int) yScale.scale(data.value(dataIndex, 1));
         return new BRectangle(x, y, 0, 0);
     }
 
     @Override
-    public Range traceYMinMax(ChartData data, int trace) {
-        return data.columnMinMax(trace + 1);
+    public Range yMinMax(ChartData data) {
+        return data.columnMinMax(1);
     }
 
     @Override
@@ -67,25 +54,20 @@ public class LineTracePainter implements TracePainter {
     }
 
     @Override
-    public NamedValue[] tracePointValues(ChartData data, int dataIndex, int trace, Scale argumentScale, Scale valueScale) {
-        NamedValue[] traceValues = {new NamedValue("",  valueScale.formatDomainValue(data.value(dataIndex, trace + 1)))};
-        return traceValues;
+    public String[] getTooltipInfo(ChartData data, int dataIndex, Scale xScale, Scale yScale) {
+        String[] info = new String[2];
+        info[0] = "x: " + xScale.formatDomainValue(data.value(dataIndex, 0));
+        info[0] = "y: " + yScale.formatDomainValue(data.value(dataIndex, 1));
+        return info;
     }
-
-
-    @Override
-    public int traceCount(ChartData data) {
-        return data.columnCount() - 1;
-    }
-
 
     private BColor getFillColor(BColor color) {
         return new BColor(color.getRed(), color.getGreen(), color.getBlue(), 110);
     }
 
     @Override
-    public void drawTrace(BCanvas canvas, ChartData data, int trace, BColor traceColor, int traceCount, boolean isSplit, Scale xScale, Scale yScale) {
-        XYViewer xyData = new XYViewer(data, trace);
+    public void drawTrace(BCanvas canvas, ChartData data, Scale xScale, Scale yScale, BColor traceColor) {
+        XYViewer xyData = new XYViewer(data);
         if (xyData.size() == 0) {
             return;
         }

@@ -1,15 +1,12 @@
 package com.biorecorder.bichart;
 
 import com.biorecorder.bichart.axis.*;
-import com.biorecorder.bichart.button.ButtonGroup;
-import com.biorecorder.bichart.button.SwitchButton;
 import com.biorecorder.bichart.graphics.*;
 import com.biorecorder.bichart.scales.CategoryScale;
 import com.biorecorder.bichart.scales.LinearScale;
 import com.biorecorder.bichart.scales.Scale;
 import com.biorecorder.bichart.themes.DarkTheme;
 import com.biorecorder.bichart.traces.TracePainter;
-import com.biorecorder.bichart.utils.StringUtils;
 import com.biorecorder.data.sequence.StringSequence;
 import com.sun.istack.internal.Nullable;
 
@@ -31,7 +28,7 @@ public class Chart implements SizeChangeListener {
     private List<AxisWrapper> yAxisList = new ArrayList<>();
 
     private ArrayList<Integer> stackWeights = new ArrayList<Integer>();
-    private List<DataPainter> dataPainters = new ArrayList<DataPainter>();
+    private TraceList traceList = new TraceList();
     private Legend legend;
     private Title title;
 
@@ -40,7 +37,7 @@ public class Chart implements SizeChangeListener {
     private int height;
 
     private Tooltip tooltip;
-    private DataPainterTracePoint hoverPoint;
+
     private boolean isValid = true;
 
     public Chart() {
@@ -57,10 +54,11 @@ public class Chart implements SizeChangeListener {
         xAxisList.add(bottomAxis);
         xAxisList.add(topAxis);
         addStack();
-        //legend
-        legend = new Legend(config.getLegendConfig());
-        //title
+
+        legend = new Legend(config.getLegendConfig(), traceList, new BRectangle(0, 0,  width, height));
+
         title = new Title(config.getTitleConfig());
+        tooltip = new Tooltip(config.getTooltipConfig(), 0, 0);
     }
 
     @Override
@@ -72,13 +70,6 @@ public class Chart implements SizeChangeListener {
         isValid = false;
     }
 
-    private boolean isLegendEnabled() {
-        if (legend == null || !legend.isEnabled()) {
-            return false;
-        }
-        return true;
-    }
-
 
     public void revalidate(RenderContext renderContext) {
         if(isValid){
@@ -88,8 +79,6 @@ public class Chart implements SizeChangeListener {
         if (width == 0 || height == 0) {
             return;
         }
-        // all calculation with x axes must be done always first course data processing depends on it!!!
-        legend.invalidate();
         if (config.getMargin() != null) { // fixed margin
             Insets margin = config.getMargin();
             int graphAreaWidth = width - margin.left() - margin.right();
@@ -107,12 +96,13 @@ public class Chart implements SizeChangeListener {
         }
         
         int titleHeight = title.getHeight(renderContext, width);
+        legend.setArea(new BRectangle(0, titleHeight, width, height - titleHeight));
 
         setXStartEnd(graphArea.x, graphArea.width);
         int top = titleHeight;
         int bottom = 0;
-        AxisWrapper topAxis = xAxisList.get(getXIndex(XAxisPosition.TOP));
-        AxisWrapper bottomAxis = xAxisList.get(getXIndex(XAxisPosition.BOTTOM));
+        AxisWrapper topAxis = xAxisList.get(xPositionToIndex(XAxisPosition.TOP));
+        AxisWrapper bottomAxis = xAxisList.get(xPositionToIndex(XAxisPosition.BOTTOM));
         if(topAxis.isUsed()) {
             top += topAxis.getWidth(renderContext);
         }
@@ -120,14 +110,12 @@ public class Chart implements SizeChangeListener {
             bottom += bottomAxis.getWidth(renderContext);
         }
 
-        if (isLegendEnabled() ) {
-            int legendHeight = legend.getHeight(renderContext);
-            if (legend.isTop()) {
-                top += legendHeight;
-            }
-            if (legend.isBottom()) {
-                bottom += legendHeight;
-            }
+        int legendHeight = legend.getLegendHeight(renderContext);
+        if (legend.isTop()) {
+            top += legendHeight;
+        }
+        if (legend.isBottom()) {
+            bottom += legendHeight;
         }
 
         setYStartEnd(top, height - top - bottom);
@@ -152,7 +140,6 @@ public class Chart implements SizeChangeListener {
 
         // adjust XAxis ranges
         setXStartEnd(graphArea.x, graphArea.width);
-        legend.validate(renderContext);
         isValid = true;
     }
 
@@ -190,28 +177,6 @@ public class Chart implements SizeChangeListener {
         }
     }
 
-    private int chooseXAxisWithGrid(int stack) {
-        int primaryAxisIndex = getXIndex(config.getPrimaryXPosition());
-
-        int leftAxisIndex = getYIndex(stack, YAxisPosition.LEFT);
-        int rightAxisIndex = getYIndex(stack, YAxisPosition.RIGHT);
-        for (DataPainter dataPainter : dataPainters) {
-            if (dataPainter.getXIndex() == primaryAxisIndex) {
-                for (int trace = 0; trace < dataPainter.traceCount(); trace++) {
-                    int traceYIndex = getTraceYIndex(dataPainter, trace);
-                    if (traceYIndex == leftAxisIndex || traceYIndex == rightAxisIndex) {
-                        return primaryAxisIndex;
-                    }
-                }
-            }
-        }
-        if (config.getPrimaryXPosition() == XAxisPosition.BOTTOM) {
-            return getXIndex(XAxisPosition.TOP);
-        } else {
-            return getXIndex(XAxisPosition.BOTTOM);
-        }
-    }
-
     private void checkStackNumber(int stack) {
         int stackCount = yAxisList.size() / 2;
         if (stack >= stackCount) {
@@ -220,7 +185,7 @@ public class Chart implements SizeChangeListener {
         }
     }
 
-    private int getYIndex(int stack, YAxisPosition yPosition) {
+    private int yPositionToIndex(int stack, YAxisPosition yPosition) {
         if (yPosition == YAxisPosition.LEFT) {
             return 2 * stack;
         } else {
@@ -228,7 +193,7 @@ public class Chart implements SizeChangeListener {
         }
     }
 
-    private int getXIndex(XAxisPosition xPosition) {
+    private int xPositionToIndex(XAxisPosition xPosition) {
         if (xPosition == XAxisPosition.BOTTOM) {
             return 0;
         } else {
@@ -254,34 +219,13 @@ public class Chart implements SizeChangeListener {
     /**
      * X-axis: 0(even) - BOTTOM and 1(odd) - TOP
      */
-    private XAxisPosition getXPosition(int xIndex) {
+    private XAxisPosition xPositionToIndex(int xIndex) {
         if ((xIndex & 1) == 0) {
             return XAxisPosition.BOTTOM;
         }
         return XAxisPosition.TOP;
     }
 
-    int getTraceYIndex(DataPainter dataPainter, int trace) {
-        if (dataPainter.isSplit()) {
-            return dataPainter.getYStartIndex() + trace * 2;
-        } else {
-            return dataPainter.getYStartIndex();
-        }
-    }
-
-    private void updateTooltipAndCrosshairs(DataPainterTracePoint hoverPoint) {
-        DataPainter dataPainter = hoverPoint.getDataPainter();
-        AxisWrapper xAxis = xAxisList.get(dataPainter.getXIndex());
-        AxisWrapper[] traceYAxes = new AxisWrapper[dataPainter.traceCount()];
-        for (int trace = 0; trace < dataPainter.traceCount(); trace++) {
-            traceYAxes[trace] = yAxisList.get(getTraceYIndex(dataPainter, trace));
-        }
-        Scale[] traceYScales = new Scale[traceYAxes.length];
-        for (int i = 0; i < traceYAxes.length; i++) {
-            traceYScales[i] = traceYAxes[i].getScale();
-        }
-        tooltip = dataPainter.createTooltip(config.getTooltipConfig(), hoverPoint.getPointIndex(), hoverPoint.getTrace(), xAxis.getScale(), traceYScales);
-    }
 
     /**
      * =============================================================*
@@ -290,9 +234,9 @@ public class Chart implements SizeChangeListener {
      */
 
     double getBestExtent(XAxisPosition xAxisPosition, RenderContext renderContext) {
-        double extent = xAxisList.get(getXIndex(xAxisPosition)).getBestExtent(renderContext, width);
-
-        double tracesExtent = getTracesBestExtent(xAxisPosition);
+        AxisWrapper xAxis = xAxisList.get(xPositionToIndex(xAxisPosition));
+        double extent = xAxis.getBestExtent(renderContext, width);
+        double tracesExtent = traceList.getTracesBestExtent(xAxis, width);
         if (extent < 0) {
             extent = tracesExtent;
         } else if (tracesExtent > 0) {
@@ -301,31 +245,6 @@ public class Chart implements SizeChangeListener {
         return extent;
     }
 
-    double getTracesBestExtent(XAxisPosition xAxisPosition) {
-        double extent = -1;
-        for (DataPainter trace : dataPainters) {
-            if (trace.getXIndex() == getXIndex(xAxisPosition)) {
-                double traceExtent = trace.getBestExtent(width);
-                if (extent < 0) {
-                    extent = traceExtent;
-                } else if (traceExtent > 0) {
-                    extent = Math.min(extent, traceExtent);
-                }
-            }
-        }
-        return extent;
-    }
-
-
-    // for all x axis
-    Range getAllTracesFullMinMax() {
-        Range minMax = null;
-        for (DataPainter trace : dataPainters) {
-            Range traceXMinMax = trace.xMinMax();
-            minMax = Range.join(minMax, traceXMinMax);
-        }
-        return minMax;
-    }
 
 
     int getStacksSumWeight() {
@@ -337,47 +256,19 @@ public class Chart implements SizeChangeListener {
     }
 
     double scale(XAxisPosition xAxisPosition, double value) {
-        return xAxisList.get(getXIndex(xAxisPosition)).getScale().scale(value);
+        return xAxisList.get(xPositionToIndex(xAxisPosition)).getScale().scale(value);
     }
 
     double invert(XAxisPosition xAxisPosition, double value) {
-        return xAxisList.get(getXIndex(xAxisPosition)).getScale().invert(value);
+        return xAxisList.get(xPositionToIndex(xAxisPosition)).getScale().invert(value);
     }
 
     Range getYMinMax(int stack, YAxisPosition yAxisPosition, BCanvas canvas) {
         if (!isValid) {
             revalidate(canvas.getRenderContext());
         }
-        AxisWrapper yAxis = yAxisList.get(getYIndex(stack, yAxisPosition));
+        AxisWrapper yAxis = yAxisList.get(yPositionToIndex(stack, yAxisPosition));
         return new Range(yAxis.getMin(), yAxis.getMax());
-    }
-
-    private DataPainterTrace getSelectedTrace() {
-        if (legend != null) {
-            return legend.getSelectedTrace();
-        }
-        return null;
-    }
-
-    public boolean isTraceSelected() {
-        return getSelectedTrace() != null;
-    }
-
-    XAxisPosition getSelectedTraceX() {
-        return getXPosition(getSelectedTrace().getDataPainter().getXIndex());
-    }
-
-    int getSelectedTraceStack() {
-        DataPainterTrace selectedTrace = getSelectedTrace();
-        int yIndex = getTraceYIndex(selectedTrace.getDataPainter(), selectedTrace.getTrace());
-        return getYStack(yIndex);
-    }
-
-
-    YAxisPosition getSelectedTraceY() {
-        DataPainterTrace selectedTrace = getSelectedTrace();
-        int yIndex = getTraceYIndex(selectedTrace.getDataPainter(), selectedTrace.getTrace());
-        return getYPosition(yIndex);
     }
 
     int getStack(BPoint point) {
@@ -398,7 +289,7 @@ public class Chart implements SizeChangeListener {
     XAxisPosition[] getXAxes() {
         List<XAxisPosition> positions = new ArrayList<>();
         for (XAxisPosition position : XAxisPosition.values()) {
-            if (xAxisList.get(getXIndex(position)).isUsed()) {
+            if (xAxisList.get(xPositionToIndex(position)).isUsed()) {
                 positions.add(position);
             }
 
@@ -409,7 +300,7 @@ public class Chart implements SizeChangeListener {
     YAxisPosition[] getYAxes(int stack) {
         List<YAxisPosition> positions = new ArrayList<>();
         for (YAxisPosition position : YAxisPosition.values()) {
-            if (yAxisList.get(getYIndex(stack, position)).isUsed()) {
+            if (yAxisList.get(yPositionToIndex(stack, position)).isUsed()) {
                 positions.add(position);
             }
 
@@ -445,26 +336,29 @@ public class Chart implements SizeChangeListener {
         return null;
     }
 
-    XAxisPosition getXAxis(BPoint point) {
+    XAxisPosition getXAxisPosition(BPoint point) {
+        return xPositionToIndex(xAxisToIndex(getXAxis(point)));
+    }
+
+    AxisWrapper getXAxis(BPoint point) {
         if (new BRectangle(0, 0, width, height).contains(point.getX(), point.getY())) {
-            int bottomAxisIndex = getXIndex(XAxisPosition.BOTTOM);
-            int topAxisIndex = getXIndex(XAxisPosition.TOP);
-            ;
+            int bottomAxisIndex = xPositionToIndex(XAxisPosition.BOTTOM);
+            int topAxisIndex = xPositionToIndex(XAxisPosition.TOP);
             AxisWrapper bottomAxis = xAxisList.get(bottomAxisIndex);
             AxisWrapper topAxis = xAxisList.get(topAxisIndex);
             if (!bottomAxis.isUsed() && !topAxis.isUsed()) {
                 return null;
             } else if (!topAxis.isUsed()) {
-                return XAxisPosition.BOTTOM;
+                return bottomAxis;
             } else if (!bottomAxis.isUsed()) {
-                return XAxisPosition.TOP;
+                return topAxis;
             } else { // both axis is used
                 // find point stack
                 int stackCount = yAxisList.size() / 2;
                 for (int stack = 0; stack < stackCount; stack++) {
                     AxisWrapper axisLeft = yAxisList.get(2 * stack);
                     if (axisLeft.getEnd() <= point.getY() && axisLeft.getStart() >= point.getY()) {
-                        return getXPosition(chooseXAxisWithGrid(stack));
+                        return traceList.getUsedXAxis(yAxisList.get(2 * stack), yAxisList.get(2 * stack + 1));
                     }
                 }
             }
@@ -473,81 +367,14 @@ public class Chart implements SizeChangeListener {
     }
 
     boolean hoverOff() {
-        if (hoverPoint != null) {
-            hoverPoint = null;
-            tooltip = null;
-            return true;
-        }
-        return false;
+       return tooltip.setHoverPoint(null);
     }
 
     boolean hoverOn(int x, int y) {
         if (!graphArea.contains(x, y)) {
             return hoverOff();
         }
-        DataPainterTrace selectedTrace = getSelectedTrace();
-        if (selectedTrace != null) {
-            Scale xScale = xAxisList.get(selectedTrace.getDataPainter().getXIndex()).getScale();
-            Scale yScale = yAxisList.get(getTraceYIndex(selectedTrace.getDataPainter(), selectedTrace.getTrace())).getScale();
-            NearestTracePoint nearestTracePoint = selectedTrace.getDataPainter().nearest(x, y, selectedTrace.getTrace(), xScale, yScale);
-            if (nearestTracePoint != null) {
-                if (nearestTracePoint.getTracePoint().equals(hoverPoint)) {
-                    return false;
-                } else {
-                    hoverPoint = nearestTracePoint.getTracePoint();
-                    updateTooltipAndCrosshairs(hoverPoint);
-                    return true;
-                }
-            } else if (hoverPoint == null) {
-                return false;
-            }
-            return true;
-        }
-
-        if (hoverPoint != null) {
-            Scale xScale = xAxisList.get(hoverPoint.getDataPainter().getXIndex()).getScale();
-            Scale yScale = yAxisList.get(getTraceYIndex(hoverPoint.getDataPainter(), hoverPoint.getTrace())).getScale();
-            NearestTracePoint nearestTracePoint = hoverPoint.getDataPainter().nearest(x, y, hoverPoint.getTrace(), xScale, yScale);
-            if (nearestTracePoint != null) {
-                if (nearestTracePoint.getTracePoint().equals(hoverPoint)) {
-                    return false;
-                } else {
-                    hoverPoint = nearestTracePoint.getTracePoint();
-                    updateTooltipAndCrosshairs(hoverPoint);
-                    return true;
-                }
-            }
-        }
-
-        // find nearest trace trace
-        NearestTracePoint closestTracePoint = null;
-        for (DataPainter dataPainter : dataPainters) {
-            Scale[] traceYScales = new Scale[dataPainter.traceCount()];
-            for (int trace = 0; trace < dataPainter.traceCount(); trace++) {
-                traceYScales[trace] = yAxisList.get(getTraceYIndex(dataPainter, trace)).getScale();
-            }
-            Scale xScale = xAxisList.get(dataPainter.getXIndex()).getScale();
-
-            NearestTracePoint nearestTracePoint = dataPainter.nearest(x, y, xScale, traceYScales);
-            if (nearestTracePoint != null) {
-                if (nearestTracePoint.getDistanceSqw() == 0) {
-                    closestTracePoint = nearestTracePoint;
-                    break;
-                } else {
-                    if (closestTracePoint == null || closestTracePoint.getDistanceSqw() > nearestTracePoint.getDistanceSqw()) {
-                        closestTracePoint = nearestTracePoint;
-                    }
-                }
-            }
-        }
-
-        if (closestTracePoint != null) {
-            hoverPoint = closestTracePoint.getTracePoint();
-            updateTooltipAndCrosshairs(hoverPoint);
-            return true;
-        }
-
-        return false;
+        return tooltip.setHoverPoint(traceList.getNearest(x, y));
     }
 
     /**
@@ -580,8 +407,8 @@ public class Chart implements SizeChangeListener {
         for (int stack = 0; stack < stackCount; stack++) {
             AxisWrapper yAxis = yAxisList.get(2 * stack);
             BRectangle stackArea = new BRectangle(graphArea.x, (int) yAxis.getEnd(), graphArea.width, (int) yAxis.length());
-            int bottomAxisIndex = getXIndex(XAxisPosition.BOTTOM);
-            int topAxisIndex = getXIndex(XAxisPosition.TOP);
+            int bottomAxisIndex = xPositionToIndex(XAxisPosition.BOTTOM);
+            int topAxisIndex = xPositionToIndex(XAxisPosition.TOP);
             AxisWrapper bottomAxis = xAxisList.get(bottomAxisIndex);
             AxisWrapper topAxis = xAxisList.get(topAxisIndex);
             if (!bottomAxis.isUsed() && !topAxis.isUsed()) {
@@ -591,7 +418,7 @@ public class Chart implements SizeChangeListener {
             } else if (!topAxis.isUsed()) {
                 bottomAxis.drawGrid(canvas, stackArea);
             } else { // both axis used
-                AxisWrapper xAxisWithGrid = xAxisList.get(chooseXAxisWithGrid(stack));
+                AxisWrapper xAxisWithGrid = traceList.getUsedXAxis(yAxisList.get(stack * 2), yAxisList.get(stack * 2 + 1));
                 if (xAxisWithGrid.isUsed()) {
                     xAxisWithGrid.drawGrid(canvas, stackArea);
                 }
@@ -599,8 +426,8 @@ public class Chart implements SizeChangeListener {
         }
         // draw Y axes grids
         for (int i = 0; i < stackCount; i++) {
-            AxisWrapper leftAxis = yAxisList.get(getYIndex(i, YAxisPosition.LEFT));
-            AxisWrapper rightAxis = yAxisList.get(getYIndex(i, YAxisPosition.RIGHT));
+            AxisWrapper leftAxis = yAxisList.get(yPositionToIndex(i, YAxisPosition.LEFT));
+            AxisWrapper rightAxis = yAxisList.get(yPositionToIndex(i, YAxisPosition.RIGHT));
             if (!rightAxis.isUsed() && !leftAxis.isUsed()) {
                 // do nothing
             } else if (!leftAxis.isUsed()) {
@@ -630,95 +457,22 @@ public class Chart implements SizeChangeListener {
         }
         canvas.save();
         canvas.setClip(graphArea.x, graphArea.y, graphArea.width, graphArea.height);
-        for (DataPainter dataPainter : dataPainters) {
-            for (int trace = 0; trace < dataPainter.traceCount(); trace++) {
-                dataPainter.drawTrace(canvas, trace, xAxisList.get(dataPainter.getXIndex()).getScale(), yAxisList.get(getTraceYIndex(dataPainter, trace)).getScale());
-            }
-        }
+        traceList.draw(canvas);
         canvas.restore();
-        if (isLegendEnabled()) {
-            legend.draw(canvas);
-        }
-        if (tooltip != null) {
-            for (Crosshair crosshair : tooltip.getXCrosshairs()) {
-                xAxisList.get(crosshair.getAxisIndex()).drawCrosshair(canvas, graphArea, crosshair.getPosition());
-            }
-            for (Crosshair crosshair : tooltip.getYCrosshairs()) {
-                yAxisList.get(crosshair.getAxisIndex()).drawCrosshair(canvas, graphArea, crosshair.getPosition());
-            }
-            tooltip.draw(canvas, new BRectangle(0, 0, width, height));
-        }
-
+        legend.draw(canvas);
+        tooltip.draw(canvas, new BRectangle(0, 0, width, height));
     }
 
     public void setXConfig(XAxisPosition xPosition, AxisConfig axisConfig) {
-        xAxisList.get(getXIndex(xPosition)).setConfig(axisConfig);
+        xAxisList.get(xPositionToIndex(xPosition)).setConfig(axisConfig);
     }
 
     public void setYConfig(int stack, YAxisPosition yPosition, AxisConfig axisConfig) {
-        yAxisList.get(getYIndex(stack, yPosition)).setConfig(axisConfig);
+        yAxisList.get(yPositionToIndex(stack, yPosition)).setConfig(axisConfig);
     }
 
     public int stackCount() {
         return yAxisList.size() / 2;
-    }
-
-    public String[] getTraceNames() {
-        List<String> names = new ArrayList<>();
-        for (DataPainter trace : dataPainters) {
-            for (int i = 0; i < trace.traceCount(); i++) {
-                names.add(trace.getTraceName(i));
-            }
-        }
-        String[] namesArr = new String[names.size()];
-        return names.toArray(namesArr);
-    }
-
-    private int dataPainterTraceToGeneralTraceNumber(DataPainterTrace dataPainterTrace) throws IllegalArgumentException {
-        int traceCount = 0;
-        for (DataPainter dataPainter : dataPainters) {
-            if (dataPainter == dataPainterTrace.getDataPainter()) {
-                traceCount += dataPainterTrace.getTrace();
-                return traceCount;
-            }
-            traceCount += dataPainter.traceCount();
-        }
-        String errMsg = "Invalid DataPainterTrace. Corresponding DataPainter does not exist";
-        throw new IllegalArgumentException(errMsg);
-    }
-
-    private DataPainterTrace generalTraceNumberToDataPainterTrace(int trace) throws IllegalArgumentException {
-        int traceCount = 0;
-        for (DataPainter dataPainter : dataPainters) {
-            if (trace < traceCount + dataPainter.traceCount()) {
-                return new DataPainterTrace(dataPainter, trace - traceCount);
-            }
-            traceCount += dataPainter.traceCount();
-        }
-        String errMsg = "Invalid trace number. No DataPainter corresponds it: " + trace;
-        throw new IllegalArgumentException(errMsg);
-
-
-    }
-
-    public int getTraceNumberByName(String name) {
-        for (int i = 0; i < dataPainters.size(); i++) {
-            DataPainter dataPainter = dataPainters.get(i);
-            for (int trace = 0; trace < dataPainter.traceCount(); trace++) {
-                if (dataPainter.getTraceName(trace).equals(name)) {
-                    return dataPainterTraceToGeneralTraceNumber(new DataPainterTrace(dataPainter, trace));
-                }
-            }
-        }
-        return -1;
-    }
-
-    public int getSelectedTraceNumber() {
-        DataPainterTrace selectedTrace = getSelectedTrace();
-        if (selectedTrace != null) {
-            return dataPainterTraceToGeneralTraceNumber(selectedTrace);
-        }
-        return -1;
     }
 
     /**
@@ -739,14 +493,12 @@ public class Chart implements SizeChangeListener {
             yAxisList.get(i).setConfig(this.config.getYAxisConfig());
         }
         legend.setConfig(config.getLegendConfig());
+        tooltip.setConfig(config.getTooltipConfig());
 
         BColor[] colors = this.config.getTraceColors();
-        int trace = 0;
-        for (DataPainter dataPainter : dataPainters) {
-            for (int i = 0; i < dataPainter.traceCount(); i++) {
-                dataPainter.setTraceColor(i, colors[(trace + i) % colors.length]);
-                trace++;
-            }
+
+        for (int i = 0; i < traceList.size(); i++) {
+            traceList.setColor(i, colors[i % colors.length]);
         }
         invalidate();
     }
@@ -757,15 +509,12 @@ public class Chart implements SizeChangeListener {
         invalidate();
     }
 
-    public void setTraceColor(int trace, BColor color) {
-        DataPainterTrace dataPainterTrace = generalTraceNumberToDataPainterTrace(trace);
-        dataPainterTrace.getDataPainter().setTraceColor(dataPainterTrace.getTrace(), color);
+    public void setTraceColor(int traceIndex, BColor color) {
+        traceList.setColor(traceIndex, color);
     }
 
-    public void setTraceName(int trace, String name) {
-        DataPainterTrace dataPainterTrace = generalTraceNumberToDataPainterTrace(trace);
-        dataPainterTrace.getDataPainter().setTraceName(dataPainterTrace.getTrace(), name);
-        legend.setTraceName(dataPainterTrace, name);
+    public void setTraceName(int traceIndex, String name) {
+        traceList.setName(traceIndex, name);
     }
 
     public void setStackWeight(int stack, int weight) {
@@ -795,21 +544,9 @@ public class Chart implements SizeChangeListener {
      */
     public void removeStack(int stack) throws IllegalStateException {
         // check that no trace use that stack
-        int leftYIndex = stack * 2;
-        int rightYIndex = stack * 2 + 1;
-
-        for (DataPainter dataPainter : dataPainters) {
-            for (int trace = 0; trace < dataPainter.traceCount(); trace++) {
-                int traceYIndex = getTraceYIndex(dataPainter, trace);
-                if (traceYIndex == leftYIndex || traceYIndex == rightYIndex) {
-                    String errMsg = "Stack: " + stack + "can not be removed. It is used by trace";
-                    throw new IllegalStateException(errMsg);
-                }
-            }
-
-            if (dataPainter.getYStartIndex() > leftYIndex) {
-                dataPainter.setYStartIndex(dataPainter.getYStartIndex() - 2);
-            }
+        if(traceList.isStackUsed(yAxisList.get(stack * 2), yAxisList.get(stack * 2 + 1))) {
+            String errMsg = "Stack: " + stack + "can not be removed. It is used by trace";
+            throw new IllegalStateException(errMsg);
         }
 
         stackWeights.remove(stack);
@@ -818,141 +555,69 @@ public class Chart implements SizeChangeListener {
         invalidate();
     }
 
-    /**
-     * add trace to the last stack
-     */
-    public void addTraces(ChartData data, TracePainter tracePainter) {
-        addTraces(data, tracePainter, true);
-    }
 
     /**
      * add trace to the last stack
      */
-    public void addTraces(ChartData data, TracePainter tracePainter, boolean isSplit) {
+    public void addTrace(ChartData data, TracePainter tracePainter) {
         int stack = Math.max(0, yAxisList.size() / 2 - 1);
-        addTraces(data, tracePainter, isSplit, stack);
+        addTrace(data, tracePainter, stack);
     }
 
     /**
-     * add trace to the stack with the given number
+     * add traces to the stack with the given number
      */
-    public void addTraces(ChartData data, TracePainter tracePainter, boolean isSplit, int stack) {
-        addTraces(data, tracePainter, isSplit, stack, config.getPrimaryXPosition(), config.getPrimaryYPosition());
+    public void addTrace(ChartData data, TracePainter tracePainter, int stack) {
+        addTrace(data, tracePainter, stack, config.getPrimaryXPosition(), config.getPrimaryYPosition());
     }
 
-    public void addTraces(ChartData data, TracePainter tracePainter, boolean isSplit, XAxisPosition xPosition, YAxisPosition yPosition) {
+    public void addTrace(ChartData data, TracePainter tracePainter, XAxisPosition xPosition, YAxisPosition yPosition) {
         int stack = Math.max(0, yAxisList.size() / 2 - 1);
-        addTraces(data, tracePainter, isSplit, stack, xPosition, yPosition);
+        addTrace(data, tracePainter,  stack, xPosition, yPosition);
     }
 
     /**
-     * add trace to the stack with the given number
+     * add traces to the stack with the given number
      */
-    public void addTraces(ChartData data, TracePainter tracePainter, boolean isSplit, int stack, XAxisPosition xPosition, YAxisPosition yPosition) throws IllegalArgumentException {
-        DataPainter dataPainter = new DataPainter(data, tracePainter, isSplit, getXIndex(xPosition), getYIndex(stack, yPosition));
-        if (dataPainter.traceCount() < 1) {
-            String errMsg = "Number of trace traces: " + dataPainter.traceCount() + ". Please specify valid trace data";
-            throw new IllegalArgumentException(errMsg);
-        }
-
+    public void addTrace(ChartData data, TracePainter tracePainter, int stack, XAxisPosition xPosition, YAxisPosition yPosition) throws IllegalArgumentException {
         if (yAxisList.size() == 0) {
             addStack(); // add stack if there is no stack
         }
         checkStackNumber(stack);
-        int xIndex = getXIndex(xPosition);
-        int yIndex = getYIndex(stack, yPosition);
+        int xIndex = xPositionToIndex(xPosition);
+        int yIndex = yPositionToIndex(stack, yPosition);
 
         AxisWrapper xAxis = xAxisList.get(xIndex);
-        StringSequence dataXLabels = dataPainter.getXLabels();
+        AxisWrapper yAxis = yAxisList.get(yIndex);
+        StringSequence dataXLabels = getXLabels(data);
         if (dataXLabels != null) {
             xAxis.setScale(new CategoryScale(dataXLabels));
         }
-        xAxis.setUsed(true);
-
-        if (!isSplit) {
-            AxisWrapper yAxis = yAxisList.get(yIndex);
-            yAxis.setUsed(true);
-        } else {
-            int stackCount = yAxisList.size() / 2;
-            int availableStacks = stackCount - stack;
-            if (dataPainter.traceCount() > availableStacks) {
-                for (int i = 0; i < dataPainter.traceCount() - availableStacks; i++) {
-                    addStack();
-                }
-            }
-            for (int trace = 0; trace < dataPainter.traceCount(); trace++) {
-                AxisWrapper yAxis = yAxisList.get(yIndex + trace * 2);
-                yAxis.setUsed(true);
-            }
-        }
 
         BColor[] colors = config.getTraceColors();
-        int totalTraces = 0;
-        for (DataPainter trace1 : dataPainters) {
-            totalTraces += trace1.traceCount();
-        }
-        for (int i = 0; i < dataPainter.traceCount(); i++) {
-            int trace = totalTraces + i;
-            if (dataPainter.getTraceColor(i) == null) {
-                dataPainter.setTraceColor(i, colors[trace % colors.length]);
-            }
-            if (StringUtils.isNullOrBlank(dataPainter.getTraceName(i))) {
-                dataPainter.setTraceName(i, "Trace" + trace);
-            }
-        }
-
-        dataPainters.add(dataPainter);
-
-        if (isLegendEnabled()) {
-            for (int i = 0; i < dataPainter.traceCount(); i++) {
-                final int traceNumber = i;
-                legend.add(new DataPainterTrace(dataPainter, traceNumber));
-            }
-        }
+        Trace trace = new Trace(data, tracePainter, xAxis, yAxis, colors[traceList.size() % colors.length], "Trace " + traceList.size());
+        traceList.add(trace);
     }
 
-    public void removeTrace(int trace) {
-        DataPainterTrace dataPainterTrace = generalTraceNumberToDataPainterTrace(trace);
-        DataPainter dataPainter = dataPainterTrace.getDataPainter();
+    public @Nullable StringSequence getXLabels(ChartData data) {
+        if (!data.isNumberColumn(0)) {
+            return new StringSequence() {
+                @Override
+                public int size() {
+                    return data.rowCount();
+                }
 
-        if (isLegendEnabled()) {
-            legend.remove(dataPainterTrace);
-        }
-        dataPainter.hideTrace(dataPainterTrace.getTrace());
-        // try to remove empty stack
-        int traceStartStack = dataPainter.getYStartIndex() / 2;
-        try {
-            removeStack(traceStartStack + dataPainter.traceCount());
-        } catch (IllegalStateException ex) {
-            // do nothing;
-        }
-        // hide unused axis
-        for (int i = 0; i < xAxisList.size(); i++) {
-            boolean isUsed = false;
-            for (DataPainter painter : dataPainters) {
-                if (painter.traceCount() > 0 && painter.getXIndex() == i) {
-                    isUsed = true;
-                    break;
+                @Override
+                public String get(int index) {
+                    return data.label(index, 0);
                 }
-            }
-            if (!isUsed) {
-                xAxisList.get(i).setUsed(false);
-            }
+            };
         }
-        for (int i = 0; i < yAxisList.size(); i++) {
-            boolean isUsed = false;
-            for (DataPainter painter : dataPainters) {
-                for (int painterTrace = 0; painterTrace < painter.traceCount(); painterTrace++) {
-                    if (getTraceYIndex(painter, painterTrace) == i) {
-                        isUsed = true;
-                        break;
-                    }
-                }
-            }
-            if (!isUsed) {
-                yAxisList.get(i).setUsed(false);
-            }
-        }
+        return null;
+    }
+
+    public void removeTrace(int traceIndex) {
+        traceList.remove(traceIndex);
     }
 
     public void setSize(int width, int height) {
@@ -962,7 +627,7 @@ public class Chart implements SizeChangeListener {
     }
 
     public int traceCount() {
-        return dataPainters.size();
+        return traceList.size();
     }
 
 
@@ -970,46 +635,46 @@ public class Chart implements SizeChangeListener {
      * return COPY of X axis legendConfig. To change axis legendConfig use setXConfig
      */
     public AxisConfig getXConfig(XAxisPosition xPosition) {
-        return xAxisList.get(getXIndex(xPosition)).getConfig();
+        return xAxisList.get(xPositionToIndex(xPosition)).getConfig();
     }
 
     /**
      * return COPY of Y axis legendConfig. To change axis legendConfig use setYConfig
      */
     public AxisConfig getYConfig(int stack, YAxisPosition yPosition) {
-        return yAxisList.get(getYIndex(stack, yPosition)).getConfig();
+        return yAxisList.get(yPositionToIndex(stack, yPosition)).getConfig();
     }
 
 
     public void setXPrefixAndSuffix(XAxisPosition xPosition, @Nullable String prefix, @Nullable String suffix) {
         AxisConfig axisConfig = getXConfig(xPosition);
         axisConfig.setTickLabelPrefixAndSuffix(prefix, suffix);
-        xAxisList.get(getXIndex(xPosition)).setConfig(axisConfig);
+        xAxisList.get(xPositionToIndex(xPosition)).setConfig(axisConfig);
     }
 
     public void setYPrefixAndSuffix(int stack, YAxisPosition yPosition, @Nullable String prefix, @Nullable String suffix) {
         AxisConfig axisConfig = getYConfig(stack, yPosition);
         axisConfig.setTickLabelPrefixAndSuffix(prefix, suffix);
-        yAxisList.get(getYIndex(stack, yPosition)).setConfig(axisConfig);
+        yAxisList.get(yPositionToIndex(stack, yPosition)).setConfig(axisConfig);
 
     }
 
     public void setXTitle(XAxisPosition xPosition, @Nullable String title) {
-        xAxisList.get(getXIndex(xPosition)).setTitle(title);
+        xAxisList.get(xPositionToIndex(xPosition)).setTitle(title);
     }
 
     public void setYTitle(int stack, YAxisPosition yPosition, @Nullable String title) {
-        yAxisList.get(getYIndex(stack, yPosition)).setTitle(title);
+        yAxisList.get(yPositionToIndex(stack, yPosition)).setTitle(title);
     }
 
 
     public void setXMinMax(XAxisPosition xPosition, double min, double max) {
-        yAxisList.get(getXIndex(xPosition)).setMinMax(min, max, false);
+        yAxisList.get(xPositionToIndex(xPosition)).setMinMax(min, max, false);
 
     }
 
     public void setYMinMax(int stack, YAxisPosition yPosition, double min, double max) {
-        yAxisList.get(getYIndex(stack, yPosition)).setMinMax(min, max, false);
+        yAxisList.get(yPositionToIndex(stack, yPosition)).setMinMax(min, max, false);
     }
 
     public void autoScaleX(int xIndex){
@@ -1017,12 +682,7 @@ public class Chart implements SizeChangeListener {
         if(!xAxis.isUsed()) {
             return;
         }
-        Range tracesXMinMax = null;
-        for (DataPainter trace : dataPainters) {
-            if (trace.getXIndex() == xIndex) {
-                tracesXMinMax = Range.join(tracesXMinMax, trace.xMinMax());
-            }
-        }
+        Range tracesXMinMax = traceList.getTracesXMinMax(xAxis);
         if (tracesXMinMax != null) {
             xAxis.setMinMax(tracesXMinMax.getMin(), tracesXMinMax.getMax(), true);
         }
@@ -1035,7 +695,7 @@ public class Chart implements SizeChangeListener {
     }
 
     public void autoScaleX(XAxisPosition xPosition) {
-        autoScaleX(getXIndex(xPosition));
+        autoScaleX(xPositionToIndex(xPosition));
     }
 
     public void autoScaleY(int yIndex) {
@@ -1043,22 +703,15 @@ public class Chart implements SizeChangeListener {
         if(!yAxis.isUsed()) {
             return;
         }
-        Range tracesYMinMax = null;
-        for (DataPainter dataPainter : dataPainters) {
-            int traceCount = dataPainter.traceCount();
-            for (int trace = 0; trace < traceCount; trace++) {
-                if (getTraceYIndex(dataPainter, trace) == yIndex) {
-                    tracesYMinMax = Range.join(tracesYMinMax, dataPainter.traceYMinMax(trace));
-                }
-            }
-        }
+        Range tracesYMinMax = traceList.getTracesYMinMax(yAxis);
+
         if (tracesYMinMax != null) {
             yAxis.setMinMax(tracesYMinMax.getMin(), tracesYMinMax.getMax(), true);
         }
     }
 
     public void autoScaleY(int stack, YAxisPosition yPosition) {
-        autoScaleY(getYIndex(stack, yPosition));
+        autoScaleY(yPositionToIndex(stack, yPosition));
     }
 
     public void autoScaleY() {
@@ -1068,264 +721,76 @@ public class Chart implements SizeChangeListener {
     }
 
     public void setXScale(XAxisPosition xPosition, Scale scale) {
-        xAxisList.get(getXIndex(xPosition)).setScale(scale);
+        xAxisList.get(xPositionToIndex(xPosition)).setScale(scale);
     }
 
     public void setYScale(int stack, YAxisPosition yPosition, Scale scale) {
-        yAxisList.get(getYIndex(stack, yPosition)).setScale(scale);
+        yAxisList.get(yPositionToIndex(stack, yPosition)).setScale(scale);
     }
 
 
     public void zoomY(int stack, YAxisPosition yPosition, double zoomFactor) {
-        yAxisList.get(getYIndex(stack, yPosition)).zoom(zoomFactor);
+        yAxisList.get(yPositionToIndex(stack, yPosition)).zoom(zoomFactor);
     }
 
     public void zoomX(XAxisPosition xPosition, double zoomFactor) {
-        xAxisList.get(getXIndex(xPosition)).zoom(zoomFactor);
+        xAxisList.get(xPositionToIndex(xPosition)).zoom(zoomFactor);
     }
 
     public void translateY(int stack, YAxisPosition yPosition, int translation) {
-        yAxisList.get(getYIndex(stack, yPosition)).translate(translation);
+        yAxisList.get(yPositionToIndex(stack, yPosition)).translate(translation);
     }
 
     public void translateX(XAxisPosition xPosition, int translation) {
-        xAxisList.get(getXIndex(xPosition)).translate(translation);
+        xAxisList.get(xPositionToIndex(xPosition)).translate(translation);
     }
 
+    public Range getAllTracesFullMinMax() {
+        return traceList.getAllTracesFullMinMax();
+    }
+
+    public double getTracesBestExtent(XAxisPosition xAxisPosition) {
+       return traceList.getTracesBestExtent(xAxisList.get(xPositionToIndex(xAxisPosition)), width);
+    }
+
+    public boolean isTraceSelected() {
+        return traceList.getSelection() >= 0;
+    }
+
+    XAxisPosition getSelectedTraceX() {
+        return xPositionToIndex(xAxisToIndex(traceList.getTraceX(traceList.getSelection())));
+    }
+
+    int getSelectedTraceStack() {
+        return yAxisToIndex(traceList.getTraceY(traceList.getSelection())) / 2;
+
+    }
+
+    YAxisPosition getSelectedTraceY() {
+        return getYPosition(yAxisToIndex(traceList.getTraceY(traceList.getSelection())));
+
+    }
 
     public boolean selectTrace(int x, int y) {
-        if (isLegendEnabled() && legend.selectItem(x, y)) {
-            return true;
-        }
-        return false;
+        return legend.selectTrace(x, y);
     }
 
-
-    class Legend {
-        private ButtonGroup buttonGroup;
-        // only LinkedHashMap will iterate in the order in which the entries were put into the map
-        private Map<SwitchButton, DataPainterTrace> buttonsToDataPainterTraces = new LinkedHashMap<>();
-        private LegendConfig legendConfig;
-        private int legendHeight;
-        private boolean isDirty;
-
-        public Legend(LegendConfig legendConfig) {
-            this.legendConfig = legendConfig;
-            this.buttonGroup = new ButtonGroup();
-        }
-
-        public DataPainterTrace getSelectedTrace() {
-            return buttonsToDataPainterTraces.get(buttonGroup.getSelection());
-        }
-
-        public boolean isEnabled() {
-            return legendConfig.isEnabled();
-        }
-        
-        public int getHeight(RenderContext renderContext) {
-            if(legendConfig.isAttachedToStacks()) {
-                return 0;
-            } else {
-                if(isDirty) {
-                    validate(renderContext);
-                }
-                return legendHeight;
-            }
-
-        }
-
-        public boolean isTop() {
-            if (legendConfig.getVerticalAlign() == VerticalAlign.TOP) {
-                return true;
-            }
-            return false;
-        }
-
-        public boolean isBottom() {
-            if (legendConfig.getVerticalAlign() == VerticalAlign.BOTTOM) {
-                return true;
-            }
-            return false;
-        }
-
-        public boolean selectItem(int x, int y) {
-            for (SwitchButton button : buttonsToDataPainterTraces.keySet()) {
-                if (button.getBounds().contains(x, y)) {
-                    button.switchState();
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        public void setTraceName(DataPainterTrace dataPainterTrace, String name) {
-            for (SwitchButton button : buttonsToDataPainterTraces.keySet()) {
-                if (buttonsToDataPainterTraces.get(button).equals(dataPainterTrace)) {
-                    button.setLabel(name);
-                    return;
-                }
-            }
-            invalidate();
-        }
-
-        public void setConfig(LegendConfig legendConfig) {
-            this.legendConfig = legendConfig;
-            for (SwitchButton button : buttonsToDataPainterTraces.keySet()) {
-                button.setBackgroundColor(this.legendConfig.getBackgroundColor());
-                button.setTextStyle(this.legendConfig.getTextStyle());
-                button.setMargin(this.legendConfig.getButtonsMargin());
-                button.setBorderWidth(this.legendConfig.getBorderWidth());
-            }
-            invalidate();
-        }
-
-        public void add(DataPainterTrace dataPainterTrace) {
-            // add trace legend button
-            SwitchButton traceButton = new SwitchButton(dataPainterTrace.getDataPainter().getTraceName(dataPainterTrace.getTrace()));
-            buttonsToDataPainterTraces.put(traceButton, dataPainterTrace);
-            buttonGroup.add(traceButton);
-            traceButton.setBackgroundColor(legendConfig.getBackgroundColor());
-            traceButton.setTextStyle(legendConfig.getTextStyle());
-            traceButton.setMargin(legendConfig.getButtonsMargin());
-            traceButton.setBorderWidth(legendConfig.getBorderWidth());
-            invalidate();
-        }
-
-        public void remove(DataPainterTrace dataPainterTrace) {
-            SwitchButton buttonToRemove = null;
-            for (SwitchButton button : buttonsToDataPainterTraces.keySet()) {
-                DataPainterTrace buttonDataPainterTrace = buttonsToDataPainterTraces.get(button);
-                if (buttonDataPainterTrace.equals(dataPainterTrace)) {
-                    buttonToRemove = button;
-                    break;
-                }
-            }
-            if (buttonToRemove != null) {
-                buttonGroup.remove(buttonToRemove);
-                buttonsToDataPainterTraces.remove(buttonToRemove);
-            }
-            invalidate();
-        }
-
-        private void invalidate() {
-            isDirty = true;
-        }
-
-        public void validate(RenderContext renderContext) {
-            if(!isDirty) {
-                return;
-            }
-            // only LinkedHashMap will iterate in the order in which the entries were put into the map
-            Map<BRectangle, List<SwitchButton>> areaToButtons = new LinkedHashMap<>();
-            if(legendConfig.isAttachedToStacks()) {
-                BRectangle legendArea = graphArea;
-                for (SwitchButton button : buttonsToDataPainterTraces.keySet()) {
-                    DataPainterTrace dataPainterTrace = buttonsToDataPainterTraces.get(button);
-
-                    Scale yScale = yAxisList.get(getTraceYIndex(dataPainterTrace.getDataPainter(), dataPainterTrace.getTrace())).getScale();
-                    BRectangle traceArea = new BRectangle(legendArea.x, (int)yScale.getEnd(), legendArea.width, (int)yScale.getLength());
-                    List<SwitchButton> areaButtons = areaToButtons.get(traceArea);
-                    if (areaButtons == null) {
-                        areaButtons = new ArrayList<>();
-                        areaToButtons.put(traceArea, areaButtons);
-                    }
-                    areaButtons.add(button);
-                }
-            } else {
-                BRectangle legendArea = new BRectangle(0, title.getHeight(renderContext, width), width, height);
-                List<SwitchButton> areaButtons = new ArrayList<>();
-                areaToButtons.put(legendArea, areaButtons);
-                for (SwitchButton button : buttonsToDataPainterTraces.keySet()) {
-                    areaButtons.add(button);
-                }
-            }
-
-            List<SwitchButton> lineButtons = new ArrayList<SwitchButton>();
-            for (BRectangle area : areaToButtons.keySet()) {
-                List<SwitchButton> areaButtons = areaToButtons.get(area);
-                legendHeight = 0;
-                int legendWidth = 0;
-                int x = area.x;
-                int y = area.y;
-                for (SwitchButton button : areaButtons) {
-                    BDimension btnDimension = button.getPrefferedSize(renderContext);
-                    if (legendHeight == 0) {
-                        legendHeight = btnDimension.height;
-                        lineButtons.clear();
-                    }
-                    if (lineButtons.size() > 0 && x + legendConfig.getInterItemSpace() + btnDimension.width >= area.x + area.width) {
-                        legendWidth += (lineButtons.size() - 1) * legendConfig.getInterItemSpace();
-                        if (legendConfig.getHorizontalAlign() == HorizontalAlign.LEFT) {
-                            moveButtons(lineButtons, 0, 0);
-                        }
-                        if (legendConfig.getHorizontalAlign() == HorizontalAlign.RIGHT) {
-                            moveButtons(lineButtons, area.width - legendWidth, 0);
-                        }
-                        if (legendConfig.getHorizontalAlign() == HorizontalAlign.CENTER) {
-                            moveButtons(lineButtons, (area.width - legendWidth) / 2, 0);
-                        }
-
-                        x = area.x;
-                        y += btnDimension.height + legendConfig.getInterLineSpace();
-                        button.setBounds(x, y, btnDimension.width, btnDimension.height);
-
-                        x += btnDimension.width + legendConfig.getInterItemSpace();
-                        legendHeight += btnDimension.height + legendConfig.getInterLineSpace();
-                        legendWidth = btnDimension.width;
-                        lineButtons.clear();
-                        lineButtons.add(button);
-                    } else {
-                        button.setBounds(x, y, btnDimension.width, btnDimension.height);
-                        x += legendConfig.getInterItemSpace() + btnDimension.width;
-                        legendWidth += btnDimension.width;
-                        lineButtons.add(button);
-                    }
-                }
-
-                legendWidth += (lineButtons.size() - 1) * legendConfig.getInterItemSpace();
-
-                if (legendConfig.getHorizontalAlign() == HorizontalAlign.LEFT) {
-                    moveButtons(lineButtons,0 , 0);
-                }
-                if (legendConfig.getHorizontalAlign() == HorizontalAlign.RIGHT) {
-                    moveButtons(lineButtons, area.width - legendWidth, 0);
-                }
-                if (legendConfig.getHorizontalAlign() == HorizontalAlign.CENTER) {
-                    moveButtons(lineButtons, (area.width - legendWidth) / 2, 0);
-                }
-
-                if (legendConfig.getVerticalAlign() == VerticalAlign.TOP) {
-                    moveButtons(lineButtons, 0, 0);
-                }
-                if (legendConfig.getVerticalAlign() == VerticalAlign.BOTTOM) {
-                    moveButtons(lineButtons, 0, area.height - legendHeight - 0);
-                }
-                if (legendConfig.getVerticalAlign() == VerticalAlign.MIDDLE) {
-                    moveButtons(lineButtons, 0, (area.height - legendHeight) / 2);
-                }
-            }
-            isDirty = false;
-        }
-
-        private void moveButtons(List<SwitchButton> buttons, int dx, int dy) {
-            if (dx != 0 || dy != 0) {
-                for (SwitchButton button : buttons) {
-                    BRectangle btnBounds = button.getBounds();
-                    button.setBounds(btnBounds.x + dx, btnBounds.y + dy, btnBounds.width, btnBounds.height);
-                }
+    private int xAxisToIndex(AxisWrapper x) {
+        for (int i = 0; i < xAxisList.size(); i++) {
+            if(xAxisList.get(i) == x) {
+                return i;
             }
         }
-
-        public void draw(BCanvas canvas) {
-            if (buttonsToDataPainterTraces.size() == 0) {
-                return;
-            }
-            canvas.setTextStyle(legendConfig.getTextStyle());
-            for (SwitchButton button : buttonsToDataPainterTraces.keySet()) {
-                DataPainterTrace dataPainterTrace = buttonsToDataPainterTraces.get(button);
-                button.setColor(dataPainterTrace.getDataPainter().getTraceColor(dataPainterTrace.getTrace()));
-                button.draw(canvas);
-            }
-        }
+        return -1;
     }
+
+    private int yAxisToIndex(AxisWrapper y) {
+        for (int i = 0; i < yAxisList.size(); i++) {
+            if (yAxisList.get(i) == y) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
 }

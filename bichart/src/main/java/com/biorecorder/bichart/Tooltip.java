@@ -4,58 +4,53 @@ import com.biorecorder.bichart.graphics.TextMetric;
 import com.biorecorder.bichart.graphics.*;
 import com.sun.istack.internal.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
 
-/**
- * Created by hdablin on 02.08.17.
- */
 class Tooltip {
-    private TooltipConfig tooltipConfig;
+    private TracePoint hoverPoint;
+    private TooltipConfig config;
     private int x, y;
     private int y_offset = 2;
-    private String separator = ":  ";
-    private TooltipItem header;
-    private ArrayList<TooltipItem> items = new ArrayList<TooltipItem>();
 
-    private List<Crosshair> xCrosshairs = new ArrayList<>();
-    private List<Crosshair> yCrosshairs = new ArrayList<>();
 
     public Tooltip(TooltipConfig tooltipConfig, int x, int y) {
-        this.tooltipConfig = tooltipConfig;
+        this.config = tooltipConfig;
         this.x = x;
         this.y = y;
     }
 
-    public void addXCrosshair(int xAxisIndex, int position) {
-        xCrosshairs.add(new Crosshair(xAxisIndex, position));
+    public void setConfig(TooltipConfig tooltipConfig) {
+        this.config = tooltipConfig;
     }
 
-    public void addYCrosshair(int yAxisIndex, int position) {
-        yCrosshairs.add(new Crosshair(yAxisIndex, position));
+    /**
+     * @return true if hoverPoint changed and false if new hoverPoint equal this.hoverPoint
+     */
+    public boolean setHoverPoint(@Nullable TracePoint newHoverPoint) {
+        boolean isEqual;
+        if(hoverPoint == null && newHoverPoint == null) {
+            isEqual = true;
+        } else if(hoverPoint == null && newHoverPoint != null || hoverPoint != null && newHoverPoint == null) {
+            isEqual = false;
+        } else {
+           isEqual  = this.hoverPoint.equals(newHoverPoint);
+
+        }
+        this.hoverPoint = newHoverPoint;
+        return !isEqual;
     }
-
-
-    public List<Crosshair> getXCrosshairs() {
-        return xCrosshairs;
-    }
-
-    public List<Crosshair> getYCrosshairs() {
-        return yCrosshairs;
-    }
-
-    public void setHeader(@Nullable BColor markColor, @Nullable String label, @Nullable String value) {
-        header = new TooltipItem(markColor, label, value);
-    }
-
-    public void addLine(@Nullable BColor markColor, @Nullable String label, @Nullable String value){
-        items.add(new TooltipItem(markColor, label, value));
-    }
-
 
     public void draw(BCanvas canvas, BRectangle area) {
-        canvas.setTextStyle(tooltipConfig.getTextStyle());
-        BDimension tooltipDimension  = getTextSize(canvas);
+        if(hoverPoint == null || hoverPoint.getPointIndex() < 0) {
+            return;
+        }
+        // draw cross hair
+        BPoint crossPoint = hoverPoint.getTrace().getCrosshairPoint(hoverPoint.getPointIndex());
+        hoverPoint.getTrace().getXAxis().drawCrosshair(canvas, area, crossPoint.getX());
+        hoverPoint.getTrace().getXAxis().drawCrosshair(canvas, area, crossPoint.getY());
+
+        String[] items = hoverPoint.getTrace().getTooltipInfo(hoverPoint.getPointIndex());
+        canvas.setTextStyle(config.getTextStyle());
+        BDimension tooltipDimension  = getTextSize(canvas, items);
         int tooltipAreaX = x - tooltipDimension.width / 2;
         int tooltipAreaY = y - tooltipDimension.height - y_offset;
         if (tooltipAreaX + tooltipDimension.width > area.x + area.width){
@@ -72,150 +67,84 @@ class Tooltip {
         }
 
         BRectangle tooltipArea = new BRectangle(tooltipAreaX, tooltipAreaY, tooltipDimension.width, tooltipDimension.height);
-        canvas.setColor(tooltipConfig.getBackgroundColor());
+        canvas.setColor(config.getBackgroundColor());
         canvas.fillRect(tooltipArea.x, tooltipArea.y, tooltipArea.width, tooltipArea.height);
-        canvas.setColor(tooltipConfig.getBorderColor());
-        canvas.setStroke(tooltipConfig.getBorderWidth(), DashStyle.SOLID);
+        canvas.setColor(config.getBorderColor());
+        canvas.setStroke(config.getBorderWidth(), DashStyle.SOLID);
         canvas.drawRect(tooltipArea.x, tooltipArea.y, tooltipArea.width, tooltipArea.height);
-        drawTooltipInfo(canvas, tooltipArea);
+        drawTooltipInfo(canvas, tooltipArea, items);
     }
 
 
     /**
      * https://stackoverflow.com/questions/27706197/how-can-i-center-graphics-drawstring-in-java
      */
-    private void drawTooltipInfo(BCanvas canvas, BRectangle area) {
-        Insets margin = tooltipConfig.getMargin();
-        int stringHeight = canvas.getRenderContext().getTextMetric(tooltipConfig.getTextStyle()).height();
+    private void drawTooltipInfo(BCanvas canvas, BRectangle area, String[] items) {
+        Insets margin = config.getMargin();
+        int stringHeight = canvas.getRenderContext().getTextMetric(config.getTextStyle()).height();
         int lineSpace = getInterLineSpace();
         int x = area.x + margin.left();
         int y = area.y + margin.top();
-        if (header != null) {
-            canvas.setColor(tooltipConfig.getHeaderBackgroundColor());
-            canvas.fillRect(area.x, area.y, area.width, stringHeight + margin.top());
 
-            int headerWidth = itemWidth(canvas, header);
-
-            drawItem(canvas, area.x + (area.width - headerWidth) / 2 , y, header);
-            y += (lineSpace + stringHeight);
-        }
-
-        for (int i = 0; i < items.size(); i++) {
-            drawItem(canvas, x, y, items.get(i));
+        for (int i = 0; i < items.length; i++) {
+            drawItem(canvas, x, y, items[i]);
             //g2.drawRect(x - margin.left(), y, area.width, stringHeght);
             y += (lineSpace + stringHeight);
+
         }
     }
 
-    private int itemWidth(BCanvas canvas, TooltipItem infoItem) {
-        TextMetric tm = canvas.getRenderContext().getTextMetric(tooltipConfig.getTextStyle());
+    private int itemWidth(BCanvas canvas, String item) {
+        TextMetric tm = canvas.getRenderContext().getTextMetric(config.getTextStyle());
         int width = 0;
-        if (infoItem.getMarkColor() != null) {
-            width += getColorMarkerSize() + getColorMarkerPadding();
-        }
-        if (infoItem.getLabel() != null) {
-            String labelString = infoItem.getLabel() + separator;
-            width += tm.stringWidth(labelString);
-        }
-        if (infoItem.getValue() != null) {
-            width += tm.stringWidth(infoItem.getValue());
+        width += getColorMarkerSize() + getColorMarkerPadding();
+        if (item != null) {
+            width += tm.stringWidth(item);
         }
         return width;
     }
 
 
-    private void drawItem(BCanvas canvas, int x, int y, TooltipItem infoItem) {
-        TextMetric tm = canvas.getRenderContext().getTextMetric(tooltipConfig.getTextStyle());
+    private void drawItem(BCanvas canvas, int x, int y, String item) {
+        TextMetric tm = canvas.getRenderContext().getTextMetric(config.getTextStyle());
         int string_y = y + tm.ascent();
-        if (infoItem.getMarkColor() != null) {
-            canvas.setColor(infoItem.getMarkColor());
-            int colorMarkerSize = getColorMarkerSize();
-            canvas.fillRect(x, y + (tm.height() - colorMarkerSize) / 2 + 1, colorMarkerSize, colorMarkerSize);
-            x = x + colorMarkerSize + getColorMarkerPadding();
-        }
-        if (infoItem.getLabel() != null) {
-            canvas.setColor(tooltipConfig.getColor());
-            canvas.setTextStyle(tooltipConfig.getTextStyle());
-            String labelString = infoItem.getLabel() + separator;
-            canvas.drawString(labelString, x, string_y);
-            x = x + tm.stringWidth(labelString);
-        }
-        if (infoItem.getValue() != null) {
-            canvas.setColor(tooltipConfig.getColor());
-            // font for value is always BOLD!
-            TextStyle ts = tooltipConfig.getTextStyle();
-            TextStyle boldTextStyle = new TextStyle(ts.getFontName(), TextStyle.BOLD, ts.getSize());
-            canvas.setTextStyle(boldTextStyle);
-            canvas.drawString(infoItem.getValue(), x, string_y);
-        }
+        canvas.setColor(hoverPoint.getTrace().getColor());
+        int colorMarkerSize = getColorMarkerSize();
+        canvas.fillRect(x, y + (tm.height() - colorMarkerSize) / 2 + 1, colorMarkerSize, colorMarkerSize);
+        x = x + colorMarkerSize + getColorMarkerPadding();
+
+        canvas.setColor(config.getColor());
+        canvas.setTextStyle(config.getTextStyle());
+        canvas.drawString(item, x, string_y);
+        x = x + tm.stringWidth(item);
     }
 
 
     private int getColorMarkerSize() {
-        return tooltipConfig.getTextStyle().getSize();
+        return config.getTextStyle().getSize();
     }
 
     private int getColorMarkerPadding() {
-        return (int) (tooltipConfig.getTextStyle().getSize() * 0.5);
+        return (int) (config.getTextStyle().getSize() * 0.5);
     }
 
-    private BDimension getTextSize(BCanvas canvas) {
+    private BDimension getTextSize(BCanvas canvas, String[] items) {
         int textWidth = 0;
 
-        for (int i = 0; i < items.size(); i++) {
-            textWidth = Math.max(textWidth, itemWidth(canvas, items.get(i)));
+        for (int i = 0; i < items.length; i++) {
+            textWidth = Math.max(textWidth, itemWidth(canvas, items[i]));
         }
-        if (header != null) {
-            textWidth = Math.max(textWidth, itemWidth(canvas, header));
-        }
-        Insets margin = tooltipConfig.getMargin();
+
+        Insets margin = config.getMargin();
         textWidth += margin.left() + margin.right();
-        int strHeight = canvas.getRenderContext().getTextMetric(tooltipConfig.getTextStyle()).height();
-        int textHeight = margin.top() + margin.bottom() + items.size() * strHeight;
-        textHeight += getInterLineSpace() * (items.size() - 1);
-        if (header != null) {
-            textHeight += strHeight + getInterLineSpace();
-        }
+        int strHeight = canvas.getRenderContext().getTextMetric(config.getTextStyle()).height();
+        int textHeight = margin.top() + margin.bottom() + items.length * strHeight;
+        textHeight += getInterLineSpace() * (items.length - 1);
+
         return new BDimension(textWidth, textHeight);
     }
 
     private int getInterLineSpace() {
-        return (int) (tooltipConfig.getTextStyle().getSize() * 0.2);
-    }
-
-    public class TooltipItem {
-        private String label;
-        private String value;
-        private BColor markColor;
-
-        public TooltipItem(BColor markColor, String label, String value) {
-            this.label = label;
-            this.value = value;
-            this.markColor = markColor;
-        }
-
-        public String getLabel() {
-            return label;
-        }
-
-        public void setLabel(String label) {
-            this.label = label;
-        }
-
-        public String getValue() {
-            return value;
-        }
-
-        public void setValue(String value) {
-            this.value = value;
-        }
-
-        public BColor getMarkColor() {
-            return markColor;
-        }
-
-        public void setMarkColor(BColor markColor) {
-            this.markColor = markColor;
-        }
+        return (int) (config.getTextStyle().getSize() * 0.2);
     }
 }

@@ -73,7 +73,7 @@ public class InteractiveChart implements InteractiveDrawable {
             XAxisPosition[] xAxisPositions1 = {chart.getSelectedTraceX()};
             xAxisPositions = xAxisPositions1;
         } else if(startPoint != null) {
-            XAxisPosition xPosition = chart.getXAxis(startPoint);
+            XAxisPosition xPosition = chart.getXAxisPosition(startPoint);
             if(xPosition != null) {
                 XAxisPosition[] xAxisPositions1 = {xPosition};
                 xAxisPositions = xAxisPositions1;
@@ -126,7 +126,7 @@ public class InteractiveChart implements InteractiveDrawable {
             XAxisPosition[] xAxisPositions1 = {chart.getSelectedTraceX()};
             xAxisPositions = xAxisPositions1;
         } else if(startPoint != null) {
-            XAxisPosition xPosition = chart.getXAxis(startPoint);
+            XAxisPosition xPosition = chart.getXAxisPosition(startPoint);
             if(xPosition != null) {
                 XAxisPosition[] xAxisPositions1 = {xPosition};
                 xAxisPositions = xAxisPositions1;

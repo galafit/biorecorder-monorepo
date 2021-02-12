@@ -68,7 +68,10 @@ public class ChartTest extends JFrame {
 
         XYData noRegularData = new XYData(list1, true);
         noRegularData.addYColumn("non-reg", list1);
-        noRegularData.addYColumn("function", new SquareFunction());
+
+
+        XYData noRegularData1 = new XYData(list1, true);
+        noRegularData1.addYColumn("function", new SquareFunction());
 
 
         XYData unsortedData = new XYData(xUnsort, false);
@@ -88,10 +91,11 @@ public class ChartTest extends JFrame {
         chart.setTitle("как дела? все хорошо как поживаете вы олрдлорлор лорор лорлор");
        // chart.setConfig(WhiteTheme.getChartConfig());
         //chart.addTraces(new LineTrace(regularData), true);
-        chart.addTraces(unsortedData, new LineTracePainter(), true, XAxisPosition.TOP, YAxisPosition.RIGHT);
+        chart.addTrace(unsortedData, new LineTracePainter(),  XAxisPosition.TOP, YAxisPosition.RIGHT);
         chart.addStack();
-        chart.addTraces(noRegularData, new LineTracePainter(), true);
-        chart.addTraces(regularData, new LineTracePainter(), false, XAxisPosition.BOTTOM, YAxisPosition.RIGHT);
+        //
+        chart.addTrace(noRegularData1, new LineTracePainter());
+        chart.addTrace(regularData, new LineTracePainter(),  XAxisPosition.BOTTOM, YAxisPosition.RIGHT);
         chart.autoScaleY();
         chart.autoScaleX();
         chartPanel = new ChartPanel(chart);
@@ -103,6 +107,22 @@ public class ChartTest extends JFrame {
         addKeyListener(chartPanel);
         setLocationRelativeTo(null);
         setVisible(true);
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        chart.addStack();
+        chart.addTrace(noRegularData, new LineTracePainter());
+        chartPanel.repaint();
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        chart.setConfig(WhiteTheme.getChartConfig());
+        chartPanel.repaint();
+
     }
 
     public static void main(String[] args) {

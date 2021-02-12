@@ -1,4 +1,4 @@
-package com.biorecorder.bichart.dataprocessing;
+package com.biorecorder.bichart.traces;
 
 import com.biorecorder.bichart.ChartData;
 import com.biorecorder.bichart.graphics.Range;
@@ -9,6 +9,10 @@ import com.biorecorder.bichart.graphics.Range;
 public class XYViewer {
     ChartData data;
     int yColumnNumber;
+
+    public XYViewer(ChartData data) {
+       this(data, 0);
+    }
 
     public XYViewer(ChartData data, int curveNumber) {
         this.data = data;
@@ -29,5 +33,8 @@ public class XYViewer {
 
     public Range getYMinMax() {
         return data.columnMinMax(yColumnNumber);
+    }
+    public Range getXMinMax() {
+        return data.columnMinMax(0);
     }
 }
