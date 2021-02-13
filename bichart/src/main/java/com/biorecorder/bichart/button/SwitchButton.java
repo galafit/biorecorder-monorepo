@@ -20,14 +20,15 @@ public class SwitchButton {
     private String label = "";
     private BColor backgroundColor = BColor.WHITE_OBSCURE_LIGHT;
     private TextStyle textStyle = new TextStyle(TextStyle.DEFAULT, TextStyle.NORMAL, 12);
-    private Insets margin = new Insets((int)(textStyle.getSize() * 0.2),
-            (int)(textStyle.getSize() * 0.2),
-            (int)(textStyle.getSize() * 0.2),
-            (int)(textStyle.getSize() * 0.2));
+    private Insets margin;
     
     public SwitchButton(String label, TextStyle textStyle) {
         this.label = label;
         this.textStyle = textStyle;
+        margin = new Insets((int)(textStyle.getSize() * 0.2),
+                (int)(textStyle.getSize() * 0.2),
+                (int)(textStyle.getSize() * 0.2),
+                (int)(textStyle.getSize() * 0.2));
     }
 
     public void setSelected(boolean isSelected) {

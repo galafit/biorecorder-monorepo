@@ -48,6 +48,7 @@ public class Axis {
             case RIGHT:
                 orientation = new RightOrientation();
         }
+        isStartEndOnTick = true;
     }
 
     public void addSizeChangeListener(SizeChangeListener l) {
@@ -231,6 +232,5 @@ public class Axis {
     public void drawAxis(BCanvas canvas, BRectangle area) {
         revalidate(canvas.getRenderContext());
         painter.drawAxis(canvas, area);
-
     }
 }

@@ -7,9 +7,6 @@ import com.biorecorder.bichart.utils.StringUtils;
 
 import java.util.ArrayList;
 
-/**
- * Created by hdablin on 17.08.17.
- */
 class Title {
     private String title;
     private TitleConfig config;

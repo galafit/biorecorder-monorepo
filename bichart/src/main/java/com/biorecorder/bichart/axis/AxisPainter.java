@@ -217,6 +217,7 @@ class AxisPainter {
         int ticksSkipStep = 1;
 
         int tickIntervalCount = ticks.size() - 1;
+
         if (ticks.size() >= 2) {
             double tickPixelInterval = Math.abs(scale.scale(ticks.get(1).getValue()) - scale.scale(ticks.get(0).getValue()));
             // calculate tick distance to avoid labels overlapping.
@@ -304,7 +305,14 @@ class AxisPainter {
             }
             ticks.add(0, extraTick);
         }
+
+        if(isRoundingEnabled) {
+            Tick tickMin = ticks.get(1);
+            Tick tickMax = ticks.get(ticks.size() - 2);
+            scale.setMinMax(tickMin.getValue(), tickMax.getValue());
+        }
         return ticks;
+
     }
 
 
@@ -359,12 +367,6 @@ class AxisPainter {
                     tickLabels.add(orientation.createTickLabel(labelTM, tickPosition, currentTick.getLabel(), (int)Math.round(scale.getStart()), (int)Math.round(scale.getEnd()), tickPixelInterval, config, getInterLabelGap(config), scale instanceof CategoryScale));
                 }
             }
-        }
-
-        if(isRoundingEnabled) {
-            Tick tickMin = ticks.get(1);
-            Tick tickMax = ticks.get(ticks.size() - 2);
-            scale.setMinMax(tickMin.getValue(), tickMax.getValue());
         }
     }
 

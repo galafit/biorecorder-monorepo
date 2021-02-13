@@ -90,7 +90,7 @@ public class ChartTest extends JFrame {
 
         chart = new Chart();
         chart.setTitle("как дела? все хорошо как поживаете вы олрдлорлор лорор лорлор");
-       // chart.setConfig(WhiteTheme.getChartConfig());
+        chart.setConfig(WhiteTheme.getChartConfig());
         //chart.addTraces(new LineTrace(regularData), true);
         chart.addTrace(unsortedData, new LineTracePainter(),  XAxisPosition.TOP, YAxisPosition.RIGHT);
         chart.addStack();
