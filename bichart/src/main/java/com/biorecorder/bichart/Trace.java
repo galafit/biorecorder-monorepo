@@ -37,6 +37,10 @@ public class Trace {
         this.color = color;
     }
 
+    public void setData(ChartData data) {
+        this.data = data;
+    }
+
     public AxisWrapper getXAxis() {
         return xAxis;
     }

@@ -8,14 +8,9 @@ import com.sun.istack.internal.Nullable;
 class Tooltip {
     private TracePoint hoverPoint;
     private TooltipConfig config;
-    private int x, y;
-    private int y_offset = 2;
 
-
-    public Tooltip(TooltipConfig tooltipConfig, int x, int y) {
+    public Tooltip(TooltipConfig tooltipConfig) {
         this.config = tooltipConfig;
-        this.x = x;
-        this.y = y;
     }
 
     public void setConfig(TooltipConfig tooltipConfig) {
@@ -46,24 +41,17 @@ class Tooltip {
         // draw cross hair
         BPoint crossPoint = hoverPoint.getTrace().getCrosshairPoint(hoverPoint.getPointIndex());
         hoverPoint.getTrace().getXAxis().drawCrosshair(canvas, area, crossPoint.getX());
-        hoverPoint.getTrace().getXAxis().drawCrosshair(canvas, area, crossPoint.getY());
-
+        hoverPoint.getTrace().getYAxis().drawCrosshair(canvas, area, crossPoint.getY());
         String[] items = hoverPoint.getTrace().getTooltipInfo(hoverPoint.getPointIndex());
         canvas.setTextStyle(config.getTextStyle());
         BDimension tooltipDimension  = getTextSize(canvas, items);
-        int tooltipAreaX = x - tooltipDimension.width / 2;
-        int tooltipAreaY = y - tooltipDimension.height - y_offset;
+        int tooltipAreaX = crossPoint.getX() - tooltipDimension.width / 2;
+        int tooltipAreaY = 0;
         if (tooltipAreaX + tooltipDimension.width > area.x + area.width){
             tooltipAreaX = area.x + area.width - tooltipDimension.width;
         }
         if (tooltipAreaX < area.x){
             tooltipAreaX = area.x;
-        }
-        if (tooltipAreaY < area.y){
-            tooltipAreaY = area.y;
-        }
-        if (tooltipAreaY + tooltipDimension.height > area.y + area.height ){
-            tooltipAreaY = area.y + area.height - tooltipDimension.height;
         }
 
         BRectangle tooltipArea = new BRectangle(tooltipAreaX, tooltipAreaY, tooltipDimension.width, tooltipDimension.height);

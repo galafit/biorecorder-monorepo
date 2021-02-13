@@ -57,7 +57,7 @@ public class LineTracePainter implements TracePainter {
     public String[] getTooltipInfo(ChartData data, int dataIndex, Scale xScale, Scale yScale) {
         String[] info = new String[2];
         info[0] = "x: " + xScale.formatDomainValue(data.value(dataIndex, 0));
-        info[0] = "y: " + yScale.formatDomainValue(data.value(dataIndex, 1));
+        info[1] = "y: " + yScale.formatDomainValue(data.value(dataIndex, 1));
         return info;
     }
 

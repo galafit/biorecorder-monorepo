@@ -11,19 +11,11 @@ import java.util.List;
 public class TraceList {
     private List<Trace> traces = new ArrayList<>();
     private List<ChangeListener> changeListeners = new ArrayList<>(1);
-    private List<SelectionListener> selectionListeners = new ArrayList<>(1);
-
     private int selectedTrace = -1; // -1 no selection
 
     private void notifyChangeListeners() {
         for (ChangeListener l : changeListeners) {
             l.onChange();
-        }
-    }
-
-    private void notifySelectionListeners() {
-        for (SelectionListener l : selectionListeners) {
-            l.onSelectionChanged();
         }
     }
 
@@ -37,10 +29,6 @@ public class TraceList {
 
     public void addChangeListener(ChangeListener l) {
         changeListeners.add(l);
-    }
-
-    public void addSelectionListener(SelectionListener l) {
-        selectionListeners.add(l);
     }
 
     public int size() {
@@ -58,11 +46,14 @@ public class TraceList {
 
     public void setColor(int traceIndex, BColor color) {
         traces.get(traceIndex).setColor(color);
-        notifyChangeListeners();
     }
 
     public BColor getColor(int traceIndex) {
         return traces.get(traceIndex).getColor();
+    }
+
+    public void setData(int traceIndex, ChartData data) {
+        traces.get(traceIndex).setData(data);
     }
 
     public void add(Trace trace) {
@@ -122,7 +113,7 @@ public class TraceList {
         Range minMax = null;
         for (Trace trace : traces) {
             if(trace.getYAxis() == yAxis) {
-                minMax = Range.join(minMax, trace.xMinMax());
+                minMax = Range.join(minMax, trace.yMinMax());
             }
         }
         return minMax;
@@ -174,7 +165,6 @@ public class TraceList {
 
     public void setSelection(int selectedTraceIndex) {
         selectedTrace = selectedTraceIndex;
-        notifySelectionListeners();
     }
 
     public int getTraceIndex(String traceName) {

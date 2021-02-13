@@ -18,25 +18,17 @@ class Legend {
                 invalidate();
             }
         });
-        traceList.addSelectionListener(new SelectionListener() {
-            @Override
-            public void onSelectionChanged() {
-                if(painter != null) {
-                    painter.setSelection(traceList.getSelection());
-                }
-            }
-        });
     }
 
     public boolean selectTrace(int x, int y) {
-        if(!config.isEnabled()) {
+        if (!config.isEnabled()) {
             return false;
         }
-        if(painter != null) {
+        if (painter != null) {
             int index = painter.findButton(x, y);
-            if(index >= 0) {
+            if (index >= 0) {
                 int currentSelection = traceList.getSelection();
-                if(index == currentSelection) {
+                if (index == currentSelection) {
                     traceList.setSelection(-1);
                 } else {
                     traceList.setSelection(index);
@@ -54,7 +46,7 @@ class Legend {
     }
 
     public int getLegendHeight(RenderContext renderContext) {
-        if(!config.isEnabled() || config.isAttachedToStacks()) {
+        if (!config.isEnabled() || config.isAttachedToStacks()) {
             return 0;
         }
         revalidate(renderContext);
@@ -62,7 +54,7 @@ class Legend {
     }
 
     public void revalidate(RenderContext renderContext) {
-        if(config.isEnabled() && painter == null) {
+        if (config.isEnabled() && painter == null) {
             painter = new LegendPainter(renderContext, traceList, config, area);
         }
     }
@@ -94,7 +86,7 @@ class Legend {
         if (!config.isEnabled()) {
             return;
         }
-       revalidate(canvas.getRenderContext());
-       painter.draw(canvas);
+        revalidate(canvas.getRenderContext());
+        painter.draw(canvas);
     }
 }

@@ -9,18 +9,18 @@ import java.util.List;
 
 public class LegendPainter {
     private SwitchButton[] buttons;
+    private TraceList traceList;
     private int legendHeight;
 
     public LegendPainter(RenderContext renderContext, TraceList traceList, LegendConfig config, BRectangle area) {
         buttons = new SwitchButton[traceList.size()];
+        this.traceList = traceList;
         HashMap<BRectangle, List<SwitchButton>> areaToButtons = new HashMap();
         // create buttons
         if (config.isAttachedToStacks()) {
             for (int i = 0; i < traceList.size(); i++) {
                 String traceName = traceList.getName(i);
-                BColor traceColor = traceList.getColor(i);
                 SwitchButton b = new SwitchButton(traceName, config.getTextStyle());
-                b.setColor(traceColor);
                 b.setBackgroundColor(config.getBackgroundColor());
                 BRectangle stackArea = traceList.getTraceStackArea(i);
                 List<SwitchButton> stackButtons = areaToButtons.get(stackArea);
@@ -36,18 +36,11 @@ public class LegendPainter {
             areaToButtons.put(area, areaButtons);
             for (int i = 0; i < traceList.size(); i++) {
                 String traceName = traceList.getName(i);
-                BColor traceColor = traceList.getColor(i);
                 SwitchButton b = new SwitchButton(traceName, config.getTextStyle());
-                b.setColor(traceColor);
                 b.setBackgroundColor(config.getBackgroundColor());
                 areaButtons.add(b);
                 buttons[i] = b;
             }
-        }
-
-        int selectedTrace = traceList.getSelection();
-        if(traceList.getSelection() >= 0)  {
-            buttons[selectedTrace].setSelected(true);
         }
 
         // arrange buttons
@@ -138,8 +131,16 @@ public class LegendPainter {
         if (buttons.length == 0) {
             return;
         }
-        for (SwitchButton button : buttons) {
-            button.draw(canvas);
+        int selection = traceList.getSelection();
+        for (int i = 0; i < buttons.length; i++) {
+            SwitchButton b = buttons[i];
+            b.setColor(traceList.getColor(i));
+            if(i == selection) {
+                b.setSelected(true);
+            } else {
+                b.setSelected(false);
+            }
+            b.draw(canvas);
         }
     }
 
@@ -154,18 +155,6 @@ public class LegendPainter {
             }
         }
         return -1;
-    }
-
-    public void setSelection(int traceIndex) {
-        for (int i = 0; i < buttons.length; i++) {
-            if(i == traceIndex) {
-                buttons[i].setSelected(true);
-            } else {
-                buttons[i].setSelected(false);
-            }
-
-        }
-
     }
 
     public int getLegendHeight() {

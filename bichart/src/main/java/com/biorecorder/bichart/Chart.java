@@ -58,7 +58,7 @@ public class Chart implements SizeChangeListener {
         legend = new Legend(config.getLegendConfig(), traceList, new BRectangle(0, 0,  width, height));
 
         title = new Title(config.getTitleConfig());
-        tooltip = new Tooltip(config.getTooltipConfig(), 0, 0);
+        tooltip = new Tooltip(config.getTooltipConfig());
     }
 
     @Override
@@ -503,7 +503,6 @@ public class Chart implements SizeChangeListener {
         invalidate();
     }
 
-
     public void setTitle(String title) {
         this.title.setTitle(title);
         invalidate();
@@ -515,6 +514,10 @@ public class Chart implements SizeChangeListener {
 
     public void setTraceName(int traceIndex, String name) {
         traceList.setName(traceIndex, name);
+    }
+
+    public void setTraceData(int traceIndex, ChartData data) {
+        traceList.setData(traceIndex, data);
     }
 
     public void setStackWeight(int stack, int weight) {
@@ -704,7 +707,6 @@ public class Chart implements SizeChangeListener {
             return;
         }
         Range tracesYMinMax = traceList.getTracesYMinMax(yAxis);
-
         if (tracesYMinMax != null) {
             yAxis.setMinMax(tracesYMinMax.getMin(), tracesYMinMax.getMax(), true);
         }

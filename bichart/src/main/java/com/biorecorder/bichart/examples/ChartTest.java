@@ -4,6 +4,7 @@ import com.biorecorder.bichart.*;
 import com.biorecorder.bichart.axis.XAxisPosition;
 import com.biorecorder.bichart.axis.YAxisPosition;
 import com.biorecorder.bichart.dataprocessing.XYData;
+import com.biorecorder.bichart.graphics.BColor;
 import com.biorecorder.bichart.themes.WhiteTheme;
 import com.biorecorder.bichart.traces.LineTracePainter;
 import com.biorecorder.data.frame.SquareFunction;
@@ -107,8 +108,8 @@ public class ChartTest extends JFrame {
         addKeyListener(chartPanel);
         setLocationRelativeTo(null);
         setVisible(true);
-        try {
-            Thread.sleep(1000);
+     /*   try {
+            Thread.sleep(3000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -120,8 +121,17 @@ public class ChartTest extends JFrame {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        chart.setConfig(WhiteTheme.getChartConfig());
+       // chart.setTraceName(2, "lala topola");
+        chart.setTraceColor(2, BColor.CYAN);
+       // chart.autoScaleY();
         chartPanel.repaint();
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        chart.setConfig(WhiteTheme.getChartConfig());
+        chartPanel.repaint();*/
 
     }
 
