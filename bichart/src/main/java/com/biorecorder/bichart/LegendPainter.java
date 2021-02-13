@@ -8,19 +8,24 @@ import java.util.HashMap;
 import java.util.List;
 
 public class LegendPainter {
-    private SwitchButton[] buttons;
+    private List<SwitchButton> buttons;
     private TraceList traceList;
-    private int legendHeight;
+    private Insets margin;
+    private BDimension prefferedSize;
+    private boolean isAttachedToStacks;
 
-    public LegendPainter(RenderContext renderContext, TraceList traceList, LegendConfig config, BRectangle area) {
-        buttons = new SwitchButton[traceList.size()];
+    public LegendPainter(RenderContext renderContext, TraceList traceList, LegendConfig config, int x, int y, int width) {
+        buttons = new ArrayList(traceList.size());
         this.traceList = traceList;
+        this.isAttachedToStacks = config.isAttachedToStacks();
+        margin = config.getLegendMargin();
         HashMap<BRectangle, List<SwitchButton>> areaToButtons = new HashMap();
         // create buttons
         if (config.isAttachedToStacks()) {
             for (int i = 0; i < traceList.size(); i++) {
                 String traceName = traceList.getName(i);
                 SwitchButton b = new SwitchButton(traceName, config.getTextStyle());
+                b.setMargin(config.getButtonsMargin());
                 b.setBackgroundColor(config.getBackgroundColor());
                 BRectangle stackArea = traceList.getTraceStackArea(i);
                 List<SwitchButton> stackButtons = areaToButtons.get(stackArea);
@@ -29,92 +34,104 @@ public class LegendPainter {
                     areaToButtons.put(stackArea, stackButtons);
                 }
                 stackButtons.add(b);
-                buttons[i] = b;
+                buttons.add(b);
             }
         } else {
+            BRectangle area = new BRectangle(x, y, width, 0);
             List<SwitchButton> areaButtons = new ArrayList<SwitchButton>();
             areaToButtons.put(area, areaButtons);
             for (int i = 0; i < traceList.size(); i++) {
                 String traceName = traceList.getName(i);
                 SwitchButton b = new SwitchButton(traceName, config.getTextStyle());
                 b.setBackgroundColor(config.getBackgroundColor());
+                b.setMargin(config.getButtonsMargin());
                 areaButtons.add(b);
-                buttons[i] = b;
+                buttons.add(b);
             }
         }
 
         // arrange buttons
         for (BRectangle stackArea : areaToButtons.keySet()) {
             List<SwitchButton> stackButtons = areaToButtons.get(stackArea);
-            legendHeight = arrangeButtons(stackButtons, stackArea, renderContext, config);
+            prefferedSize = arrangeButtons(stackButtons, stackArea, renderContext, config);
         }
         if (config.isAttachedToStacks()) {
-            legendHeight = 0;
-        }
+            prefferedSize = new BDimension(0, 0);
+         }
     }
 
-    private int arrangeButtons(List<SwitchButton> areaButtons, BRectangle area, RenderContext renderContext, LegendConfig config) {
+    private BDimension arrangeButtons(List<SwitchButton> areaButtons, BRectangle area, RenderContext renderContext, LegendConfig config) {
         int legendHeight = 0;
-        int legendWidth = 0;
-        int x = area.x;
-        int y = area.y;
+
+        int x_start = area.x;
+        int y_start = area.y;
+        int width = area.width;
         int area_end = area.x + area.width;
+        if(!config.isAttachedToStacks()) {
+            x_start += margin.left();
+            y_start += margin.top();
+            area_end -= margin.right();
+            width -= (margin.left() + margin.right());
+        }
+        int x = x_start;
+        int y = y_start;
         List<SwitchButton> lineButtons = new ArrayList<SwitchButton>();
         BDimension btnDimension = null;
+        int lineButtonsWidth = 0;
         for (SwitchButton button : areaButtons) {
             btnDimension = button.getPrefferedSize(renderContext);
-            if (lineButtons.size() > 0 && x + config.getInterItemSpace() + btnDimension.width >= area_end) {
-                legendWidth += (lineButtons.size() - 1) * config.getInterItemSpace();
-                if (config.getHorizontalAlign() == HorizontalAlign.LEFT) {
-                    moveButtons(lineButtons, 0, 0);
-                }
+            if (lineButtons.size() > 0 && x + config.getInterItemSpace() + btnDimension.width > area_end) {
+                lineButtonsWidth += (lineButtons.size() - 1) * config.getInterItemSpace();
+
                 if (config.getHorizontalAlign() == HorizontalAlign.RIGHT) {
-                    moveButtons(lineButtons, area.width - legendWidth, 0);
+                    moveButtons(lineButtons, width - lineButtonsWidth, 0);
                 }
                 if (config.getHorizontalAlign() == HorizontalAlign.CENTER) {
-                    moveButtons(lineButtons, (area.width - legendWidth) / 2, 0);
+                    moveButtons(lineButtons, (width - lineButtonsWidth) / 2, 0);
                 }
 
-                x = area.x;
+                x = x_start;
                 y += btnDimension.height + config.getInterLineSpace();
                 button.setBounds(x, y, btnDimension.width, btnDimension.height);
 
                 x += btnDimension.width + config.getInterItemSpace();
                 legendHeight += btnDimension.height + config.getInterLineSpace();
-                legendWidth = btnDimension.width;
+                lineButtonsWidth = btnDimension.width;
                 lineButtons.clear();
             } else {
                 button.setBounds(x, y, btnDimension.width, btnDimension.height);
                 x += config.getInterItemSpace() + btnDimension.width;
-                legendWidth += btnDimension.width;
+                lineButtonsWidth += btnDimension.width;
             }
             lineButtons.add(button);
         }
-        legendWidth += (lineButtons.size() - 1) * config.getInterItemSpace();
-        if(btnDimension != null) {
-            legendHeight += btnDimension.height;
-        }
 
-        if (config.getHorizontalAlign() == HorizontalAlign.LEFT) {
-            moveButtons(lineButtons, 0, 0);
-        }
+        lineButtonsWidth += (lineButtons.size() - 1) * config.getInterItemSpace();
+        legendHeight += btnDimension.height + margin.bottom() + margin.top();
+
         if (config.getHorizontalAlign() == HorizontalAlign.RIGHT) {
-            moveButtons(lineButtons, area.width - legendWidth, 0);
+            moveButtons(lineButtons, width - lineButtonsWidth, 0);
         }
         if (config.getHorizontalAlign() == HorizontalAlign.CENTER) {
-            moveButtons(lineButtons, (area.width - legendWidth) / 2, 0);
+            moveButtons(lineButtons, (width - lineButtonsWidth) / 2, 0);
         }
 
-        if (config.getVerticalAlign() == VerticalAlign.TOP) {
-            moveButtons(areaButtons, 0, 0);
+        if(config.isAttachedToStacks()) {
+            if (config.getVerticalAlign() == VerticalAlign.BOTTOM) {
+                moveButtons(areaButtons, 0, area.height - legendHeight);
+            }
+            if (config.getVerticalAlign() == VerticalAlign.MIDDLE) {
+                moveButtons(areaButtons, 0, (area.height - legendHeight) / 2);
+            }
+
         }
-        if (config.getVerticalAlign() == VerticalAlign.BOTTOM) {
-            moveButtons(areaButtons, 0, area.height - legendHeight - 0);
+        return new BDimension(area.width, legendHeight);
+    }
+
+    public void moveButtons(int dx, int dy) {
+        if(!isAttachedToStacks) {
+            moveButtons(buttons, dx, dy);
         }
-        if (config.getVerticalAlign() == VerticalAlign.MIDDLE) {
-            moveButtons(areaButtons, 0, (area.height - legendHeight) / 2);
-        }
-        return legendHeight;
     }
 
 
@@ -128,12 +145,13 @@ public class LegendPainter {
     }
 
     public void draw(BCanvas canvas) {
-        if (buttons.length == 0) {
+        if (buttons.size() == 0) {
             return;
         }
+        canvas.setColor(BColor.CYAN);
         int selection = traceList.getSelection();
-        for (int i = 0; i < buttons.length; i++) {
-            SwitchButton b = buttons[i];
+        for (int i = 0; i < buttons.size(); i++) {
+            SwitchButton b = buttons.get(i);
             b.setColor(traceList.getColor(i));
             if(i == selection) {
                 b.setSelected(true);
@@ -149,16 +167,16 @@ public class LegendPainter {
      * o -1 if there is no such button
      */
     public int findButton(int x, int y) {
-        for (int i = 0; i < buttons.length; i++) {
-            if (buttons[i].getBounds().contains(x, y)) {
+        for (int i = 0; i < buttons.size(); i++) {
+            if (buttons.get(i).getBounds().contains(x, y)) {
                 return i;
             }
         }
         return -1;
     }
 
-    public int getLegendHeight() {
-        return legendHeight;
+    public BDimension getPrefferedSize() {
+        return prefferedSize;
     }
 
 }

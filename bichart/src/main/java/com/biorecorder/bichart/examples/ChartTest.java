@@ -4,7 +4,6 @@ import com.biorecorder.bichart.*;
 import com.biorecorder.bichart.axis.XAxisPosition;
 import com.biorecorder.bichart.axis.YAxisPosition;
 import com.biorecorder.bichart.dataprocessing.XYData;
-import com.biorecorder.bichart.graphics.BColor;
 import com.biorecorder.bichart.themes.WhiteTheme;
 import com.biorecorder.bichart.traces.LineTracePainter;
 import com.biorecorder.data.frame.SquareFunction;
@@ -91,12 +90,14 @@ public class ChartTest extends JFrame {
         chart = new Chart();
         chart.setTitle("как дела? все хорошо как поживаете вы олрдлорлор лорор лорлор");
         chart.setConfig(WhiteTheme.getChartConfig());
-        //chart.addTraces(new LineTrace(regularData), true);
+
         chart.addTrace(unsortedData, new LineTracePainter(),  XAxisPosition.TOP, YAxisPosition.RIGHT);
         chart.addStack();
-        //
+        chart.addTrace(regularData, new LineTracePainter());
+        chart.addStack();
         chart.addTrace(noRegularData1, new LineTracePainter());
         chart.addTrace(regularData, new LineTracePainter(),  XAxisPosition.BOTTOM, YAxisPosition.RIGHT);
+
         chart.autoScaleY();
         chart.autoScaleX();
         chartPanel = new ChartPanel(chart);

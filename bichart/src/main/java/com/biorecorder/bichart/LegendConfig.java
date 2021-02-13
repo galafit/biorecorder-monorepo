@@ -12,10 +12,10 @@ public class LegendConfig {
     private TextStyle textStyle = new TextStyle(TextStyle.DEFAULT, TextStyle.NORMAL, 12);
     private HorizontalAlign horizontalAlign = HorizontalAlign.LEFT;
     private VerticalAlign verticalAlign = VerticalAlign.TOP;
-
     private int borderWidth = 1;
     private BColor backgroundColor = BColor.WHITE;
     private Insets buttonsMargin;
+    private Insets legendMargin = new Insets(3);
     private boolean isAttachedToStacks = true;
 
     private int interItemSpace = 0;
@@ -35,6 +35,18 @@ public class LegendConfig {
         interLineSpace = legendConfig.interLineSpace;
         isEnabled = legendConfig.isEnabled;
         borderWidth = legendConfig.borderWidth;
+        legendMargin = legendConfig.legendMargin;
+    }
+
+    public Insets getLegendMargin() {
+        if(legendMargin == null) {
+            return new Insets(0);
+        }
+        return legendMargin;
+    }
+
+    public void setLegendMargin(Insets legendMargin) {
+        this.legendMargin = legendMargin;
     }
 
     public int getBorderWidth() {
@@ -113,8 +125,7 @@ public class LegendConfig {
         if(buttonsMargin != null) {
             return buttonsMargin;
         }
-
-        return new Insets(textStyle.getSize()/2);
+        return new Insets((int)(textStyle.getSize() * 0.2));
     }
 
     public void setButtonsMargin(@Nullable Insets buttonsMargin) {

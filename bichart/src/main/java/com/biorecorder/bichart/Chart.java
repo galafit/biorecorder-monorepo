@@ -55,7 +55,7 @@ public class Chart implements SizeChangeListener {
         xAxisList.add(topAxis);
         addStack();
 
-        legend = new Legend(config.getLegendConfig(), traceList, new BRectangle(0, 0,  width, height));
+        legend = new Legend(config.getLegendConfig(), traceList, width);
 
         title = new Title(config.getTitleConfig());
         tooltip = new Tooltip(config.getTooltipConfig());
@@ -96,8 +96,6 @@ public class Chart implements SizeChangeListener {
         }
         
         int titleHeight = title.getHeight(renderContext, width);
-        legend.setArea(new BRectangle(0, titleHeight, width, height - titleHeight));
-
         setXStartEnd(graphArea.x, graphArea.width);
         int top = titleHeight;
         int bottom = 0;
@@ -109,13 +107,15 @@ public class Chart implements SizeChangeListener {
         if(bottomAxis.isUsed()) {
             bottom += bottomAxis.getWidth(renderContext);
         }
-
-        int legendHeight = legend.getLegendHeight(renderContext);
-        if (legend.isTop()) {
-            top += legendHeight;
-        }
-        if (legend.isBottom()) {
-            bottom += legendHeight;
+        BDimension legendPrefSize = legend.getPrefferedSize(renderContext);
+        if(legend.isTop()) {
+            legend.moveTo(0, titleHeight);
+            top += legendPrefSize.height;
+        } else if (legend.isBottom()) {
+            legend.moveTo(0, height - legendPrefSize.height);
+            bottom += legendPrefSize.height;
+        } else {
+            legend.moveTo(0, titleHeight + (height - titleHeight)/2);
         }
 
         setYStartEnd(top, height - top - bottom);
@@ -626,6 +626,7 @@ public class Chart implements SizeChangeListener {
     public void setSize(int width, int height) {
         this.width = width;
         this.height = height;
+        legend.setWidth(width);
         invalidate();
     }
 

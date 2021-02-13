@@ -25,10 +25,7 @@ public class SwitchButton {
     public SwitchButton(String label, TextStyle textStyle) {
         this.label = label;
         this.textStyle = textStyle;
-        margin = new Insets((int)(textStyle.getSize() * 0.2),
-                (int)(textStyle.getSize() * 0.2),
-                (int)(textStyle.getSize() * 0.2),
-                (int)(textStyle.getSize() * 0.2));
+        margin = new Insets((int)(textStyle.getSize() * 0.2));
     }
 
     public void setSelected(boolean isSelected) {
