@@ -39,10 +39,6 @@ public class DarkTheme {
     private static final BColor CROSSHAIR_COLOR = BColor.WHITE_OBSCURE;
 
     public static ChartConfig getChartConfig() {
-        return getChartConfig(false);
-    }
-
-    public static ChartConfig getChartConfig(boolean isYRoundingEnabled) {
         AxisConfig xAxisConfig = new AxisConfig();
         xAxisConfig.setColors(AXIS_COLOR, TEXT_COLOR, GRID_COLOR, GRID_COLOR);
         xAxisConfig.setTickMarkSize(X_MARK_SIZE, 0);
@@ -72,13 +68,13 @@ public class DarkTheme {
         return chartConfig;
     }
 
-    public static NavigableChartConfig getNavigableChartConfig(boolean isYRoundingEnabled) {
+    public static NavigableChartConfig getNavigableChartConfig() {
         BColor navigatorBgColor = MARGIN_COLOR;
         BColor navigatorMarginColor = navigatorBgColor;
         BColor scrollColor = CROSSHAIR_COLOR;
         BColor bgColor = navigatorBgColor;
 
-        ChartConfig navigatorConfig = getChartConfig(true);
+        ChartConfig navigatorConfig = getChartConfig();
         navigatorConfig.setBackgroundColor(navigatorBgColor);
         navigatorConfig.setMarginColor(navigatorMarginColor);
         navigatorConfig.getTitleConfig().setTextColor(TEXT_COLOR);
@@ -92,7 +88,7 @@ public class DarkTheme {
         ScrollConfig scrollConfig = new ScrollConfig();
         scrollConfig.setColor(scrollColor);
 
-        ChartConfig chartConfig1 = getChartConfig(isYRoundingEnabled);
+        ChartConfig chartConfig1 = getChartConfig();
         chartConfig1.getYAxisConfig().setTickLabelOutside(false);
         chartConfig1.setPrimaryYPosition(YAxisPosition.RIGHT);
         chartConfig1.setPrimaryXPosition(XAxisPosition.TOP);
@@ -100,10 +96,5 @@ public class DarkTheme {
         NavigableChartConfig navigableChartConfig = new NavigableChartConfig(chartConfig1, navigatorConfig, scrollConfig);
         navigableChartConfig.setBackgroundColor(bgColor);
         return navigableChartConfig;
-    }
-
-    public static NavigableChartConfig getNavigableChartConfig() {
-        return getNavigableChartConfig(false);
-
     }
 }

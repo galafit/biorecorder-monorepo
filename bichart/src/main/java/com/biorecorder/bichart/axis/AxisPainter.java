@@ -235,12 +235,14 @@ class AxisPainter {
                     }
                 }
 
+
                 if (ticksSkipStep > tickIntervalCount) {
                     ticksSkipStep = tickIntervalCount;
                 }
             }
-
-            if (!isRoundingEnabled && ticksSkipStep > 1 && (ticks.size() - 1) / ticksSkipStep > 1) {
+            // commented string gives more precise rounding but tick numbers are not so "round" and nice
+            //if (!isRoundingEnabled && ticksSkipStep > 1 && (ticks.size() - 1) / ticksSkipStep >= 1) {
+            if (ticksSkipStep > 1 && (ticks.size() - 1) / ticksSkipStep >= 1) {
                 tickProvider.increaseTickInterval(ticksSkipStep);
                 ticks = generateTicks(tickProvider, isRoundingEnabled);
                 ticksSkipStep = 1;

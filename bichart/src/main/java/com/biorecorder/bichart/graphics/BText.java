@@ -78,6 +78,16 @@ public class BText {
         return text;
     }
 
+    public void move(int dx, int dy) {
+        this.x += dx;
+        this.y += dy;
+    }
+
+    public void moveTo(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+
     public int getX() {
         return x;
     }

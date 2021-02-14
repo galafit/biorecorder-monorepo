@@ -48,11 +48,8 @@ public class WhiteTheme {
            final BColor CYAN = new BColor(0, 160, 160);
            final BColor GRAY = new BColor(120, 56, 7); //new BColor(60, 70, 100);
            */
-    public static ChartConfig getChartConfig() {
-        return getChartConfig(false);
-    }
 
-    public static ChartConfig getChartConfig(boolean isYRoundingEnabled) {
+    public static ChartConfig getChartConfig() {
         AxisConfig xAxisConfig = new AxisConfig();
         xAxisConfig.setColors(AXIS_COLOR, TEXT_COLOR, GRID_COLOR, GRID_COLOR);
         xAxisConfig.setTickMarkSize(X_MARK_SIZE, 0);
@@ -82,13 +79,13 @@ public class WhiteTheme {
         return chartConfig;
     }
 
-    public static NavigableChartConfig getNavigableChartConfig(boolean isYRoundingEnabled) {
+    public static NavigableChartConfig getNavigableChartConfig() {
         BColor navigatorBgColor = MARGIN_COLOR;
         BColor navigatorMarginColor = navigatorBgColor;
         BColor scrollColor = CROSSHAIR_COLOR;
         BColor bgColor = navigatorBgColor;
 
-        ChartConfig navigatorConfig = getChartConfig(true);
+        ChartConfig navigatorConfig = getChartConfig();
         navigatorConfig.setBackgroundColor(navigatorBgColor);
         navigatorConfig.setMarginColor(navigatorMarginColor);
         navigatorConfig.getTitleConfig().setTextColor(TEXT_COLOR);
@@ -102,7 +99,7 @@ public class WhiteTheme {
         ScrollConfig scrollConfig = new ScrollConfig();
         scrollConfig.setColor(scrollColor);
 
-        ChartConfig chartConfig1 = getChartConfig(isYRoundingEnabled);
+        ChartConfig chartConfig1 = getChartConfig();
         chartConfig1.getYAxisConfig().setTickLabelOutside(false);
         chartConfig1.setPrimaryYPosition(YAxisPosition.RIGHT);
         chartConfig1.setPrimaryXPosition(XAxisPosition.TOP);
@@ -112,7 +109,4 @@ public class WhiteTheme {
         return navigableChartConfig;
     }
 
-    public static NavigableChartConfig getNavigableChartConfig() {
-        return getNavigableChartConfig(false);
-    }
 }

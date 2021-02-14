@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * Created by hdablin on 24.03.17.
  */
-public class Chart implements SizeChangeListener {
+public class Chart {
     private ChartConfig config = new ChartConfig();
     /*
      * 2 X-axis: 0(even) - BOTTOM and 1(odd) - TOP
@@ -31,13 +31,11 @@ public class Chart implements SizeChangeListener {
     private TraceList traceList = new TraceList();
     private Legend legend;
     private Title title;
+    private Tooltip tooltip;
 
     private BRectangle graphArea = new BRectangle(0, 0, 0, 0);
     private int width;
     private int height;
-
-    private Tooltip tooltip;
-
     private boolean isValid = true;
 
     public Chart() {
@@ -46,30 +44,31 @@ public class Chart implements SizeChangeListener {
 
     public Chart(ChartConfig config) {
         this.config = new ChartConfig(config);
-
         AxisWrapper bottomAxis = new AxisWrapper(new Axis(new LinearScale(), config.getXAxisConfig(), XAxisPosition.BOTTOM));
         AxisWrapper topAxis = new AxisWrapper(new Axis(new LinearScale(), config.getXAxisConfig(), XAxisPosition.TOP));
-        bottomAxis.addSizeChangeListener(this);
-        topAxis.addSizeChangeListener(this);
+        bottomAxis.addSizeChangeListener(new ElementChangeListener());
+        topAxis.addSizeChangeListener(new ElementChangeListener());
         xAxisList.add(bottomAxis);
         xAxisList.add(topAxis);
         addStack();
 
-        legend = new Legend(config.getLegendConfig(), traceList, width);
-
-        title = new Title(config.getTitleConfig());
+        legend = new Legend(config.getLegendConfig(), traceList);
+        legend.addSizeChangeListener(new ElementChangeListener());
+        title = new Title(null, config.getTitleConfig());
+        title.addSizeChangeListener(new ElementChangeListener());
         tooltip = new Tooltip(config.getTooltipConfig());
-    }
-
-    @Override
-    public void onSizeChanged() {
-        invalidate();
     }
 
     private void invalidate() {
         isValid = false;
     }
 
+    class ElementChangeListener implements SizeChangeListener {
+        @Override
+        public void onSizeChanged() {
+            invalidate();
+        }
+    }
 
     public void revalidate(RenderContext renderContext) {
         if(isValid){
@@ -95,7 +94,8 @@ public class Chart implements SizeChangeListener {
             return;
         }
         
-        int titleHeight = title.getHeight(renderContext, width);
+        BDimension titlePrefSize = title.getPrefferedSize(renderContext);
+        int titleHeight = titlePrefSize.height;
         setXStartEnd(graphArea.x, graphArea.width);
         int top = titleHeight;
         int bottom = 0;
@@ -137,9 +137,9 @@ public class Chart implements SizeChangeListener {
         graphArea = new BRectangle(left, top,
                 Math.max(0, width - left - right), Math.max(0, height - top - bottom));
 
-
         // adjust XAxis ranges
         setXStartEnd(graphArea.x, graphArea.width);
+        legend.onParentContainerRearranged();
         isValid = true;
     }
 
@@ -533,8 +533,8 @@ public class Chart implements SizeChangeListener {
     public void addStack(int weight) {
         AxisWrapper leftAxis = new AxisWrapper(new Axis(new LinearScale(), config.getYAxisConfig(), YAxisPosition.LEFT));
         AxisWrapper rightAxis = new AxisWrapper(new Axis(new LinearScale(), config.getYAxisConfig(), YAxisPosition.RIGHT));
-        leftAxis.addSizeChangeListener(this);
-        rightAxis.addSizeChangeListener(this);
+        leftAxis.addSizeChangeListener(new ElementChangeListener());
+        rightAxis.addSizeChangeListener(new ElementChangeListener());
         yAxisList.add(leftAxis);
         yAxisList.add(rightAxis);
         stackWeights.add(weight);
@@ -557,7 +557,6 @@ public class Chart implements SizeChangeListener {
         yAxisList.remove(stack * 2);
         invalidate();
     }
-
 
     /**
      * add trace to the last stack
@@ -627,13 +626,13 @@ public class Chart implements SizeChangeListener {
         this.width = width;
         this.height = height;
         legend.setWidth(width);
+        title.setWidth(width);
         invalidate();
     }
 
     public int traceCount() {
         return traceList.size();
     }
-
 
     /**
      * return COPY of X axis legendConfig. To change axis legendConfig use setXConfig

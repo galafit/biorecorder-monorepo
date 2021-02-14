@@ -1,32 +1,70 @@
 package com.biorecorder.bichart;
 
-import com.biorecorder.bichart.graphics.BText;
-import com.biorecorder.bichart.graphics.TextMetric;
 import com.biorecorder.bichart.graphics.*;
 import com.biorecorder.bichart.utils.StringUtils;
 
 import java.util.ArrayList;
+import java.util.List;
 
 class Title {
+    int x = 0;
+    int y = 0;
+    int width = 0;
     private String title;
     private TitleConfig config;
-    private ArrayList<BText> lines = new ArrayList<BText>();
-    private int height;
-    private boolean isDirty;
+    private TitlePainter painter;
 
-    public Title(TitleConfig config) {
+    private List<SizeChangeListener> listeners = new ArrayList<>(1);
+
+    public Title(String title, TitleConfig config) {
         this.config = config;
+        this.title = title;
     }
-    
+
+    public void addSizeChangeListener(SizeChangeListener l) {
+        listeners.add(l);
+    }
+
     private void invalidate() {
-        isDirty = true;
-    }
-    
-    public int getHeight(RenderContext renderContext, int width) {
-        if(isDirty) {
-            validate(renderContext, width);
+        painter = null;
+        for (SizeChangeListener l : listeners) {
+            l.onSizeChanged();
         }
-        return height;
+    }
+
+    public void setWidth(int width) {
+        if(this.width != width) {
+            this.width = width;
+            invalidate();
+        }
+    }
+
+    private void revalidate(RenderContext renderContext) {
+        if(painter == null) {
+          painter = new TitlePainter(renderContext, config, title, x, y, width);
+        }
+    }
+
+    /**
+     * move top left corner to the given point (x, y)
+     */
+    public void moveTo(int x, int y)  {
+        if(painter != null) {
+            int dx = x - this.x;
+            int dy = y - this.y;
+            painter.move(dx, dy);
+        }
+        this.x = x;
+        this.y = y;
+    }
+
+
+    public BDimension getPrefferedSize(RenderContext renderContext) {
+        if (isNullOrBlank()) {
+            return new BDimension(0, 0);
+        }
+        revalidate(renderContext);
+        return painter.getPrefferedSize();
     }
 
     public void setTitle(String title) {
@@ -43,61 +81,11 @@ class Title {
         return StringUtils.isNullOrBlank(title);
     }
 
-
-    public void validate(RenderContext renderContext, int width){
-        lines = new ArrayList<BText>();
-        height = 0;
-        if(StringUtils.isNullOrBlank(title)) {
+    public void draw(BCanvas canvas) {
+        if (isNullOrBlank()) {
             return;
         }
-
-        String[] words = title.split(" ");
-        StringBuilder stringBuilder = new StringBuilder(words[0]);
-        TextMetric tm = renderContext.getTextMetric(config.getTextStyle());
-        Insets margin = config.getMargin();
-        int y = margin.top();
-        int x;
-        for (int i = 1; i < words.length; i++) {
-            int strWidth = tm.stringWidth(stringBuilder + " "+ words[i]);
-            if ( strWidth + margin.left() + margin.right() > width ){
-                String lineString = stringBuilder.toString();
-                x = width / 2 - tm.stringWidth(lineString) / 2;
-                if (x < margin.left()) {
-                    x = margin.left();
-                }
-                lines.add(new BText(lineString, x, y + tm.ascent()));
-
-                y += config.getInterLineSpace() + tm.height();
-                stringBuilder = new StringBuilder(words[i]);
-            } else {
-                stringBuilder.append(" ").append(words[i]);
-            }
-        }
-
-        // last line
-        String lineString = stringBuilder.toString();
-        x = width / 2 - tm.stringWidth(lineString) / 2;
-        if (x <  margin.left()) {
-            x = margin.left();
-        }
-
-        lines.add(new BText(lineString, x, y + tm.ascent()));
-
-        height = tm.height() * lines.size()
-                + config.getInterLineSpace() * (lines.size() - 1)
-                + margin.top() + margin.bottom();
-        isDirty = false;
-     }
-
-    public void draw(BCanvas canvas){
-        if (lines.size() == 0){
-            return;
-        }
-        canvas.setTextStyle(config.getTextStyle());
-        canvas.setColor(config.getTextColor());
-        for (BText string : lines) {
-            string.draw(canvas);
-        }
+        revalidate(canvas.getRenderContext());
+        painter.draw(canvas);
     }
-
 }

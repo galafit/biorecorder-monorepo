@@ -1,6 +1,7 @@
 package com.biorecorder.bichart;
 
 import com.biorecorder.bichart.graphics.BColor;
+import com.biorecorder.bichart.graphics.HorizontalAlign;
 import com.biorecorder.bichart.graphics.Insets;
 import com.biorecorder.bichart.graphics.TextStyle;
 import com.sun.istack.internal.Nullable;
@@ -13,6 +14,7 @@ public class TitleConfig {
     private BColor textColor = BColor.BLACK_LIGHT;
     private Insets margin;
     private int interLineSpace = -1;
+    private HorizontalAlign align = HorizontalAlign.CENTER;
 
     public TitleConfig() {
     }
@@ -21,6 +23,16 @@ public class TitleConfig {
         textStyle = config.textStyle;
         textColor = config.textColor;
         margin = config.margin;
+        interLineSpace = config.interLineSpace;
+        align = config.align;
+    }
+
+    public HorizontalAlign getAlign() {
+        return align;
+    }
+
+    public void setAlign(HorizontalAlign align) {
+        this.align = align;
     }
 
     public int getInterLineSpace() {

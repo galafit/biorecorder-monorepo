@@ -2,25 +2,52 @@ package com.biorecorder.bichart;
 
 import com.biorecorder.bichart.graphics.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 class Legend {
     private LegendConfig config;
     private TraceList traceList;
     private LegendPainter painter;
-    private int width;
+    private int width = 0;
     // top left corner
     int x = 0;
     int y = 0;
+    private List<SizeChangeListener> listeners = new ArrayList<>(1);
 
-    public Legend(LegendConfig config, TraceList traceList, int width) {
+
+    public Legend(LegendConfig config, TraceList traceList){
         this.config = config;
         this.traceList = traceList;
-        this.width = width;
         traceList.addChangeListener(new ChangeListener() {
             @Override
             public void onChange() {
-                invalidate();
+                if(!config.isAttachedToStacks()) {
+                    invalidate(true);
+                } else {
+                    invalidate(false);
+                }
             }
         });
+    }
+
+    public void onParentContainerRearranged() {
+        if(config.isAttachedToStacks()) {
+            invalidate(false);
+        }
+    }
+
+    public void addSizeChangeListener(SizeChangeListener l) {
+        listeners.add(l);
+    }
+
+    private void invalidate(boolean isSizeChanged) {
+        painter = null;
+        if(isSizeChanged) {
+            for (SizeChangeListener l : listeners) {
+                l.onSizeChanged();
+            }
+        }
     }
 
     public boolean selectTrace(int x, int y) {
@@ -42,12 +69,16 @@ class Legend {
         return false;
     }
 
-
     public void setWidth(int width) {
-        this.width = width;
-        invalidate();
+        if(this.width != width) {
+            this.width = width;
+            if(!config.isAttachedToStacks()) {
+                invalidate(true);
+            } else {
+                invalidate(false);
+            }
+        }
     }
-
     public BDimension getPrefferedSize(RenderContext renderContext) {
         if (!config.isEnabled() || config.isAttachedToStacks()) {
             return new BDimension(0, 0);
@@ -69,7 +100,6 @@ class Legend {
         this.y = y;
     }
 
-
     public void revalidate(RenderContext renderContext) {
         if (config.isEnabled() && painter == null) {
             painter = new LegendPainter(renderContext, traceList, config, x, y, width);
@@ -90,13 +120,13 @@ class Legend {
         return false;
     }
 
-    public void setConfig(LegendConfig legendConfig) {
-        this.config = legendConfig;
-        invalidate();
-    }
-
-    private void invalidate() {
-        painter = null;
+    public void setConfig(LegendConfig newConfig) {
+        this.config = newConfig;
+        if(config.isAttachedToStacks() && newConfig.isAttachedToStacks()) {
+            invalidate(false);
+        } else {
+            invalidate(true);
+        }
     }
 
     public void draw(BCanvas canvas) {

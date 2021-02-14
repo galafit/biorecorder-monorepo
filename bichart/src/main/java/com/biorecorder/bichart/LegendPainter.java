@@ -63,16 +63,10 @@ public class LegendPainter {
     private BDimension arrangeButtons(List<SwitchButton> areaButtons, BRectangle area, RenderContext renderContext, LegendConfig config) {
         int legendHeight = 0;
 
-        int x_start = area.x;
-        int y_start = area.y;
-        int width = area.width;
+        int x_start = area.x + margin.left();
+        int y_start = area.y + margin.top();
+        int width = area.width - margin.right() - margin.left();
         int area_end = area.x + area.width;
-        if(!config.isAttachedToStacks()) {
-            x_start += margin.left();
-            y_start += margin.top();
-            area_end -= margin.right();
-            width -= (margin.left() + margin.right());
-        }
         int x = x_start;
         int y = y_start;
         List<SwitchButton> lineButtons = new ArrayList<SwitchButton>();
