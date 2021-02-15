@@ -1,5 +1,6 @@
 package com.biorecorder.bichart;
 
+import com.biorecorder.bichart.button.SwitchButton;
 import com.biorecorder.bichart.graphics.*;
 
 import java.util.ArrayList;
@@ -14,8 +15,6 @@ class Legend {
     int x = 0;
     int y = 0;
     private List<SizeChangeListener> listeners = new ArrayList<>(1);
-
-
     public Legend(LegendConfig config, TraceList traceList){
         this.config = config;
         this.traceList = traceList;
@@ -134,6 +133,24 @@ class Legend {
             return;
         }
         revalidate(canvas.getRenderContext());
-        painter.draw(canvas);
+        painter.draw(canvas, new TraceColorsAndSelections(traceList));
+    }
+
+    class TraceColorsAndSelections implements ColorsAndSelections {
+        private final TraceList traceList;
+
+        public TraceColorsAndSelections(TraceList traceList) {
+            this.traceList = traceList;
+        }
+
+        @Override
+        public BColor getColor(int index) {
+            return traceList.getColor(index);
+        }
+
+        @Override
+        public boolean isSelected(int index) {
+            return index == traceList.getSelection();
+        }
     }
 }

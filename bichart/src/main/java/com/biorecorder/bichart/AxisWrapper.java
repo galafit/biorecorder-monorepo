@@ -10,7 +10,6 @@ import com.biorecorder.bichart.scales.Scale;
 
 class AxisWrapper {
     private Axis axis;
-    private boolean isUsed = false;
     private boolean isStartEndOnTick;
 
 
@@ -154,10 +153,6 @@ class AxisWrapper {
         return axis.getEnd();
     }
 
-    public boolean isUsed() {
-        return isUsed;
-    }
-
     public int getWidth(RenderContext renderContext) {
         return axis.getWidthOut(renderContext);
     }
@@ -172,9 +167,4 @@ class AxisWrapper {
     public void drawAxis(BCanvas canvas, BRectangle area) {
         axis.drawAxis(canvas, area);
     }
-
-    public void setUsed(boolean isUsed) {
-        this.isUsed = isUsed;
-    }
-
 }

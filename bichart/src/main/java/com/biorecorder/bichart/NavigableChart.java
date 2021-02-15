@@ -85,7 +85,7 @@ public class NavigableChart {
 
     // navigator have all X axes synchronized (the same min and max)
     private void updateScrollsAndPreview(BCanvas canvas) {
-        Range chartDataMinMax = chart.getAllTracesFullMinMax();
+        Range chartDataMinMax = chart.getAllTracesXMinMax();
         if (chartDataMinMax == null) {
             return;
         }

@@ -21,8 +21,6 @@ public class Trace {
         this.yAxis = yAxis;
         this.name = name;
         this.color = traceColor;
-        xAxis.setUsed(true);
-        yAxis.setUsed(true);
     }
 
     public String getName() {

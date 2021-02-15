@@ -6,10 +6,14 @@ import com.biorecorder.bichart.graphics.BRectangle;
 import com.biorecorder.bichart.graphics.Range;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class TraceList {
     private List<Trace> traces = new ArrayList<>();
+    private Map<AxisWrapper, List<Trace>> xAxisToTraces = new HashMap<>();
+    private Map<AxisWrapper, List<Trace>> yAxisToTraces = new HashMap<>();
     private List<ChangeListener> changeListeners = new ArrayList<>(1);
     private int selectedTrace = -1; // -1 no selection
 
@@ -58,25 +62,40 @@ public class TraceList {
 
     public void add(Trace trace) {
         traces.add(trace);
+        AxisWrapper xAxis = trace.getXAxis();
+        AxisWrapper yAxis = trace.getYAxis();
+        List<Trace> xTraces = xAxisToTraces.get(xAxis);
+        if(xTraces == null) {
+            xTraces = new ArrayList<>();
+            xAxisToTraces.put(xAxis, xTraces);
+        }
+        xTraces.add(trace);
+
+        List<Trace> yTraces = yAxisToTraces.get(yAxis);
+        if(yTraces == null) {
+            yTraces = new ArrayList<>();
+            yAxisToTraces.put(yAxis, yTraces);
+        }
+        yTraces.add(trace);
         notifyChangeListeners();
     }
 
     public void remove(int traceIndex) {
         Trace traceToRemove = traces.get(traceIndex);
         traces.remove(traceIndex);
-        boolean isXUsed = false;
-        boolean isYUsed = false;
-        for (Trace trace : traces) {
-            if(trace.getXAxis() == traceToRemove.getXAxis()) {
-                isXUsed = true;
-            }
-            if(trace.getYAxis() == traceToRemove.getYAxis()) {
-                isYUsed = true;
-            }
+        AxisWrapper xAxis = traceToRemove.getXAxis();
+        AxisWrapper yAxis = traceToRemove.getYAxis();
+        List<Trace> xTraces = xAxisToTraces.get(xAxis);
+        xTraces.remove(traceToRemove);
+        if(xTraces.size() == 0) {
+            xAxisToTraces.remove(xAxis);
         }
-        traceToRemove.getXAxis().setUsed(isXUsed);
-        traceToRemove.getYAxis().setUsed(isYUsed);
-        notifyChangeListeners();
+        List<Trace> yTraces = yAxisToTraces.get(yAxis);
+        yTraces.remove(traceToRemove);
+        if(yTraces.size() == 0) {
+            yAxisToTraces.remove(yAxis);
+        }
+         notifyChangeListeners();
     }
 
 
@@ -89,32 +108,89 @@ public class TraceList {
         return  new BRectangle(x, y, (int) xAxis.length(), (int) yAxis.length());
     }
 
+    public boolean isXAxisUsed(AxisWrapper x) {
+        return xAxisToTraces.get(x) != null;
+    }
 
-    public boolean isStackUsed(AxisWrapper y1, AxisWrapper y2) {
-        for (Trace trace : traces) {
-            if(trace.getYAxis() == y1 || trace.getYAxis() == y2) {
-                return true;
-            }
-        }
-       return false;
+    public boolean isYAxisUsed(AxisWrapper y) {
+        return yAxisToTraces.get(y) != null;
     }
 
     public Range getTracesXMinMax(AxisWrapper xAxis) {
+        List<Trace> xTraces = xAxisToTraces.get(xAxis);
+        if(xTraces == null) {
+            return null;
+        }
         Range minMax = null;
-        for (Trace trace : traces) {
-            if(trace.getXAxis() == xAxis) {
-                minMax = Range.join(minMax, trace.xMinMax());
-            }
+        for (Trace trace : xTraces) {
+            minMax = Range.join(minMax, trace.xMinMax());
         }
         return minMax;
     }
 
     public Range getTracesYMinMax(AxisWrapper yAxis) {
+        List<Trace> yTraces = yAxisToTraces.get(yAxis);
+        if(yTraces == null) {
+            return null;
+        }
+        Range minMax = null;
+        for (Trace trace : yTraces) {
+            minMax = Range.join(minMax, trace.yMinMax());
+        }
+        return minMax;
+    }
+
+    public void autoScaleX(AxisWrapper xAxis){
+        Range xMinMax = getTracesXMinMax(xAxis);
+        if (xMinMax != null) {
+            xAxis.setMinMax(xMinMax.getMin(), xMinMax.getMax(), true);
+        }
+    }
+
+    public void autoScaleX() {
+        Range xMinMax = null;
+        if(selectedTrace >= 0) {
+            Trace selected = traces.get(selectedTrace);
+            xMinMax = selected.xMinMax();
+            if(xMinMax != null) {
+                selected.getXAxis().setMinMax(xMinMax.getMin(), xMinMax.getMax(), true);
+            }
+        } else {
+            for (AxisWrapper xAxis : xAxisToTraces.keySet()) {
+                autoScaleX(xAxis);
+            }
+        }
+    }
+
+    public void autoScaleY(AxisWrapper yAxis) {
+        Range yMinMax = getTracesYMinMax(yAxis);
+        if (yMinMax != null) {
+            yAxis.setMinMax(yMinMax.getMin(), yMinMax.getMax(), true);
+        }
+    }
+
+    public void autoScaleY() {
+        Range yMinMax = null;
+        if(selectedTrace >= 0) {
+            Trace selected = traces.get(selectedTrace);
+            yMinMax = selected.yMinMax();
+            if(yMinMax != null) {
+                selected.getYAxis().setMinMax(yMinMax.getMin(), yMinMax.getMax(), true);
+            }
+        } else {
+            for (AxisWrapper yAxis : yAxisToTraces.keySet()) {
+                autoScaleY(yAxis);
+            }
+        }
+    }
+
+
+
+    public Range getAllTracesXMinMax() {
         Range minMax = null;
         for (Trace trace : traces) {
-            if(trace.getYAxis() == yAxis) {
-                minMax = Range.join(minMax, trace.yMinMax());
-            }
+            Range traceXMinMax = trace.xMinMax();
+            minMax = Range.join(minMax, traceXMinMax);
         }
         return minMax;
     }
@@ -126,10 +202,13 @@ public class TraceList {
      * @param yAxis1, yAxis2 - right and left axis of the given stack
      */
     public AxisWrapper getUsedXAxis(AxisWrapper yAxis1, AxisWrapper yAxis2) {
-        for (Trace trace : traces) {
-            if(trace.getYAxis() == yAxis1 || trace.getYAxis() == yAxis2) {
-                return trace.getXAxis();
-            }
+        List<Trace> yTraces1 = yAxisToTraces.get(yAxis1);
+        if(yTraces1 != null) {
+            return yTraces1.get(0).getXAxis();
+        }
+        List<Trace> yTraces2 = yAxisToTraces.get(yAxis2);
+        if(yTraces2 != null) {
+            return yTraces2.get(0).getXAxis();
         }
         return null;
     }
@@ -147,16 +226,6 @@ public class TraceList {
             }
         }
         return extent;
-    }
-
-    // for all x axis
-    public Range getAllTracesFullMinMax() {
-        Range minMax = null;
-        for (Trace trace : traces) {
-            Range traceXMinMax = trace.xMinMax();
-            minMax = Range.join(minMax, traceXMinMax);
-        }
-        return minMax;
     }
 
     public int getSelection() {
@@ -201,6 +270,5 @@ public class TraceList {
         for (Trace trace : traces) {
             trace.draw(canvas);
         }
-
     }
 }

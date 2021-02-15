@@ -84,14 +84,13 @@ public class BRectangle {
                     (height == r.height));
         }
         return super.equals(obj);
-
     }
 
     /**
      * https://www.mkyong.com/java/java-how-to-overrides-equals-and-hashcode/
      * https://medium.com/codelog/overriding-hashcode-method-effective-java-notes-723c1fedf51c
      */
-    @Override
+/*    @Override
     public int hashCode() {
         int result = 17;
         result = 31 * result + x;
@@ -99,7 +98,7 @@ public class BRectangle {
         result = 31 * result + width;
         result = 31 * result + height;
         return result;
-    }
+    }*/
 
     @Override
     public String toString() {
