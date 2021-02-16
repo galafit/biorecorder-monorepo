@@ -681,19 +681,53 @@ public class Chart {
     }
 
     public void autoScaleX(int xIndex){
-       traceList.autoScaleX(xAxisList.get(xIndex));
+        AxisWrapper xAxis = xAxisList.get(xIndex);
+        Range xMinMax = traceList.getTracesXMinMax(xAxis);
+        if (xMinMax != null) {
+            xAxis.setMinMax(xMinMax.getMin(), xMinMax.getMax(), true);
+        }
     }
 
     public void autoScaleX() {
-        traceList.autoScaleX();
+        Range xMinMax = null;
+        int selectedTrace = traceList.getSelection();
+        if(selectedTrace >= 0) {
+            AxisWrapper xAxis = traceList.getTraceX(selectedTrace);
+            xMinMax = traceList.getTracesXMinMax(xAxis);
+            if(xMinMax != null) {
+               xAxis.setMinMax(xMinMax.getMin(), xMinMax.getMax(), true);
+            }
+        } else {
+            for (AxisWrapper xAxis : xAxisList) {
+                xMinMax = traceList.getTracesXMinMax(xAxis);
+                xAxis.setMinMax(xMinMax.getMin(), xMinMax.getMax(), true);
+            }
+        }
     }
 
     public void autoScaleY(int yIndex) {
-        traceList.autoScaleY(yAxisList.get(yIndex));
+        AxisWrapper yAxis = yAxisList.get(yIndex);
+        Range yMinMax = traceList.getTracesYMinMax(yAxis);;
+        if (yMinMax != null) {
+            yAxis.setMinMax(yMinMax.getMin(), yMinMax.getMax(), true);
+        }
     }
 
     public void autoScaleY() {
-        traceList.autoScaleY();
+        Range yMinMax = null;
+        int selectedTrace = traceList.getSelection();
+        if(selectedTrace >= 0) {
+            AxisWrapper yAxis = traceList.getTraceY(selectedTrace);
+            yMinMax = traceList.getTracesYMinMax(yAxis);
+            if(yMinMax != null) {
+                yAxis.setMinMax(yMinMax.getMin(), yMinMax.getMax(), true);
+            }
+        } else {
+            for (AxisWrapper yAxis : yAxisList) {
+                yMinMax = traceList.getTracesXMinMax(yAxis);
+                yAxis.setMinMax(yMinMax.getMin(), yMinMax.getMax(), true);
+            }
+        }
     }
 
     public void autoScaleY(int stack, YAxisPosition yPosition) {

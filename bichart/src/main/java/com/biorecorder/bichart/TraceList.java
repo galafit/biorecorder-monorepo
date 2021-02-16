@@ -98,7 +98,6 @@ public class TraceList {
          notifyChangeListeners();
     }
 
-
     public BRectangle getTraceStackArea(int traceIndex) {
         Trace t = traces.get(traceIndex);
         AxisWrapper xAxis = t.getXAxis();
@@ -107,6 +106,7 @@ public class TraceList {
         int y =  (int) Math.min(yAxis.getStart(), yAxis.getEnd());
         return  new BRectangle(x, y, (int) xAxis.length(), (int) yAxis.length());
     }
+    
 
     public boolean isXAxisUsed(AxisWrapper x) {
         return xAxisToTraces.get(x) != null;
@@ -138,50 +138,6 @@ public class TraceList {
             minMax = Range.join(minMax, trace.yMinMax());
         }
         return minMax;
-    }
-
-    public void autoScaleX(AxisWrapper xAxis){
-        Range xMinMax = getTracesXMinMax(xAxis);
-        if (xMinMax != null) {
-            xAxis.setMinMax(xMinMax.getMin(), xMinMax.getMax(), true);
-        }
-    }
-
-    public void autoScaleX() {
-        Range xMinMax = null;
-        if(selectedTrace >= 0) {
-            Trace selected = traces.get(selectedTrace);
-            xMinMax = selected.xMinMax();
-            if(xMinMax != null) {
-                selected.getXAxis().setMinMax(xMinMax.getMin(), xMinMax.getMax(), true);
-            }
-        } else {
-            for (AxisWrapper xAxis : xAxisToTraces.keySet()) {
-                autoScaleX(xAxis);
-            }
-        }
-    }
-
-    public void autoScaleY(AxisWrapper yAxis) {
-        Range yMinMax = getTracesYMinMax(yAxis);
-        if (yMinMax != null) {
-            yAxis.setMinMax(yMinMax.getMin(), yMinMax.getMax(), true);
-        }
-    }
-
-    public void autoScaleY() {
-        Range yMinMax = null;
-        if(selectedTrace >= 0) {
-            Trace selected = traces.get(selectedTrace);
-            yMinMax = selected.yMinMax();
-            if(yMinMax != null) {
-                selected.getYAxis().setMinMax(yMinMax.getMin(), yMinMax.getMax(), true);
-            }
-        } else {
-            for (AxisWrapper yAxis : yAxisToTraces.keySet()) {
-                autoScaleY(yAxis);
-            }
-        }
     }
 
 
