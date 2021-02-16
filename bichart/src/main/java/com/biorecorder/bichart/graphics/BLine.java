@@ -15,4 +15,10 @@ public class BLine {
         this.x2 = x2;
         this.y2 = y2;
     }
+
+    public int length() {
+        int dx = x2 - x1;
+        int dy = y2 - y1;
+        return (int) Math.sqrt(dx * dx + dy * dy);
+    }
 }

@@ -17,21 +17,21 @@ class AxisPainter {
 
     private AxisConfig config;
     private Orientation orientation;
-    private Scale scale;
-    private double tickInterval;
 
     private List<BText> tickLabels = new ArrayList<>();
     private IntArrayList tickPositions = new IntArrayList();
     private IntArrayList minorTickPositions = new IntArrayList();
     private BText titleText;
+    private BLine axisLine;
+    private int axisLength;
     private int widthOut;
 
     public AxisPainter(Scale scale, AxisConfig axisConfig, Orientation orientation, RenderContext renderContext, String title, double tickInterval,  boolean isRoundingEnabled) {
-        this.scale = scale;
         this.config = axisConfig;
         this.orientation = orientation;
-        this.tickInterval = tickInterval;
-        createAxisElements(renderContext, isRoundingEnabled, title);
+        axisLength = (int) scale.getLength();
+        axisLine = orientation.createAxisLine((int)Math.round(scale.getStart()), (int)Math.round(scale.getEnd()));
+        createAxisElements(renderContext, scale, tickInterval, isRoundingEnabled, title);
     }
 
     public int getWidthOut() {
@@ -40,7 +40,7 @@ class AxisPainter {
 
     private boolean isTooShort() {
         int lengthMin = config.getTickLabelTextStyle().getSize() * 3;
-        if (length() > lengthMin) {
+        if (axisLength > lengthMin) {
             return false;
         }
         return true;
@@ -66,10 +66,6 @@ class AxisPainter {
             }
         }
         return -1;
-    }
-
-    public double length() {
-        return Math.abs(scale.getEnd() - scale.getStart());
     }
 
     public void drawCrosshair(BCanvas canvas, BRectangle area, int position) {
@@ -141,17 +137,14 @@ class AxisPainter {
         if (config.getAxisLineWidth() > 0) {
             canvas.setColor(config.getAxisLineColor());
             canvas.setStroke(config.getAxisLineWidth(), config.getAxisLineDashStyle());
-            canvas.drawLine(orientation.createAxisLine((int)Math.round(scale.getStart()), (int)Math.round(scale.getEnd())));
+            canvas.drawLine(axisLine);
         }
 
         canvas.restore();
     }
 
-    private boolean isTickIntervalSpecified() {
-        return tickInterval > 0;
-    }
 
-    private List<Tick> generateTicks(TickProvider tickProvider, boolean isRoundingEnabled) {
+    private List<Tick> generateTicks(TickProvider tickProvider, Scale scale, boolean isRoundingEnabled) {
         double min = scale.getMin();
         double max = scale.getMax();
 
@@ -190,26 +183,27 @@ class AxisPainter {
     }
 
     // create ticks and fix overlapping
-    private List<Tick> createValidTicks(TextMetric tm, boolean isRoundingEnabled) {
+    private List<Tick> createValidTicks(TextMetric tm, Scale scale, double tickInterval, boolean isRoundingEnabled) {
         if (isTooShort()) {
             return new ArrayList<>(0);
         }
 
         TickProvider tickProvider;
-        if (isTickIntervalSpecified()) {
+        // if tick interval specified (tickInterval > 0)
+        if (tickInterval > 0) {
             tickProvider = scale.getTickProviderByInterval(tickInterval, config.getTickLabelPrefixAndSuffix());
         } else {
             int tickIntervalCount;
             int fontFactor = 4;
             double tickPixelInterval = fontFactor * config.getTickLabelTextStyle().getSize();
-            tickIntervalCount = (int) (length() / tickPixelInterval);
+            tickIntervalCount = (int)(scale.getLength() / tickPixelInterval);
             tickIntervalCount = Math.max(tickIntervalCount, MIN_TICK_COUNT);
             tickProvider = scale.getTickProviderByIntervalCount(tickIntervalCount, config.getTickLabelPrefixAndSuffix());
         }
 
         double min = scale.getMin();
         double max = scale.getMax();
-        List<Tick> ticks = generateTicks(tickProvider, isRoundingEnabled);
+        List<Tick> ticks = generateTicks(tickProvider, scale, isRoundingEnabled);
 
         // Calculate how many ticks need to be skipped to avoid labels overlapping.
         // When ticksSkipStep = n, only every n'th label on the axis will be shown.
@@ -226,7 +220,7 @@ class AxisPainter {
             if (tickPixelInterval < requiredSpaceForTickLabel) {
                 if(isRoundingEnabled) {
                     // need to take into account that some extra ticks will be added
-                    int n = Math.max(1, (int)length() / requiredSpaceForTickLabel);
+                    int n = Math.max(1, axisLength / requiredSpaceForTickLabel);
                     ticksSkipStep = (tickIntervalCount + tickIntervalCount % n) / n;
                 } else {
                     ticksSkipStep = (int) (requiredSpaceForTickLabel / tickPixelInterval);
@@ -244,7 +238,7 @@ class AxisPainter {
             //if (!isRoundingEnabled && ticksSkipStep > 1 && (ticks.size() - 1) / ticksSkipStep >= 1) {
             if (ticksSkipStep > 1 && (ticks.size() - 1) / ticksSkipStep >= 1) {
                 tickProvider.increaseTickInterval(ticksSkipStep);
-                ticks = generateTicks(tickProvider, isRoundingEnabled);
+                ticks = generateTicks(tickProvider, scale, isRoundingEnabled);
                 ticksSkipStep = 1;
             }
         }
@@ -318,12 +312,12 @@ class AxisPainter {
     }
 
 
-    public void createAxisElements(RenderContext renderContext, boolean isRoundingEnabled, String title) {
+    public void createAxisElements(RenderContext renderContext, Scale scale, double tickInterval, boolean isRoundingEnabled, String title) {
         tickPositions = new IntArrayList();
         minorTickPositions = new IntArrayList();
         tickLabels = new ArrayList<>();
         TextMetric labelTM = renderContext.getTextMetric(config.getTickLabelTextStyle());
-        List<Tick> ticks = createValidTicks(labelTM, isRoundingEnabled);
+        List<Tick> ticks = createValidTicks(labelTM, scale, tickInterval, isRoundingEnabled);
 
         widthOut = config.getAxisLineWidth() / 2;
         if(ticks.size() == 0) {
@@ -333,7 +327,6 @@ class AxisPainter {
         widthOut += config.getTickMarkOutsideSize();
         if (config.isTickLabelOutside()) {
             widthOut += config.getTickPadding() + orientation.labelSizeForWidth(labelTM, ticks);
-
         }
         if (! StringUtils.isNullOrBlank(title)) {
             TextMetric titleTM = renderContext.getTextMetric(config.getTitleTextStyle());

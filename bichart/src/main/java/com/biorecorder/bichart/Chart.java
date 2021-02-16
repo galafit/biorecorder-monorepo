@@ -700,7 +700,9 @@ public class Chart {
         } else {
             for (AxisWrapper xAxis : xAxisList) {
                 xMinMax = traceList.getTracesXMinMax(xAxis);
-                xAxis.setMinMax(xMinMax.getMin(), xMinMax.getMax(), true);
+                if(xMinMax != null) {
+                    xAxis.setMinMax(xMinMax.getMin(), xMinMax.getMax(), true);
+                }
             }
         }
     }
@@ -724,8 +726,10 @@ public class Chart {
             }
         } else {
             for (AxisWrapper yAxis : yAxisList) {
-                yMinMax = traceList.getTracesXMinMax(yAxis);
-                yAxis.setMinMax(yMinMax.getMin(), yMinMax.getMax(), true);
+                yMinMax = traceList.getTracesYMinMax(yAxis);
+                if(yMinMax != null) {
+                    yAxis.setMinMax(yMinMax.getMin(), yMinMax.getMax(), true);
+                }
             }
         }
     }
