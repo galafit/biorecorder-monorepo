@@ -106,7 +106,17 @@ public class TraceList {
         int y =  (int) Math.min(yAxis.getStart(), yAxis.getEnd());
         return  new BRectangle(x, y, (int) xAxis.length(), (int) yAxis.length());
     }
-    
+    public boolean isXAxisUsedByStack(AxisWrapper x, AxisWrapper y1, AxisWrapper y2) {
+        List<Trace> xTraces = xAxisToTraces.get(x);
+        if(xTraces != null) {
+            for (Trace trace : xTraces) {
+                if(trace.getYAxis() == y1 || trace.getYAxis() == y2) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
     public boolean isXAxisUsed(AxisWrapper x) {
         return xAxisToTraces.get(x) != null;

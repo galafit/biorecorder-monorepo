@@ -449,18 +449,19 @@ public class Chart {
         }
         // draw X axes grids separately for every stack
         for (int stack = 0; stack < stackCount; stack++) {
-            AxisWrapper yAxis = yAxisList.get(2 * stack);
-            BRectangle stackArea = new BRectangle(graphArea.x, (int) yAxis.getEnd(), graphArea.width, (int) yAxis.length());
+            AxisWrapper y1 = yAxisList.get(2 * stack);
+            AxisWrapper y2 = yAxisList.get(2 * stack + 1);
+            BRectangle stackArea = new BRectangle(graphArea.x, (int) y1.getEnd(), graphArea.width, (int) y1.length());
             int bottomAxisIndex = xPositionToIndex(XAxisPosition.BOTTOM);
             int topAxisIndex = xPositionToIndex(XAxisPosition.TOP);
             AxisWrapper bottomAxis = xAxisList.get(bottomAxisIndex);
             AxisWrapper topAxis = xAxisList.get(topAxisIndex);
-            if (!traceList.isXAxisUsed(bottomAxis) && !traceList.isXAxisUsed(topAxis)) {
+            if (!traceList.isXAxisUsedByStack(bottomAxis, y1, y2) && !traceList.isXAxisUsedByStack(topAxis, y1, y2)) {
                 // do nothing
-            } else if (!traceList.isXAxisUsed(bottomAxis)) {
-                topAxis.drawGrid(canvas, stackArea);
-            } else if (!traceList.isXAxisUsed(topAxis)) {
+            } else if (traceList.isXAxisUsedByStack(bottomAxis, y1, y2)) {
                 bottomAxis.drawGrid(canvas, stackArea);
+            } else if (traceList.isXAxisUsedByStack(topAxis, y1, y2)) {
+                topAxis.drawGrid(canvas, stackArea);
             } else { // both axis used
                 AxisWrapper primaryXAxis = xAxisList.get(xPositionToIndex(config.getPrimaryXPosition()));
                 primaryXAxis.drawGrid(canvas, stackArea);

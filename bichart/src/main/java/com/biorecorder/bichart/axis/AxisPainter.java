@@ -236,7 +236,14 @@ class AxisPainter {
             }
             // commented string gives more precise rounding but tick numbers are not so "round" and nice
             //if (!isRoundingEnabled && ticksSkipStep > 1 && (ticks.size() - 1) / ticksSkipStep >= 1) {
-            if (ticksSkipStep > 1 && (ticks.size() - 1) / ticksSkipStep >= 1) {
+            boolean isTickIntervalCanBeIncreased = false;
+            if(!isRoundingEnabled && ticksSkipStep > 1 && (ticks.size() - 1) / ticksSkipStep > 1) {
+                isTickIntervalCanBeIncreased = true;
+            }
+            if(isRoundingEnabled && ticksSkipStep > 1 && (ticks.size() - 1) / ticksSkipStep >= 1) {
+                isTickIntervalCanBeIncreased = true;
+            }
+            if (isTickIntervalCanBeIncreased) {
                 tickProvider.increaseTickInterval(ticksSkipStep);
                 ticks = generateTicks(tickProvider, scale, isRoundingEnabled);
                 ticksSkipStep = 1;
