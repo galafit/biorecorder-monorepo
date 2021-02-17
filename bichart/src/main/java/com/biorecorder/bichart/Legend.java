@@ -8,15 +8,16 @@ class Legend {
     private TraceList traceList;
     private boolean isAttachedToStacks = true;
     private LegendPainter painter;
-    private int width = 0;
+    private int width;
     // top left corner
     int x = 0;
     int y = 0;
 
-    public Legend(LegendConfig config, TraceList traceList, boolean isAttachedToStacks){
+    public Legend(LegendConfig config, TraceList traceList, int width, boolean isAttachedToStacks){
         this.config = config;
         this.traceList = traceList;
         this.isAttachedToStacks = isAttachedToStacks;
+        this.width = width;
         traceList.addChangeListener(new ChangeListener() {
             @Override
             public void onChange() {
@@ -29,10 +30,6 @@ class Legend {
         painter = null;
     }
 
-    public void setConfig(LegendConfig config) {
-        this.config = config;
-        invalidate();
-    }
 
     public boolean selectTrace(int x, int y) {
         if (painter != null) {
@@ -50,12 +47,6 @@ class Legend {
         return false;
     }
 
-    public void setWidth(int width) {
-        if(this.width != width) {
-            this.width = width;
-            invalidate();
-        }
-    }
     public BDimension getPrefferedSize(RenderContext renderContext) {
         revalidate(renderContext);
         return painter.getPrefferedSize();

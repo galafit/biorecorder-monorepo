@@ -21,7 +21,7 @@ public class Chart {
     private boolean isLegendEnabled = true;
     private boolean isLegendAttachedToStacks = true;
     private Insets fixedMargin;
-
+    private Insets margin;
     /*
      * 2 X-axis: 0(even) - BOTTOM and 1(odd) - TOP
      * 2 Y-axis for every section(stack): even - LEFT and odd - RIGHT;
@@ -36,11 +36,9 @@ public class Chart {
     private Legend legend;
     private Title title;
     private Tooltip tooltip;
-
-    private BRectangle graphArea = new BRectangle(0, 0, 0, 0);
     private int width;
     private int height;
-    private boolean isValid = true;
+    private boolean isValid = false;
 
     public Chart() {
         this(DarkTheme.getChartConfig());
@@ -54,6 +52,14 @@ public class Chart {
         xAxisList.add(topAxis);
         addStack();
         tooltip = new Tooltip(config.getTooltipConfig());
+        traceList.addChangeListener(new ChangeListener() {
+            @Override
+            public void onChange() {
+                if(isLegendEnabled && !isLegendAttachedToStacks) {
+                    invalidate();
+                }
+            }
+        });
     }
 
     private void invalidate() {
@@ -61,35 +67,34 @@ public class Chart {
         legend = null;
     }
 
-    private Legend createLegend() {
-        Legend l = new Legend(config.getLegendConfig(), traceList, isLegendAttachedToStacks);
-        l.setWidth(width);
-        return l;
+    private BRectangle graphArea() {
+        int graphAreaWidth = width - margin.left() - margin.right();
+        int graphAreaHeight = height - margin.top() - margin.bottom();
+        if (graphAreaHeight < 0) {
+            graphAreaHeight = 0;
+        }
+        if (graphAreaWidth < 0) {
+            graphAreaWidth = 0;
+        }
+        return new BRectangle(margin.left(), margin.top(), graphAreaWidth, graphAreaHeight);
     }
 
     public void revalidate(RenderContext renderContext) {
         if(isValid){
             return;
         }
-        graphArea = new BRectangle(0, 0, width, height);
+        margin = new Insets(0);
         if (width == 0 || height == 0) {
             return;
         }
         if (fixedMargin != null) { // fixed margin
-            int graphAreaWidth = width - fixedMargin.left() - fixedMargin.right();
-            int graphAreaHeight = height - fixedMargin.top() - fixedMargin.bottom();
-            if (graphAreaHeight < 0) {
-                graphAreaHeight = 0;
-            }
-            if (graphAreaWidth < 0) {
-                graphAreaWidth = 0;
-            }
-            graphArea = new BRectangle(fixedMargin.left(), fixedMargin.top(), graphAreaWidth, graphAreaHeight);
+            margin = fixedMargin;
+            BRectangle graphArea = graphArea();
             setXStartEnd(graphArea.x, graphArea.width);
             setYStartEnd(graphArea.y, graphArea.height);
             if(isLegendEnabled) {
-                legend = createLegend();
-             }
+                legend = new Legend(config.getLegendConfig(), traceList, width, isLegendAttachedToStacks);
+            }
             return;
         }
 
@@ -100,7 +105,7 @@ public class Chart {
         int top = titleHeight;
         int bottom = 0;
         if(isLegendEnabled && !isLegendAttachedToStacks) {
-            legend = createLegend();
+            legend = new Legend(config.getLegendConfig(), traceList, width, isLegendAttachedToStacks);
             BDimension legendPrefSize = legend.getPrefferedSize(renderContext);
             if(legend.isTop()) {
                 legend.moveTo(0, titleHeight);
@@ -112,8 +117,7 @@ public class Chart {
                 legend.moveTo(0, titleHeight + (height - titleHeight)/2);
             }
         }
-
-        setXStartEnd(graphArea.x, graphArea.width);
+        setXStartEnd(0, width);
         AxisWrapper topAxis = xAxisList.get(xPositionToIndex(XAxisPosition.TOP));
         AxisWrapper bottomAxis = xAxisList.get(xPositionToIndex(XAxisPosition.BOTTOM));
         if(traceList.isXAxisUsed(topAxis)) {
@@ -123,7 +127,9 @@ public class Chart {
             bottom += bottomAxis.getWidth(renderContext);
         }
 
-        setYStartEnd(top, height - top - bottom);
+        margin = new Insets(top, 0, bottom, 0);
+        BRectangle graphArea = graphArea();
+        setYStartEnd(graphArea.y, graphArea.height);
         int left = 0;
         int right = 0;
         for (int i = 0; i < yAxisList.size(); i++) {
@@ -136,13 +142,13 @@ public class Chart {
                 }
             }
         }
-        graphArea = new BRectangle(left, top,
-                Math.max(0, width - left - right), Math.max(0, height - top - bottom));
+        margin = new Insets(top, right, bottom, left);
+        graphArea = graphArea();
 
         // adjust XAxis ranges
         setXStartEnd(graphArea.x, graphArea.width);
         if(isLegendEnabled && isLegendAttachedToStacks) {
-            legend = createLegend();
+            legend = new Legend(config.getLegendConfig(), traceList, width, isLegendAttachedToStacks);
         }
         isValid = true;
     }
@@ -232,7 +238,7 @@ public class Chart {
 
     private void setAxisMinMax(AxisWrapper axis, double min, double max, boolean isAutoscale) {
         axis.setMinMax(min, max, isAutoscale);
-        if(axis.isVertical() || axis.isTickLabelOutside()) {
+        if(axis.isSizeDependsOnMinMax()) {
             invalidate();
         }
     }
@@ -265,6 +271,13 @@ public class Chart {
      * Protected method for careful use                            *
      * ==============================================================
      */
+
+    Insets getMargin(RenderContext renderContext) {
+        if(!isValid) {
+            revalidate(renderContext);
+        }
+        return margin;
+    }
 
     double getBestExtent(XAxisPosition xAxisPosition, RenderContext renderContext) {
         AxisWrapper xAxis = xAxisList.get(xPositionToIndex(xAxisPosition));
@@ -404,7 +417,7 @@ public class Chart {
     }
 
     public boolean hoverOn(int x, int y) {
-        if (!graphArea.contains(x, y)) {
+        if (!graphArea().contains(x, y)) {
             return hoverOff();
         }
         return tooltip.setHoverPoint(traceList.getNearest(x, y));
@@ -414,6 +427,7 @@ public class Chart {
         if(!isValid) {
             revalidate(canvas.getRenderContext());
         }
+        BRectangle graphArea = graphArea();
         if (width == 0 || height == 0) {
             return;
         }
@@ -510,9 +524,6 @@ public class Chart {
         if(title != null) {
             title.setConfig(this.config.getTitleConfig());
         }
-        if(legend != null) {
-            legend.setConfig(config.getLegendConfig());
-        }
         for (int i = 0; i < xAxisList.size(); i++) {
             xAxisList.get(i).setConfig(this.config.getXAxisConfig());
         }
@@ -530,14 +541,6 @@ public class Chart {
     public void setTitle(String title) {
         this.title = new Title(title, config.getTitleConfig());
         invalidate();
-    }
-
-    public void setTraceColor(int traceIndex, BColor color) {
-        traceList.setColor(traceIndex, color);
-    }
-
-    public void setTraceName(int traceIndex, String name) {
-        traceList.setName(traceIndex, name);
     }
 
     public void setTraceData(int traceIndex, ChartData data) {
@@ -623,6 +626,14 @@ public class Chart {
         traceList.add(trace);
     }
 
+    public void setTraceName(int traceIndex, String name) {
+        traceList.setName(traceIndex, name);
+    }
+
+    public void setTraceColor(int traceIndex, BColor color) {
+        traceList.setColor(traceIndex, color);
+    }
+
     public @Nullable StringSequence getXLabels(ChartData data) {
         if (!data.isNumberColumn(0)) {
             return new StringSequence() {
@@ -649,9 +660,6 @@ public class Chart {
         this.height = height;
         if(title != null) {
             title.setWidth(width);
-        }
-        if(legend != null) {
-            legend.setWidth(width);
         }
         invalidate();
     }

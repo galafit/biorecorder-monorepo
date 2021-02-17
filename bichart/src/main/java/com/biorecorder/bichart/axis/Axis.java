@@ -149,12 +149,9 @@ public class Axis {
         }
         return false;
     }
-    public boolean isTickLabelOutside() {
-        return config.isTickLabelOutside();
-    }
 
-    public boolean isVertical() {
-        return orientation.isVertical();
+    public boolean isSizeDependsOnMinMax() {
+        return orientation.isVertical() && config.isTickLabelOutside();
     }
 
     public double getMin() {

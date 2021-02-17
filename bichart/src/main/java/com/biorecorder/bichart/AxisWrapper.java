@@ -110,10 +110,6 @@ class AxisWrapper {
         return new Range(minNew, maxNew);
     }
 
-    public boolean isTickLabelOutside() {
-        return axis.isTickLabelOutside();
-    }
-
     /**
      * return true if axis start or end actually changed
      */
@@ -133,10 +129,9 @@ class AxisWrapper {
         return axis.setMinMax(min, max);
     }
 
-    public boolean isVertical() {
-        return axis.isVertical();
+    public boolean isSizeDependsOnMinMax() {
+        return axis.isSizeDependsOnMinMax();
     }
-
     public double getMin() {
         return axis.getMin();
     }
