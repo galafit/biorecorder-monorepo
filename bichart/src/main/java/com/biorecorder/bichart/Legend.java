@@ -1,58 +1,40 @@
 package com.biorecorder.bichart;
 
-import com.biorecorder.bichart.button.SwitchButton;
 import com.biorecorder.bichart.graphics.*;
 
-import java.util.ArrayList;
-import java.util.List;
 
 class Legend {
     private LegendConfig config;
     private TraceList traceList;
+    private boolean isAttachedToStacks = true;
     private LegendPainter painter;
     private int width = 0;
     // top left corner
     int x = 0;
     int y = 0;
-    private List<SizeChangeListener> listeners = new ArrayList<>(1);
-    public Legend(LegendConfig config, TraceList traceList){
+
+    public Legend(LegendConfig config, TraceList traceList, boolean isAttachedToStacks){
         this.config = config;
         this.traceList = traceList;
+        this.isAttachedToStacks = isAttachedToStacks;
         traceList.addChangeListener(new ChangeListener() {
             @Override
             public void onChange() {
-                if(!config.isAttachedToStacks()) {
-                    invalidate(true);
-                } else {
-                    invalidate(false);
-                }
+                invalidate();
             }
         });
     }
 
-    public void onParentContainerRearranged() {
-        if(config.isAttachedToStacks()) {
-            invalidate(false);
-        }
-    }
-
-    public void addSizeChangeListener(SizeChangeListener l) {
-        listeners.add(l);
-    }
-
-    private void invalidate(boolean isSizeChanged) {
+    private void invalidate() {
         painter = null;
-        if(isSizeChanged) {
-            for (SizeChangeListener l : listeners) {
-                l.onSizeChanged();
-            }
-        }
+    }
+
+    public void setConfig(LegendConfig config) {
+        this.config = config;
+        invalidate();
     }
 
     public boolean selectTrace(int x, int y) {
-        if (!config.isEnabled()) {
-            return false;
-        }
         if (painter != null) {
             int index = painter.findButton(x, y);
             if (index >= 0) {
@@ -71,17 +53,10 @@ class Legend {
     public void setWidth(int width) {
         if(this.width != width) {
             this.width = width;
-            if(!config.isAttachedToStacks()) {
-                invalidate(true);
-            } else {
-                invalidate(false);
-            }
+            invalidate();
         }
     }
     public BDimension getPrefferedSize(RenderContext renderContext) {
-        if (!config.isEnabled() || config.isAttachedToStacks()) {
-            return new BDimension(0, 0);
-        }
         revalidate(renderContext);
         return painter.getPrefferedSize();
     }
@@ -100,9 +75,7 @@ class Legend {
     }
 
     public void revalidate(RenderContext renderContext) {
-        if (config.isEnabled() && painter == null) {
-            painter = new LegendPainter(renderContext, traceList, config, x, y, width);
-        }
+        painter = new LegendPainter(renderContext, traceList, config, isAttachedToStacks, x, y, width);
     }
 
     public boolean isTop() {
@@ -119,19 +92,8 @@ class Legend {
         return false;
     }
 
-    public void setConfig(LegendConfig newConfig) {
-        this.config = newConfig;
-        if(config.isAttachedToStacks() && newConfig.isAttachedToStacks()) {
-            invalidate(false);
-        } else {
-            invalidate(true);
-        }
-    }
 
     public void draw(BCanvas canvas) {
-        if (!config.isEnabled()) {
-            return;
-        }
         revalidate(canvas.getRenderContext());
         painter.draw(canvas, new TraceColorsAndSelections(traceList));
     }

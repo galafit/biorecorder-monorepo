@@ -742,23 +742,6 @@ public class NavigableChart {
         chart.setYScale(stack, yPosition, scale);
     }
 
-    public void setChartXConfig(XAxisPosition xPosition, AxisConfig axisConfig) {
-        chart.setXConfig(xPosition, axisConfig);
-    }
-
-    public void setChartYConfig(int stack, YAxisPosition yPosition, AxisConfig axisConfig) {
-        chart.setYConfig(stack, yPosition, axisConfig);
-    }
-
-    public AxisConfig getChartXConfig(XAxisPosition xPosition) {
-        return chart.getXConfig(xPosition);
-    }
-
-    public AxisConfig getChartYConfig(int stack, YAxisPosition yPosition) {
-        return chart.getYConfig(stack, yPosition);
-    }
-
-
     public void setChartTraceColor(int trace, BColor color) {
         chart.setTraceColor(trace, color);
     }
@@ -864,14 +847,6 @@ public class NavigableChart {
 
     public void setNavigatorYScale(int stack, YAxisPosition yPosition, Scale scale) {
         navigator.setYScale(stack, yPosition, scale);
-    }
-
-    public void setNavigatorXConfig(XAxisPosition xPosition, AxisConfig axisConfig) {
-        navigator.setXConfig(xPosition, axisConfig);
-    }
-
-    public void setNavigatorYConfig(int stack, YAxisPosition yPosition, AxisConfig axisConfig) {
-        navigator.setYConfig(stack, yPosition, axisConfig);
     }
 
     public void setNavigatorXPrefixAndSuffix(XAxisPosition xPosition, @Nullable String prefix, @Nullable String suffix) {

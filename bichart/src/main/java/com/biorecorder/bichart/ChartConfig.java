@@ -19,7 +19,6 @@ public class ChartConfig {
     private LegendConfig legendConfig = new LegendConfig();
     private TooltipConfig tooltipConfig = new TooltipConfig();
 
-    private Insets margin;
     private Insets spacing;
     private int autoSpacing = 5; //px taken into account only if spacing is null
 
@@ -63,7 +62,6 @@ public class ChartConfig {
         legendConfig = new LegendConfig(chartConfig.legendConfig);
         tooltipConfig = new TooltipConfig(chartConfig.tooltipConfig);
         spacing = chartConfig.spacing;
-        margin = chartConfig.margin;
         autoSpacing = chartConfig.autoSpacing;
         stackGap = chartConfig.stackGap;
         yAxisConfig = new AxisConfig(chartConfig.yAxisConfig);
@@ -79,17 +77,6 @@ public class ChartConfig {
 
     public void setStackGap(int stackGap) {
         this.stackGap = stackGap;
-    }
-
-    public Insets getMargin() {
-        return margin;
-    }
-
-    /**
-     * if null (default) margins will be calculated automatically
-     */
-    public void setMargin(@Nullable Insets margin) {
-        this.margin = margin;
     }
 
     public Insets getSpacing() {

@@ -8,7 +8,6 @@ import com.sun.istack.internal.Nullable;
  * Created by galafit on 18/8/17.
  */
 public class LegendConfig {
-    private boolean isEnabled = true;
     private TextStyle textStyle = new TextStyle(TextStyle.DEFAULT, TextStyle.NORMAL, 12);
     private HorizontalAlign horizontalAlign = HorizontalAlign.LEFT;
     private VerticalAlign verticalAlign = VerticalAlign.TOP;
@@ -16,7 +15,6 @@ public class LegendConfig {
     private BColor backgroundColor = BColor.WHITE;
     private Insets buttonsMargin;
     private Insets legendMargin = new Insets(3);
-    private boolean isAttachedToStacks = true;
 
     private int interItemSpace = 0;
     private int interLineSpace = 1;
@@ -27,13 +25,11 @@ public class LegendConfig {
     public LegendConfig(LegendConfig legendConfig) {
         backgroundColor = legendConfig.backgroundColor;
         buttonsMargin = legendConfig.buttonsMargin;
-        isAttachedToStacks = legendConfig.isAttachedToStacks;
         textStyle = legendConfig.textStyle;
         verticalAlign = legendConfig.verticalAlign;
         horizontalAlign = legendConfig.horizontalAlign;
         interItemSpace = legendConfig.interItemSpace;
         interLineSpace = legendConfig.interLineSpace;
-        isEnabled = legendConfig.isEnabled;
         borderWidth = legendConfig.borderWidth;
         legendMargin = legendConfig.legendMargin;
     }
@@ -57,14 +53,6 @@ public class LegendConfig {
         this.borderWidth = borderWidth;
     }
 
-    public boolean isEnabled() {
-        return isEnabled;
-    }
-
-    public void setEnabled(boolean isEnabled) {
-        this.isEnabled = isEnabled;
-    }
-
     public int getInterItemSpace() {
         return interItemSpace;
     }
@@ -79,14 +67,6 @@ public class LegendConfig {
 
     public void setInterLineSpace(int interLineSpace) {
         this.interLineSpace = interLineSpace;
-    }
-
-    public boolean isAttachedToStacks() {
-        return isAttachedToStacks;
-    }
-
-    public void setAttachedToStacks(boolean attachedToStacks) {
-        isAttachedToStacks = attachedToStacks;
     }
 
     public HorizontalAlign getHorizontalAlign() {

@@ -3,9 +3,6 @@ package com.biorecorder.bichart;
 import com.biorecorder.bichart.graphics.*;
 import com.biorecorder.bichart.utils.StringUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-
 class Title {
     int x = 0;
     int y = 0;
@@ -14,22 +11,13 @@ class Title {
     private TitleConfig config;
     private TitlePainter painter;
 
-    private List<SizeChangeListener> listeners = new ArrayList<>(1);
-
     public Title(String title, TitleConfig config) {
         this.config = config;
         this.title = title;
     }
 
-    public void addSizeChangeListener(SizeChangeListener l) {
-        listeners.add(l);
-    }
-
     private void invalidate() {
         painter = null;
-        for (SizeChangeListener l : listeners) {
-            l.onSizeChanged();
-        }
     }
 
     public void setWidth(int width) {
@@ -58,18 +46,12 @@ class Title {
         this.y = y;
     }
 
-
     public BDimension getPrefferedSize(RenderContext renderContext) {
         if (isNullOrBlank()) {
             return new BDimension(0, 0);
         }
         revalidate(renderContext);
         return painter.getPrefferedSize();
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-        invalidate();
     }
 
     public void setConfig(TitleConfig config) {

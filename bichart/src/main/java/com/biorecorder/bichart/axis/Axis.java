@@ -1,6 +1,5 @@
 package com.biorecorder.bichart.axis;
 
-import com.biorecorder.bichart.SizeChangeListener;
 import com.biorecorder.bichart.graphics.*;
 import com.biorecorder.bichart.scales.*;
 
@@ -20,8 +19,6 @@ public class Axis {
     private AxisPainter painter;
     private AxisConfig config;
     private Orientation orientation;
-    
-    private List<SizeChangeListener> listeners = new ArrayList<>(1);
 
     private boolean isStartEndOnTick = false;
     private double tickInterval = -1; // in axis domain units (If <= 0 will not be taken into account)
@@ -51,22 +48,12 @@ public class Axis {
         isStartEndOnTick = true;
     }
 
-    public void addSizeChangeListener(SizeChangeListener l) {
-        listeners.add(l);
-    }
-
-    public void invalidate(boolean isSizeChanged) {
+    public void invalidate() {
         painter = null;
-        if (isSizeChanged) {
-            for (SizeChangeListener l : listeners) {
-                l.onSizeChanged();
-            }
-        }
     }
 
     public void setTitle(String title) {
         this.title = title;
-        invalidate(true);
     }
 
     public double getTickInterval() {
@@ -79,11 +66,7 @@ public class Axis {
      */
     public void setTickInterval(double tickInterval) {
         this.tickInterval = tickInterval;
-        boolean sizeChange = false;
-        if(orientation.isVertical() && config.isTickLabelOutside()) {
-            sizeChange = true;
-        }
-        invalidate(sizeChange);
+        invalidate();
     }
 
     /**
@@ -94,7 +77,7 @@ public class Axis {
      */
     public void setScale(Scale scale) {
         this.scale = scale.copy();
-        invalidate(true);
+        invalidate();
     }
 
     /**
@@ -125,7 +108,7 @@ public class Axis {
     public void setConfig(AxisConfig config) {
         // set a copy to safely change
         this.config = new AxisConfig(config);
-        invalidate(true);
+        invalidate();
     }
 
     public String getTitle() {
@@ -138,11 +121,7 @@ public class Axis {
 
     public void setStartEndOnTick(boolean startEndOnTick) {
         isStartEndOnTick = startEndOnTick;
-        boolean sizeChange = false;
-        if(orientation.isVertical() && config.isTickLabelOutside()) {
-            sizeChange = true;
-        }
-        invalidate(sizeChange);
+        invalidate();
     }
     
     /**
@@ -156,11 +135,7 @@ public class Axis {
     public boolean setMinMax(double min, double max) {
         if(min != scale.getMin() || max != scale.getMax()) {
             scale.setMinMax(min, max);
-            boolean sizeChange = false;
-            if(orientation.isVertical() && config.isTickLabelOutside()) {
-                sizeChange = true;
-            }
-            invalidate(sizeChange);
+            invalidate();
             return true;
         }
         return false;
@@ -169,10 +144,17 @@ public class Axis {
     public boolean setStartEnd(int start, int end) {
         if (start != end && ((int)scale.getStart() != start || (int)scale.getEnd() != end)) {
             scale.setStartEnd(start, end);
-            invalidate(true);
+            invalidate();
             return true;
         }
         return false;
+    }
+    public boolean isTickLabelOutside() {
+        return config.isTickLabelOutside();
+    }
+
+    public boolean isVertical() {
+        return orientation.isVertical();
     }
 
     public double getMin() {

@@ -13,13 +13,13 @@ public class LegendPainter {
     private BDimension prefferedSize;
     private boolean isAttachedToStacks;
 
-    public LegendPainter(RenderContext renderContext, TraceList traceList, LegendConfig config, int x, int y, int width) {
+    public LegendPainter(RenderContext renderContext, TraceList traceList, LegendConfig config, boolean isAttachedToStacks, int x, int y, int width) {
         buttons = new ArrayList(traceList.size());
-        this.isAttachedToStacks = config.isAttachedToStacks();
+        this.isAttachedToStacks = isAttachedToStacks;
         margin = config.getLegendMargin();
         HashMap<BRectangle, List<SwitchButton>> areaToButtons = new HashMap();
         // create buttons
-        if (config.isAttachedToStacks()) {
+        if (isAttachedToStacks) {
             for (int i = 0; i < traceList.size(); i++) {
                 String traceName = traceList.getName(i);
                 SwitchButton b = new SwitchButton(traceName, config.getTextStyle());
@@ -53,7 +53,7 @@ public class LegendPainter {
             List<SwitchButton> stackButtons = areaToButtons.get(stackArea);
             prefferedSize = arrangeButtons(stackButtons, stackArea, renderContext, config);
         }
-        if (config.isAttachedToStacks()) {
+        if (isAttachedToStacks) {
             prefferedSize = new BDimension(0, 0);
          }
     }
@@ -109,7 +109,7 @@ public class LegendPainter {
             moveButtons(lineButtons, (width - lineButtonsWidth) / 2, 0);
         }
 
-        if(config.isAttachedToStacks()) {
+        if(isAttachedToStacks) {
             if (config.getVerticalAlign() == VerticalAlign.BOTTOM) {
                 moveButtons(areaButtons, 0, height - legendHeight);
             }

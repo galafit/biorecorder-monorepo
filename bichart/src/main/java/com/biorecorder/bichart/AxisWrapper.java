@@ -4,6 +4,7 @@ import com.biorecorder.bichart.axis.Axis;
 import com.biorecorder.bichart.axis.AxisConfig;
 import com.biorecorder.bichart.graphics.BCanvas;
 import com.biorecorder.bichart.graphics.BRectangle;
+import com.biorecorder.bichart.graphics.Range;
 import com.biorecorder.bichart.graphics.RenderContext;
 import com.biorecorder.bichart.scales.Scale;
 
@@ -26,20 +27,12 @@ class AxisWrapper {
         axis.setStartEndOnTick(isStartEndOnTick);
     }
 
-    public void addSizeChangeListener(SizeChangeListener l) {
-        axis.addSizeChangeListener(l);
-    }
-
     public boolean isStartEndOnTick() {
         return isStartEndOnTick;
     }
 
     public void setStartEndOnTick(boolean startEndOnTick) {
         isStartEndOnTick = startEndOnTick;
-    }
-
-    public double getTickInterval() {
-        return axis.getTickInterval();
     }
 
     public void setTickInterval(double tickInterval) {
@@ -92,7 +85,7 @@ class AxisWrapper {
     }
 
 
-    public void zoom(double zoomFactor) {
+    public Range zoomedMinMax(double zoomFactor) {
         if (zoomFactor <= 0) {
             String errMsg = "Zoom factor = " + zoomFactor + "  Expected > 0";
             throw new IllegalArgumentException(errMsg);
@@ -105,17 +98,20 @@ class AxisWrapper {
         double zoomedEnd = start + zoomedLength;
         zoomedScale.setStartEnd(start, zoomedEnd);
         double maxNew = zoomedScale.invert(end);
-        setMinMax(getMin(), maxNew, false);
+        return new Range(getMin(), maxNew);
     }
 
-    public void translate(int translation) {
+    public Range translatedMinMax(int translation) {
         Scale translatedScale = axis.getScale().copy();
-
         double start = getStart();
         double end = getEnd();
         double minNew = translatedScale.invert(start + translation);
         double maxNew = translatedScale.invert(end + translation);
-        setMinMax(minNew, maxNew, false);
+        return new Range(minNew, maxNew);
+    }
+
+    public boolean isTickLabelOutside() {
+        return axis.isTickLabelOutside();
     }
 
     /**
@@ -135,6 +131,10 @@ class AxisWrapper {
             deactivateRounding();
         }
         return axis.setMinMax(min, max);
+    }
+
+    public boolean isVertical() {
+        return axis.isVertical();
     }
 
     public double getMin() {
