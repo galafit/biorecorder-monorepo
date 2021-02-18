@@ -9,9 +9,9 @@ import java.util.List;
  * Created by galafit on 9/6/19.
  */
 interface Orientation {
-      int labelSizeForOverlap(TextMetric tm, List<Tick> ticks);
+      int labelSizeForOverlap(TextMetric tm, String label);
 
-      int labelSizeForWidth(TextMetric tm, List<Tick> ticks);
+      int labelSizeForWidth(TextMetric tm, String label);
 
       void translateCanvas(BCanvas canvas, BRectangle area);
 

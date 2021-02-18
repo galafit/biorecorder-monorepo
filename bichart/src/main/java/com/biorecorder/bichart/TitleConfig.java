@@ -66,7 +66,7 @@ public class TitleConfig {
         if(margin != null) {
             return margin;
         }
-        return new Insets(textStyle.getSize() / 2);
+        return new Insets(textStyle.getSize() / 4);
     }
 
     public void setMargin(@Nullable Insets margin) {

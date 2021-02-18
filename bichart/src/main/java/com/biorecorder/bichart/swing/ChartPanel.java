@@ -25,7 +25,6 @@ public class ChartPanel extends JPanel implements KeyListener {
 
     public ChartPanel(Chart chart1) {
         this.chart = new InteractiveChart(chart1);
-        chart.update(new SwingRenderContext());
         init();
     }
 

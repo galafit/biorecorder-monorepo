@@ -150,6 +150,10 @@ public class Axis {
         return false;
     }
 
+    public boolean isVertical() {
+        return orientation.isVertical();
+    }
+
     public boolean isSizeDependsOnMinMax() {
         return orientation.isVertical() && config.isTickLabelOutside();
     }
@@ -193,6 +197,10 @@ public class Axis {
     }
 
     public int getWidthOut(RenderContext renderContext) {
+        if(!isSizeDependsOnMinMax()) {
+            String label = "";
+            return AxisPainter.calculateWidthOut(renderContext, orientation, (int) length(), config, label, title);
+        }
         revalidate(renderContext);
         return painter.getWidthOut();
     }

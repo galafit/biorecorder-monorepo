@@ -10,7 +10,7 @@ import java.util.List;
  */
 abstract class HorizontalOrientation implements Orientation {
     @Override
-    public int labelSizeForWidth(TextMetric tm,  List<Tick> ticks) {
+    public int labelSizeForWidth(TextMetric tm,  String label) {
         return tm.height();
     }
 
@@ -51,14 +51,8 @@ abstract class HorizontalOrientation implements Orientation {
     }
 
     @Override
-    public int labelSizeForOverlap(TextMetric tm, List<Tick> ticks) {
-        String maxLabel = "";
-        for (Tick tick : ticks) {
-            if (tick.getLabel().length() > maxLabel.length()) {
-                maxLabel = tick.getLabel();
-            }
-        }
-        return tm.stringWidth(maxLabel);
+    public int labelSizeForOverlap(TextMetric tm, String label) {
+        return tm.stringWidth(label);
     }
 
     @Override

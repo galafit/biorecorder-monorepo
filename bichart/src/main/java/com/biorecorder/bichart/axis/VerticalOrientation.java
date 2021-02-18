@@ -11,14 +11,8 @@ import java.util.List;
  */
 abstract class VerticalOrientation implements Orientation {
     @Override
-    public int labelSizeForWidth(TextMetric tm,  List<Tick> ticks) {
-        String longestLabel = "";
-        for (Tick tick : ticks) {
-            if(tick.getLabel().length() > longestLabel.length()) {
-                longestLabel = tick.getLabel();
-            }
-        }
-        return tm.stringWidth(longestLabel);
+    public int labelSizeForWidth(TextMetric tm,  String label) {
+        return tm.stringWidth(label);
     }
 
     @Override
@@ -53,7 +47,7 @@ abstract class VerticalOrientation implements Orientation {
     }
 
     @Override
-    public int labelSizeForOverlap(TextMetric tm, List<Tick> ticks) {
+    public int labelSizeForOverlap(TextMetric tm, String label) {
         return tm.height();
     }
 

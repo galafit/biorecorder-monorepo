@@ -23,9 +23,7 @@ public class NavigableChart {
 
     private int navigatorMaxZoomFactor = -1;
     private boolean isAutoScrollEnabled = true;
-    private boolean isAutoScaleEnabled = true; // chart Y auto scale during scrolling
 
-    private boolean isChartAutoscaleNeedDisable;
     private int width;
     private int height;
     private BRectangle chartArea;
@@ -60,9 +58,6 @@ public class NavigableChart {
 
     public NavigableChart(NavigableChartConfig config, DataProcessingConfig chartDataProcessingConfig, DataProcessingConfig navigatorDataProcessingConfig) {
         this.config = new NavigableChartConfig(config);
-         if (!isAutoScaleEnabled) {
-            isChartAutoscaleNeedDisable = true;
-        }
         chart = new Chart(config.getChartConfig());
         DataProcessingConfig copyProcessingConfig = new DataProcessingConfig(navigatorDataProcessingConfig);
         copyProcessingConfig.setGroupAll(true);
@@ -454,17 +449,6 @@ public class NavigableChart {
         for (XAxisPosition key : scrolls.keySet()) {
             drawScroll(canvas, scrolls.get(key));
         }
-        if (isChartAutoscaleNeedDisable) {
-            for (int stack = 0; stack < chart.stackCount(); stack++) {
-                YAxisPosition[] yAxisPositions = chart.getYAxes(stack);
-                for (int i = 0; i < yAxisPositions.length; i++) {
-                    YAxisPosition yAxisPosition = yAxisPositions[i];
-                    Range minMax = chart.getYMinMax(stack, yAxisPosition, canvas);
-                    chart.setYMinMax(stack, yAxisPosition, minMax.getMin(), minMax.getMax());
-                }
-            }
-            isChartAutoscaleNeedDisable = false;
-        }
     }
 
     /**
@@ -480,19 +464,8 @@ public class NavigableChart {
         isAutoScrollEnabled = autoScrollEnabled;
         scrolls.clear();
         isScrollsDirty = true;
-        if (!isAutoScaleEnabled) {
-            isChartAutoscaleNeedDisable = true;
-        }
     }
 
-    public void setAutoScaleEnabled(boolean autoScaleEnabled) {
-        isAutoScaleEnabled = autoScaleEnabled;
-        if (!isAutoScaleEnabled) {
-            isChartAutoscaleNeedDisable = true;
-        } else {
-            autoScaleChartY();
-        }
-    }
 
     public void setSize(int width, int height) {
         this.width = width;
@@ -508,11 +481,6 @@ public class NavigableChart {
         scrolls.clear();
         isAreasDirty = true;
         isScrollsDirty = true;
-        if (!isAutoScaleEnabled) {
-            isChartAutoscaleNeedDisable = true;
-        } else {
-            autoScaleChartY();
-        }
     }
 
     public void zoomNavigatorY(int stack, YAxisPosition yPosition, double zoomFactor) {
@@ -634,25 +602,16 @@ public class NavigableChart {
 
     public void autoScaleChartY(int stack, YAxisPosition yPosition) {
         chart.autoScaleY(stack, yPosition);
-        if (!isAutoScaleEnabled) {
-            isChartAutoscaleNeedDisable = true;
-        }
     }
 
     public void addChartStack(int weight) {
         chart.addStack(weight);
         isAreasDirty = true;
-        if(!isAutoScaleEnabled){
-            isChartAutoscaleNeedDisable = true;
-        }
     }
 
     public void addChartStack() {
         chart.addStack();
         isAreasDirty = true;
-        if (!isAutoScaleEnabled) {
-            isChartAutoscaleNeedDisable = true;
-        }
     }
 
     public void setChartStackWeigt(int stack, int weight) {
@@ -673,9 +632,6 @@ public class NavigableChart {
         chart.addTrace(data, tracePainter);
         isAreasDirty = true;
         isScrollsDirty = true;
-        if(!isAutoScaleEnabled){
-            isChartAutoscaleNeedDisable = true;
-        }
     }
 
 
@@ -683,27 +639,18 @@ public class NavigableChart {
         chart.addTrace(data,  tracePainter, xPosition, yPosition);
         isAreasDirty = true;
         isScrollsDirty = true;
-        if(!isAutoScaleEnabled){
-            isChartAutoscaleNeedDisable = true;
-        }
     }
 
     public void addChartTrace(ChartData data, TracePainter tracePainter, int stackNumber) {
         chart.addTrace(data,  tracePainter, stackNumber);
         isAreasDirty = true;
         isScrollsDirty = true;
-        if(!isAutoScaleEnabled){
-            isChartAutoscaleNeedDisable = true;
-        }
     }
 
     public void addChartTrace(ChartData data, TracePainter tracePainter,  int stackNumber, XAxisPosition xPosition, YAxisPosition yPosition) {
         chart.addTrace(data,  tracePainter, stackNumber, xPosition, yPosition);
         isAreasDirty = true;
         isScrollsDirty = true;
-        if(!isAutoScaleEnabled){
-            isChartAutoscaleNeedDisable = true;
-        }
     }
 
     public void removeChartTrace(int traceNumber) {

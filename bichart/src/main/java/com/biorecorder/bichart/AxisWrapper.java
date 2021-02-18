@@ -129,9 +129,14 @@ class AxisWrapper {
         return axis.setMinMax(min, max);
     }
 
+    public boolean isVertical() {
+        return axis.isVertical();
+    }
+
     public boolean isSizeDependsOnMinMax() {
         return axis.isSizeDependsOnMinMax();
     }
+
     public double getMin() {
         return axis.getMin();
     }

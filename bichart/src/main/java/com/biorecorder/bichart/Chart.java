@@ -19,7 +19,7 @@ import java.util.List;
 public class Chart {
     private ChartConfig config;
     private boolean isLegendEnabled = true;
-    private boolean isLegendAttachedToStacks = true;
+    private boolean isLegendAttachedToStacks = false;
     private Insets fixedMargin;
     private Insets margin;
     /*
@@ -55,7 +55,7 @@ public class Chart {
         traceList.addChangeListener(new ChangeListener() {
             @Override
             public void onChange() {
-                if(isLegendEnabled && !isLegendAttachedToStacks) {
+                if (isLegendEnabled && !isLegendAttachedToStacks) {
                     invalidate();
                 }
             }
@@ -80,7 +80,7 @@ public class Chart {
     }
 
     public void revalidate(RenderContext renderContext) {
-        if(isValid){
+        if (isValid) {
             return;
         }
         margin = new Insets(0);
@@ -92,53 +92,64 @@ public class Chart {
             BRectangle graphArea = graphArea();
             setXStartEnd(graphArea.x, graphArea.width);
             setYStartEnd(graphArea.y, graphArea.height);
-            if(isLegendEnabled) {
+            if (isLegendEnabled) {
                 legend = new Legend(config.getLegendConfig(), traceList, width, isLegendAttachedToStacks);
             }
             return;
         }
 
-        int titleHeight = 0;
-        if(title != null) {
-           titleHeight = title.getPrefferedSize(renderContext).height;
+        Insets spacing = config.getSpacing();
+        if (spacing == null) {
+            spacing = new Insets(0);
         }
-        int top = titleHeight;
-        int bottom = 0;
-        if(isLegendEnabled && !isLegendAttachedToStacks) {
-            legend = new Legend(config.getLegendConfig(), traceList, width, isLegendAttachedToStacks);
+
+        int top = spacing.top();
+        int bottom = spacing.bottom();
+        int left = spacing.left();
+        int right = spacing.right();
+        int width1 = width - left - right;
+
+        if (title != null) {
+            title.setWidth(width1);
+            int titleHeight = title.getPrefferedSize(renderContext).height;
+            title.moveTo(left, top);
+            top += titleHeight;
+        }
+
+        if (isLegendEnabled && !isLegendAttachedToStacks) {
+            legend = new Legend(config.getLegendConfig(), traceList, width1, isLegendAttachedToStacks);
             BDimension legendPrefSize = legend.getPrefferedSize(renderContext);
-            if(legend.isTop()) {
-                legend.moveTo(0, titleHeight);
+            if (legend.isTop()) {
+                legend.moveTo(left, top);
                 top += legendPrefSize.height;
             } else if (legend.isBottom()) {
-                legend.moveTo(0, height - legendPrefSize.height);
+                legend.moveTo(left, height - legendPrefSize.height - bottom);
                 bottom += legendPrefSize.height;
             } else {
-                legend.moveTo(0, titleHeight + (height - titleHeight)/2);
+                legend.moveTo(left, top + (height - top - bottom - legendPrefSize.height) / 2);
             }
         }
-        setXStartEnd(0, width);
+        setXStartEnd(left, width1);
         AxisWrapper topAxis = xAxisList.get(xPositionToIndex(XAxisPosition.TOP));
         AxisWrapper bottomAxis = xAxisList.get(xPositionToIndex(XAxisPosition.BOTTOM));
-        if(traceList.isXAxisUsed(topAxis)) {
+        if (traceList.isXAxisUsed(topAxis)) {
             top += topAxis.getWidth(renderContext);
         }
-        if(traceList.isXAxisUsed(bottomAxis)) {
+        if (traceList.isXAxisUsed(bottomAxis)) {
             bottom += bottomAxis.getWidth(renderContext);
         }
 
-        margin = new Insets(top, 0, bottom, 0);
+        margin = new Insets(top, right, bottom, left);
         BRectangle graphArea = graphArea();
         setYStartEnd(graphArea.y, graphArea.height);
-        int left = 0;
-        int right = 0;
+
         for (int i = 0; i < yAxisList.size(); i++) {
             AxisWrapper yAxis = yAxisList.get(i);
-            if(traceList.isYAxisUsed(yAxis)) {
+            if (traceList.isYAxisUsed(yAxis)) {
                 if (i % 2 == 0) {
-                    left = Math.max(left, yAxis.getWidth(renderContext));
+                    left = Math.max(left, yAxis.getWidth(renderContext) + spacing.left());
                 } else {
-                    right = Math.max(right, yAxis.getWidth(renderContext));
+                    right = Math.max(right, yAxis.getWidth(renderContext) + spacing.right());
                 }
             }
         }
@@ -147,8 +158,8 @@ public class Chart {
 
         // adjust XAxis ranges
         setXStartEnd(graphArea.x, graphArea.width);
-        if(isLegendEnabled && isLegendAttachedToStacks) {
-            legend = new Legend(config.getLegendConfig(), traceList, width, isLegendAttachedToStacks);
+        if (isLegendEnabled && isLegendAttachedToStacks) {
+            legend = new Legend(config.getLegendConfig(), traceList, graphArea.width, isLegendAttachedToStacks);
         }
         isValid = true;
     }
@@ -236,15 +247,22 @@ public class Chart {
         return XAxisPosition.TOP;
     }
 
+    private void setAxisMinMax(AxisWrapper axis, Range minMax, boolean isAutoscale) {
+        if (minMax != null) {
+            setAxisMinMax(axis, minMax.getMin(), minMax.getMax(), isAutoscale);
+        }
+    }
+
     private void setAxisMinMax(AxisWrapper axis, double min, double max, boolean isAutoscale) {
         axis.setMinMax(min, max, isAutoscale);
-        if(axis.isSizeDependsOnMinMax()) {
+        if (axis.isSizeDependsOnMinMax()) {
             invalidate();
         }
     }
+
     private int xAxisToIndex(AxisWrapper x) {
         for (int i = 0; i < xAxisList.size(); i++) {
-            if(xAxisList.get(i) == x) {
+            if (xAxisList.get(i) == x) {
                 return i;
             }
         }
@@ -260,12 +278,6 @@ public class Chart {
         return -1;
     }
 
-    private void setAxisMinMax(AxisWrapper axis, Range minMax, boolean isAutoscale) {
-        if(minMax != null) {
-            axis.setMinMax(minMax.getMin(), minMax.getMax(), isAutoscale);
-        }
-    }
-
     /**
      * =============================================================*
      * Protected method for careful use                            *
@@ -273,7 +285,7 @@ public class Chart {
      */
 
     Insets getMargin(RenderContext renderContext) {
-        if(!isValid) {
+        if (!isValid) {
             revalidate(renderContext);
         }
         return margin;
@@ -290,7 +302,6 @@ public class Chart {
         }
         return extent;
     }
-
 
 
     int getStacksSumWeight() {
@@ -424,7 +435,7 @@ public class Chart {
     }
 
     public void draw(BCanvas canvas) {
-        if(!isValid) {
+        if (!isValid) {
             revalidate(canvas.getRenderContext());
         }
         BRectangle graphArea = graphArea();
@@ -435,7 +446,7 @@ public class Chart {
         canvas.setColor(config.getMarginColor());
         canvas.fillRect(0, 0, width, height);
         //draw title
-        if(title != null) {
+        if (title != null) {
             title.draw(canvas);
         }
 
@@ -502,7 +513,7 @@ public class Chart {
         canvas.setClip(graphArea.x, graphArea.y, graphArea.width, graphArea.height);
         traceList.draw(canvas);
         canvas.restore();
-        if(legend != null) {
+        if (legend != null) {
             legend.draw(canvas);
         }
         tooltip.draw(canvas, new BRectangle(0, 0, width, height));
@@ -522,7 +533,7 @@ public class Chart {
 
     public void setConfig(ChartConfig config) {
         this.config = new ChartConfig(config);
-        if(title != null) {
+        if (title != null) {
             title.setConfig(this.config.getTitleConfig());
         }
         for (int i = 0; i < xAxisList.size(); i++) {
@@ -573,7 +584,7 @@ public class Chart {
      */
     public void removeStack(int stack) throws IllegalStateException {
         // check that no trace use that stack
-        if(traceList.isYAxisUsed(yAxisList.get(stack * 2)) || traceList.isYAxisUsed(yAxisList.get(stack * 2 + 1))) {
+        if (traceList.isYAxisUsed(yAxisList.get(stack * 2)) || traceList.isYAxisUsed(yAxisList.get(stack * 2 + 1))) {
             String errMsg = "Stack: " + stack + "can not be removed. It is used by trace";
             throw new IllegalStateException(errMsg);
         }
@@ -601,7 +612,7 @@ public class Chart {
 
     public void addTrace(ChartData data, TracePainter tracePainter, XAxisPosition xPosition, YAxisPosition yPosition) {
         int stack = Math.max(0, yAxisList.size() / 2 - 1);
-        addTrace(data, tracePainter,  stack, xPosition, yPosition);
+        addTrace(data, tracePainter, stack, xPosition, yPosition);
     }
 
     /**
@@ -635,7 +646,8 @@ public class Chart {
         traceList.setColor(traceIndex, color);
     }
 
-    public @Nullable StringSequence getXLabels(ChartData data) {
+    public @Nullable
+    StringSequence getXLabels(ChartData data) {
         if (!data.isNumberColumn(0)) {
             return new StringSequence() {
                 @Override
@@ -659,9 +671,6 @@ public class Chart {
     public void setSize(int width, int height) {
         this.width = width;
         this.height = height;
-        if(title != null) {
-            title.setWidth(width);
-        }
         invalidate();
     }
 
@@ -709,7 +718,7 @@ public class Chart {
     }
 
     public void setXMinMax(XAxisPosition xPosition, double min, double max) {
-        setAxisMinMax(yAxisList.get(xPositionToIndex(xPosition)), min, max, false);
+        setAxisMinMax(xAxisList.get(xPositionToIndex(xPosition)), min, max, false);
 
     }
 
@@ -717,7 +726,7 @@ public class Chart {
         setAxisMinMax(yAxisList.get(yPositionToIndex(stack, yPosition)), min, max, false);
     }
 
-    public void autoScaleX(int xIndex){
+    public void autoScaleX(int xIndex) {
         AxisWrapper xAxis = xAxisList.get(xIndex);
         Range xMinMax = traceList.getTracesXMinMax(xAxis);
         setAxisMinMax(xAxis, xMinMax, true);
@@ -726,7 +735,7 @@ public class Chart {
     public void autoScaleX() {
         Range xMinMax = null;
         int selectedTrace = traceList.getSelection();
-        if(selectedTrace >= 0) {
+        if (selectedTrace >= 0) {
             AxisWrapper xAxis = traceList.getTraceX(selectedTrace);
             xMinMax = traceList.getTracesXMinMax(xAxis);
             setAxisMinMax(xAxis, xMinMax, true);
@@ -740,14 +749,15 @@ public class Chart {
 
     public void autoScaleY(int yIndex) {
         AxisWrapper yAxis = yAxisList.get(yIndex);
-        Range yMinMax = traceList.getTracesYMinMax(yAxis);;
+        Range yMinMax = traceList.getTracesYMinMax(yAxis);
+        ;
         setAxisMinMax(yAxis, yMinMax, true);
     }
 
     public void autoScaleY() {
         Range yMinMax = null;
         int selectedTrace = traceList.getSelection();
-        if(selectedTrace >= 0) {
+        if (selectedTrace >= 0) {
             AxisWrapper yAxis = traceList.getTraceY(selectedTrace);
             yMinMax = traceList.getTracesYMinMax(yAxis);
             setAxisMinMax(yAxis, yMinMax, true);
@@ -802,7 +812,7 @@ public class Chart {
     }
 
     public double getTracesBestExtent(XAxisPosition xAxisPosition) {
-       return traceList.getTracesBestExtent(xAxisList.get(xPositionToIndex(xAxisPosition)), width);
+        return traceList.getTracesBestExtent(xAxisList.get(xPositionToIndex(xAxisPosition)), width);
     }
 
     public boolean isTraceSelected() {
@@ -824,7 +834,7 @@ public class Chart {
     }
 
     public boolean selectTrace(int x, int y) {
-        if(legend != null) {
+        if (legend != null) {
             return legend.selectTrace(x, y);
         }
         return false;

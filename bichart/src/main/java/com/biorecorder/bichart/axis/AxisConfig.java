@@ -49,7 +49,7 @@ public class AxisConfig {
     private DashStyle crosshairLineDashStyle = DashStyle.SOLID;
 
     public AxisConfig() {
-        titlePadding = titleTextStyle.getSize() / 2;
+        titlePadding = titleTextStyle.getSize() / 4;
         tickPadding = tickLabelTextStyle.getSize() / 2;
     }
 

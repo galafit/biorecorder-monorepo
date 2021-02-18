@@ -20,7 +20,7 @@ public class ChartConfig {
     private TooltipConfig tooltipConfig = new TooltipConfig();
 
     private Insets spacing;
-    private int autoSpacing = 5; //px taken into account only if spacing is null
+    private int autoSpacing = 10; //px taken into account only if spacing is null
 
     private int stackGap = 4; //px
 

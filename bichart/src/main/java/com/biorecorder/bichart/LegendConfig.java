@@ -10,7 +10,7 @@ import com.sun.istack.internal.Nullable;
 public class LegendConfig {
     private TextStyle textStyle = new TextStyle(TextStyle.DEFAULT, TextStyle.NORMAL, 12);
     private HorizontalAlign horizontalAlign = HorizontalAlign.LEFT;
-    private VerticalAlign verticalAlign = VerticalAlign.TOP;
+    private VerticalAlign verticalAlign = VerticalAlign.MIDDLE;
     private int borderWidth = 1;
     private BColor backgroundColor = BColor.WHITE;
     private Insets buttonsMargin;

@@ -43,7 +43,7 @@ public class DarkTheme {
         xAxisConfig.setColors(AXIS_COLOR, TEXT_COLOR, GRID_COLOR, GRID_COLOR);
         xAxisConfig.setTickMarkSize(X_MARK_SIZE, 0);
         xAxisConfig.setCrosshairLineColor(CROSSHAIR_COLOR);
-        xAxisConfig.setAxisLineWidth(0);
+        xAxisConfig.setAxisLineWidth(1);
         //xAxisConfig.setMinorTickIntervalCount(3);
 
         AxisConfig yAxisConfig = new AxisConfig();

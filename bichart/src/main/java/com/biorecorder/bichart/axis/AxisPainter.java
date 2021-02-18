@@ -38,14 +38,6 @@ class AxisPainter {
         return widthOut;
     }
 
-    private boolean isTooShort() {
-        int lengthMin = config.getTickLabelTextStyle().getSize() * 3;
-        if (axisLength > lengthMin) {
-            return false;
-        }
-        return true;
-    }
-
     public static double getBestExtent(RenderContext renderContext, Scale scale, AxisConfig config, Orientation orientation, int length) {
         if (scale instanceof CategoryScale) {
             TextMetric tm = renderContext.getTextMetric(config.getTickLabelTextStyle());
@@ -318,27 +310,45 @@ class AxisPainter {
 
     }
 
+    private boolean isTooShort() {
+        return isTooShort(config, axisLength);
+    }
+
+    public static boolean isTooShort(AxisConfig config, int axisLength) {
+        int lengthMin = config.getTickLabelTextStyle().getSize() * 2;
+        if (axisLength > lengthMin) {
+            return false;
+        }
+        return true;
+    }
+
+    public static int calculateWidthOut(RenderContext renderContext, Orientation orientation, int axisLength, AxisConfig config, String label, String title) {
+        int widthOut = config.getAxisLineWidth() / 2 + 1;
+        if(isTooShort(config, axisLength)) {
+            return widthOut;
+        }
+        widthOut += config.getTickMarkOutsideSize();
+        if (config.isTickLabelOutside()) {
+            TextMetric labelTM = renderContext.getTextMetric(config.getTickLabelTextStyle());
+            widthOut += config.getTickPadding() + orientation.labelSizeForWidth(labelTM, label);
+        }
+        if (! StringUtils.isNullOrBlank(title)) {
+            TextMetric titleTM = renderContext.getTextMetric(config.getTitleTextStyle());
+            widthOut += config.getTitlePadding() + titleTM.height();
+        }
+        return widthOut;
+    }
+
 
     public void createAxisElements(RenderContext renderContext, Scale scale, double tickInterval, boolean isRoundingEnabled, String title) {
         tickPositions = new IntArrayList();
         minorTickPositions = new IntArrayList();
         tickLabels = new ArrayList<>();
+        String longestLabel = "";
         TextMetric labelTM = renderContext.getTextMetric(config.getTickLabelTextStyle());
         List<Tick> ticks = createValidTicks(labelTM, scale, tickInterval, isRoundingEnabled);
-
-        widthOut = config.getAxisLineWidth() / 2;
         if(ticks.size() == 0) {
             return;
-        }
-
-        widthOut += config.getTickMarkOutsideSize();
-        if (config.isTickLabelOutside()) {
-            widthOut += config.getTickPadding() + orientation.labelSizeForWidth(labelTM, ticks);
-        }
-        if (! StringUtils.isNullOrBlank(title)) {
-            TextMetric titleTM = renderContext.getTextMetric(config.getTitleTextStyle());
-            widthOut += config.getTitlePadding() + titleTM.height();
-            titleText = orientation.createTitle(title,  titleTM, (int)Math.round(scale.getStart()), (int)Math.round(scale.getEnd()), widthOut);
         }
 
         int minorTickIntervalCount = config.getMinorTickIntervalCount();
@@ -366,9 +376,17 @@ class AxisPainter {
                     // tick position
                     tickPositions.add(tickPosition);
                     // tick label
+                    if(currentTick.getLabel().length() > longestLabel.length()) {
+                        longestLabel = currentTick.getLabel();
+                    }
                     tickLabels.add(orientation.createTickLabel(labelTM, tickPosition, currentTick.getLabel(), (int)Math.round(scale.getStart()), (int)Math.round(scale.getEnd()), tickPixelInterval, config, getInterLabelGap(config), scale instanceof CategoryScale));
                 }
             }
+        }
+        widthOut = calculateWidthOut(renderContext, orientation, axisLength, config, longestLabel, title);
+        if (! StringUtils.isNullOrBlank(title)) {
+            TextMetric titleTM = renderContext.getTextMetric(config.getTitleTextStyle());
+            titleText = orientation.createTitle(title, titleTM, (int)Math.round(scale.getStart()), (int)Math.round(scale.getEnd()), widthOut);
         }
     }
 
@@ -377,7 +395,13 @@ class AxisPainter {
     }
 
     private static int getRequiredSpaceForTickLabel(TextMetric tm, AxisConfig config, Orientation orientation,  List<Tick> ticks) {
-        return  orientation.labelSizeForOverlap(tm, ticks) + getInterLabelGap(config);
+        String longestLabel = "";
+        for (Tick tick : ticks) {
+            if(tick.getLabel().length() > longestLabel.length()) {
+                longestLabel = tick.getLabel();
+            }
+        }
+        return  orientation.labelSizeForOverlap(tm, longestLabel) + getInterLabelGap(config);
     }
 }
 
