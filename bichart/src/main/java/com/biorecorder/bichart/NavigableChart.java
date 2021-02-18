@@ -31,51 +31,20 @@ public class NavigableChart {
     private Map<XAxisPosition, Scroll> scrolls = new Hashtable<XAxisPosition, Scroll>(2);
     private List<XAxisPosition> scrollsToAutoscale = new ArrayList<>(2);
 
+
     private boolean isScrollsAtTheEnd = true;
     private boolean isScrollsDirty = true;
     private boolean isAreasDirty = true;
 
 
     public NavigableChart() {
-        this(new DataProcessingConfig());
+        this(DarkTheme.getNavigableChartConfig());
     }
 
     public NavigableChart(NavigableChartConfig config) {
-        this(config, new DataProcessingConfig());
-    }
-
-    public NavigableChart(DataProcessingConfig dataProcessingConfig) {
-        this(dataProcessingConfig, dataProcessingConfig);
-    }
-
-    public NavigableChart(NavigableChartConfig config, DataProcessingConfig dataProcessingConfig) {
-        this(config, dataProcessingConfig, dataProcessingConfig);
-    }
-
-    public NavigableChart(DataProcessingConfig chartDataProcessingConfig, DataProcessingConfig navigatorDataProcessingConfig) {
-        this(DarkTheme.getNavigableChartConfig(), chartDataProcessingConfig, navigatorDataProcessingConfig);
-    }
-
-    public NavigableChart(NavigableChartConfig config, DataProcessingConfig chartDataProcessingConfig, DataProcessingConfig navigatorDataProcessingConfig) {
         this.config = new NavigableChartConfig(config);
-        chart = new Chart(config.getChartConfig());
-        DataProcessingConfig copyProcessingConfig = new DataProcessingConfig(navigatorDataProcessingConfig);
-        copyProcessingConfig.setGroupAll(true);
-        navigator = new Chart(config.getNavigatorConfig());
-    }
-
-    private void autoScaleChartY() {
-        for (int i = 0; i < chart.stackCount(); i++) {
-            chart.autoScaleY(i, YAxisPosition.LEFT);
-            chart.autoScaleY(i, YAxisPosition.RIGHT);
-        }
-    }
-
-    private void autoScaleNavigatorY() {
-        for (int i = 0; i < navigator.stackCount(); i++) {
-            navigator.autoScaleY(i, YAxisPosition.LEFT);
-            navigator.autoScaleY(i, YAxisPosition.RIGHT);
-        }
+         chart = new Chart(config.getChartConfig());
+         navigator = new Chart(config.getNavigatorConfig());
     }
 
     // navigator have all X axes synchronized (the same min and max)

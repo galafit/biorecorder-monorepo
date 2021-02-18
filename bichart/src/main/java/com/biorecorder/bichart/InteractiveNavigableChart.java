@@ -40,7 +40,6 @@ public class InteractiveNavigableChart implements InteractiveDrawable {
         // AUTO SCALE both chart and navigator
         if(chart.isChartTraceSelected()) {
             // if some trace is selected we auto scale only axis belonging to that trace
-            chart.autoScaleScrollExtent(chart.getChartSelectedTraceX());
             chart.autoScaleChartY(chart.getChartSelectedTraceStack(), chart.getChartSelectedTraceY());
         } else {
             // if no selected trace in chart we scale all x and y axis

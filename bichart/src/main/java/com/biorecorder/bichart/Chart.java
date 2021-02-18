@@ -19,7 +19,7 @@ import java.util.List;
 public class Chart {
     private ChartConfig config;
     private boolean isLegendEnabled = true;
-    private boolean isLegendAttachedToStacks = false;
+    private boolean isLegendAttachedToStacks = true;
     private Insets fixedMargin;
     private Insets margin;
     /*
@@ -64,7 +64,9 @@ public class Chart {
 
     private void invalidate() {
         isValid = false;
-        legend = null;
+        if(isLegendAttachedToStacks) {
+            legend = null;
+        }
     }
 
     private BRectangle graphArea() {
@@ -87,36 +89,36 @@ public class Chart {
         if (width == 0 || height == 0) {
             return;
         }
-        if (fixedMargin != null) { // fixed margin
-            margin = fixedMargin;
-            BRectangle graphArea = graphArea();
-            setXStartEnd(graphArea.x, graphArea.width);
-            setYStartEnd(graphArea.y, graphArea.height);
-            if (isLegendEnabled) {
-                legend = new Legend(config.getLegendConfig(), traceList, width, isLegendAttachedToStacks);
-            }
-            return;
-        }
 
         Insets spacing = config.getSpacing();
         if (spacing == null) {
             spacing = new Insets(0);
         }
-
         int top = spacing.top();
         int bottom = spacing.bottom();
         int left = spacing.left();
         int right = spacing.right();
         int width1 = width - left - right;
-
         if (title != null) {
             title.setWidth(width1);
-            int titleHeight = title.getPrefferedSize(renderContext).height;
             title.moveTo(left, top);
-            top += titleHeight;
+        }
+        if (fixedMargin != null) { // fixed margin
+            margin = fixedMargin;
+            BRectangle graphArea = graphArea();
+            setXStartEnd(graphArea.x, graphArea.width);
+            setYStartEnd(graphArea.y, graphArea.height);
+            if (isLegendEnabled && legend == null) {
+                legend = new Legend(config.getLegendConfig(), traceList, width1, isLegendAttachedToStacks);
+            }
+            return;
         }
 
-        if (isLegendEnabled && !isLegendAttachedToStacks) {
+        if (title != null) {
+            int titleHeight = title.getPrefferedSize(renderContext).height;
+            top += titleHeight;
+        }
+        if (isLegendEnabled && legend == null && !isLegendAttachedToStacks) {
             legend = new Legend(config.getLegendConfig(), traceList, width1, isLegendAttachedToStacks);
             BDimension legendPrefSize = legend.getPrefferedSize(renderContext);
             if (legend.isTop()) {
@@ -158,8 +160,8 @@ public class Chart {
 
         // adjust XAxis ranges
         setXStartEnd(graphArea.x, graphArea.width);
-        if (isLegendEnabled && isLegendAttachedToStacks) {
-            legend = new Legend(config.getLegendConfig(), traceList, graphArea.width, isLegendAttachedToStacks);
+        if (isLegendEnabled && legend == null && isLegendAttachedToStacks) {
+            legend = new Legend(config.getLegendConfig(), traceList, width1, isLegendAttachedToStacks);
         }
         isValid = true;
     }
@@ -289,6 +291,15 @@ public class Chart {
             revalidate(renderContext);
         }
         return margin;
+    }
+
+    /**
+     * set fixed margin
+     * if margin == null delete fixed margin
+     */
+    void setMargin(@Nullable Insets margin) {
+        this.fixedMargin = margin;
+        invalidate();
     }
 
     double getBestExtent(XAxisPosition xAxisPosition, RenderContext renderContext) {
@@ -547,11 +558,13 @@ public class Chart {
         for (int i = 0; i < traceList.size(); i++) {
             traceList.setColor(i, colors[i % colors.length]);
         }
+        legend = null;
         invalidate();
     }
 
     public void setTitle(String title) {
         this.title = new Title(title, config.getTitleConfig());
+        legend = null;
         invalidate();
     }
 
@@ -669,9 +682,15 @@ public class Chart {
     }
 
     public void setSize(int width, int height) {
-        this.width = width;
-        this.height = height;
-        invalidate();
+        if(this.width != width) {
+            this.width = width;
+            legend = null;
+            invalidate();
+        }
+        if(this.height != height) {
+            this.height = height;
+            invalidate();
+        }
     }
 
     public int traceCount() {
