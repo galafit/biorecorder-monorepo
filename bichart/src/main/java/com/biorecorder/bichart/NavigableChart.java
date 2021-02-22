@@ -157,7 +157,7 @@ public class NavigableChart {
     }
 
 
-    private void calculateAndSetAreas() {
+    private void calculateAndSetAreas(RenderContext renderContext) {
         int top = config.getSpacing().top();
         int bottom = config.getSpacing().bottom();
         int left = config.getSpacing().left();
@@ -185,6 +185,16 @@ public class NavigableChart {
         navigatorArea = new BRectangle(left, height - navigatorHeight, width1, navigatorHeight);
         chart.setSize(chartArea.width, chartArea.height);
         navigator.setSize(navigatorArea.width, navigatorArea.height);
+        //  выравниваем маргины
+        Insets chartMargin = chart.getMargin(renderContext);
+        Insets navigatorMargin = navigator.getMargin(renderContext);
+        if(chartMargin.left() != navigatorMargin.left() ||
+                chartMargin.right() != navigatorMargin.right()) {
+            int leftMargin = Math.min(chartMargin.left(), navigatorMargin.left());
+            int rightMargin = Math.min(chartMargin.right(), navigatorMargin.right());
+            chart.setMargin(new Insets(chartMargin.top(), rightMargin, chartMargin.bottom(), leftMargin));
+            navigator.setMargin(new Insets(navigatorMargin.top(), rightMargin, navigatorMargin.bottom(), leftMargin));
+        }
     }
 
 
@@ -305,7 +315,7 @@ public class NavigableChart {
                     scroll.setExtent(scrollExtentNew);
                 }
             }
-            calculateAndSetAreas();
+            calculateAndSetAreas(canvas.getRenderContext());
             isAreasDirty = false;
         }
         if (isScrollsDirty) {
