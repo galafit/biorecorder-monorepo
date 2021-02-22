@@ -28,8 +28,6 @@ public class AxisConfig {
     private BColor tickLabelColor = BColor.GRAY;
     private boolean isTickLabelCentered = true;
 
-    private TickLabelFormat tickLabelPrefixAndSuffix;
-
     private int minorTickMarkWidth = 1; // px
     private BColor minorTickMarkColor = BColor.GRAY;
     private BColor gridColor = BColor.GRAY_LIGHT;
@@ -72,7 +70,6 @@ public class AxisConfig {
         tickMarkColor = axisConfig.tickMarkColor;
         tickLabelColor = axisConfig.tickLabelColor;
         tickLabelTextStyle = axisConfig.tickLabelTextStyle;
-        tickLabelPrefixAndSuffix = axisConfig.tickLabelPrefixAndSuffix;
         isTickLabelCentered = axisConfig.isTickLabelCentered;
 
         minorTickMarkWidth = axisConfig.minorTickMarkWidth;
@@ -120,22 +117,12 @@ public class AxisConfig {
         this.crosshairLineDashStyle = crosshairLineDashStyle;
     }
 
-
-    public void setTickLabelPrefixAndSuffix(@Nullable String prefix, @Nullable String suffix) {
-        tickLabelPrefixAndSuffix = new TickLabelFormat(prefix, suffix);
-    }
-
     public boolean isTickLabelCentered() {
         return isTickLabelCentered;
     }
 
     public void setTickLabelCentered(boolean tickLabelCentered) {
         isTickLabelCentered = tickLabelCentered;
-    }
-
-
-    public TickLabelFormat getTickLabelPrefixAndSuffix() {
-        return tickLabelPrefixAndSuffix;
     }
 
     public int getMinorTickIntervalCount() {

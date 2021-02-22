@@ -2,9 +2,7 @@ package com.biorecorder.bichart.axis;
 
 import com.biorecorder.bichart.graphics.*;
 import com.biorecorder.bichart.scales.*;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.sun.istack.internal.Nullable;
 
 /**
  * Axis is visual representation of Scale that generates and draws
@@ -19,6 +17,7 @@ public class Axis {
     private AxisPainter painter;
     private AxisConfig config;
     private Orientation orientation;
+    private TickLabelFormat tickLabelPrefixAndSuffix;
 
     private boolean isStartEndOnTick = false;
     private double tickInterval = -1; // in axis domain units (If <= 0 will not be taken into account)
@@ -46,6 +45,11 @@ public class Axis {
                 orientation = new RightOrientation();
         }
         isStartEndOnTick = true;
+    }
+
+    public void setTickLabelPrefixAndSuffix(@Nullable String prefix, @Nullable String suffix) {
+        tickLabelPrefixAndSuffix = new TickLabelFormat(prefix, suffix);
+        invalidate();
     }
 
     public void invalidate() {
@@ -182,17 +186,25 @@ public class Axis {
         return scale.invert(value);
     }
 
-    public double length() {
-        return Math.abs(getEnd() - getStart());
+    public boolean contain(BPoint point) {
+        int start = (int) getStart();
+        int end = (int) getEnd();
+        if(isVertical()) {
+            return (point.getY() >= end && point.getY() <= start) ||
+                    (point.getY() >= start && point.getY() <= end);
+        } else {
+            return (point.getX() >= start && point.getX() <= end) ||
+                    (point.getX() <= end && point.getX() <= start);
+        }
     }
 
-    public double getBestExtent(RenderContext renderContext, int length) {
-       return AxisPainter.getBestExtent(renderContext, scale, config, orientation, length);
+    public double length() {
+        return Math.abs(getEnd() - getStart());
     }
     
     public void revalidate(RenderContext renderContext) {
         if(painter == null) {
-            painter = new AxisPainter(scale, config, orientation, renderContext, title, tickInterval, isStartEndOnTick);
+            painter = new AxisPainter(scale, config, orientation, renderContext, title, tickInterval, tickLabelPrefixAndSuffix, isStartEndOnTick);
         }
     }
 

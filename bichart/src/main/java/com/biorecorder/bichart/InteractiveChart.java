@@ -30,21 +30,12 @@ public class InteractiveChart implements InteractiveDrawable {
     @Override
     public boolean onDoubleTap(int x, int y) {
         if(chart.isTraceSelected()) {
-            chart.autoScaleX(chart.getSelectedTraceX());
-            chart.autoScaleY(chart.getSelectedTraceStack(), chart.getSelectedTraceY());
+            chart.autoScaleSelectedTraceX();
+            chart.autoScaleSelectedTraceY();
         } else {
-            XAxisPosition[] xAxisPositions = chart.getXAxes();
-            for (int i = 0; i < xAxisPositions.length; i++) {
-                chart.autoScaleX(xAxisPositions[i]);
-            }
-            for (int stack = 0; stack < chart.stackCount(); stack++) {
-                YAxisPosition[] yAxisPositions = chart.getYAxes(stack);
-                for (int i = 0; i < yAxisPositions.length; i++) {
-                    chart.autoScaleY(stack, yAxisPositions[i]);
-                }
-            }
+            chart.autoScaleX();
+            chart.autoScaleY();
         }
-
         return true;
     }
 
@@ -58,7 +49,6 @@ public class InteractiveChart implements InteractiveDrawable {
         if(chart.traceCount() == 0) {
             return false;
         }
-
        return chart.hoverOn(x, y);
     }
 
@@ -67,52 +57,18 @@ public class InteractiveChart implements InteractiveDrawable {
         if(scaleFactor == 0 || scaleFactor == 1) {
             return false;
         }
-
-        XAxisPosition[] xAxisPositions = new XAxisPosition[0];
         if(chart.isTraceSelected()) {
-            XAxisPosition[] xAxisPositions1 = {chart.getSelectedTraceX()};
-            xAxisPositions = xAxisPositions1;
-        } else if(startPoint != null) {
+            chart.zoomSelectedTraceX(scaleFactor);
+
+        } else if (startPoint != null){
             XAxisPosition xPosition = chart.getXAxisPosition(startPoint);
-            if(xPosition != null) {
-                XAxisPosition[] xAxisPositions1 = {xPosition};
-                xAxisPositions = xAxisPositions1;
-            }
+            chart.zoomX(xPosition, scaleFactor);
         } else {
-           xAxisPositions = chart.getXAxes();
+            chart.zoomX(XAxisPosition.BOTTOM, scaleFactor);
+            chart.zoomX(XAxisPosition.TOP, scaleFactor);
         }
 
-        if(xAxisPositions.length > 0) {
-            for (int i = 0; i < xAxisPositions.length; i++) {
-                chart.zoomX(xAxisPositions[i], scaleFactor);
-            }
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public boolean onScaleY(@Nullable BPoint startPoint, double scaleFactor) {
-        if(scaleFactor == 0 || scaleFactor == 1) {
-            return false;
-        }
-
-        if(chart.isTraceSelected()) {
-            chart.zoomY(chart.getSelectedTraceStack(), chart.getSelectedTraceY(), scaleFactor);
-            return true;
-        }
-
-        if(startPoint != null) {
-            int stack = chart.getStack(startPoint);
-            if(stack >= 0) {
-                YAxisPosition yAxisPosition = chart.getYAxis(stack, startPoint);
-                if(yAxisPosition != null) {
-                    chart.zoomY(stack, yAxisPosition, scaleFactor);
-                    return true;
-                }
-            }
-        }
-        return false;
+        return true;
     }
 
     @Override
@@ -120,25 +76,30 @@ public class InteractiveChart implements InteractiveDrawable {
         if(dx == 0) {
             return false;
         }
-
-        XAxisPosition[] xAxisPositions = new XAxisPosition[0];
         if(chart.isTraceSelected()) {
-            XAxisPosition[] xAxisPositions1 = {chart.getSelectedTraceX()};
-            xAxisPositions = xAxisPositions1;
-        } else if(startPoint != null) {
+            chart.translateSelectedTraceX(dx);
+        } else if (startPoint != null){
             XAxisPosition xPosition = chart.getXAxisPosition(startPoint);
-            if(xPosition != null) {
-                XAxisPosition[] xAxisPositions1 = {xPosition};
-                xAxisPositions = xAxisPositions1;
-            }
+            chart.translateX(xPosition, dx);
         } else {
-            xAxisPositions = chart.getXAxes();
+            chart.translateX(XAxisPosition.BOTTOM, dx);
+            chart.translateX(XAxisPosition.TOP, dx);
         }
+        return true;
+    }
 
-        if(xAxisPositions.length > 0) {
-            for (int i = 0; i < xAxisPositions.length; i++) {
-                chart.translateX(xAxisPositions[i], dx);
-            }
+    @Override
+    public boolean onScaleY(@Nullable BPoint startPoint, double scaleFactor) {
+        if(scaleFactor == 0 || scaleFactor == 1) {
+            return false;
+        }
+        if(chart.isTraceSelected()) {
+            chart.zoomSelectedTraceY(scaleFactor);
+            return true;
+        } else if (startPoint != null) {
+            int stack = chart.getStack(startPoint);
+            YAxisPosition yPosition = chart.getYAxisPosition(stack, startPoint);
+            chart.zoomY(stack, yPosition, scaleFactor);
             return true;
         }
         return false;
@@ -150,19 +111,14 @@ public class InteractiveChart implements InteractiveDrawable {
             return false;
         }
         if(chart.isTraceSelected()) {
-            chart.translateY(chart.getSelectedTraceStack(), chart.getSelectedTraceY(), dy);
+            chart.translateSelectedTraceY(dy);
             return true;
         }
-
-        if(startPoint != null) {
+        if (startPoint != null) {
             int stack = chart.getStack(startPoint);
-            if(stack >= 0) {
-                YAxisPosition yAxisPosition = chart.getYAxis(stack, startPoint);
-                if(yAxisPosition != null) {
-                    chart.translateY(stack, yAxisPosition, dy);
-                    return true;
-                }
-            }
+            YAxisPosition yPosition = chart.getYAxisPosition(stack, startPoint);
+            chart.translateY(stack, yPosition, dy);
+            return true;
         }
         return false;
     }

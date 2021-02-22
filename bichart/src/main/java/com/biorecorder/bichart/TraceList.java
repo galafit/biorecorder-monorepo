@@ -23,6 +23,10 @@ public class TraceList {
         }
     }
 
+    public boolean isTraceSelected() {
+        return selectedTrace >= 0;
+    }
+
     AxisWrapper getTraceX(int traceIndex) {
         return traces.get(traceIndex).getXAxis();
     }
@@ -188,6 +192,24 @@ public class TraceList {
                     extent = traceExtent;
                 } else if (traceExtent > 0) {
                     extent = Math.min(extent, traceExtent);
+                }
+            }
+        }
+        return extent;
+    }
+
+    public double getSelectedTraceXBestExtent(int width) {
+        double extent = -1;
+        if(selectedTrace > 0) {
+            AxisWrapper xAxis = traces.get(selectedTrace).getXAxis();
+            for (Trace trace : traces) {
+                if (trace.getXAxis() == xAxis) {
+                    double traceExtent = trace.getBestExtent(width);
+                    if (extent < 0) {
+                        extent = traceExtent;
+                    } else if (traceExtent > 0) {
+                        extent = Math.min(extent, traceExtent);
+                    }
                 }
             }
         }

@@ -30,7 +30,6 @@ class Legend {
         painter = null;
     }
 
-
     public boolean selectTrace(int x, int y) {
         if (painter != null) {
             int index = painter.findButton(x, y);
@@ -48,6 +47,9 @@ class Legend {
     }
 
     public BDimension getPrefferedSize(RenderContext renderContext) {
+        if(isAttachedToStacks) {
+            return new BDimension(0, 0);
+        }
         revalidate(renderContext);
         return painter.getPrefferedSize();
     }
@@ -56,6 +58,9 @@ class Legend {
      * move top left corner to the given point (x, y)
      */
     public void moveTo(int x, int y)  {
+        if(isAttachedToStacks) {
+            return;
+        }
         if(painter != null) {
             int dx = x - this.x;
             int dy = y - this.y;

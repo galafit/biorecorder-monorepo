@@ -17,6 +17,7 @@ class AxisPainter {
 
     private AxisConfig config;
     private Orientation orientation;
+    private TickLabelFormat tickLabelPrefixAndSuffix;
 
     private List<BText> tickLabels = new ArrayList<>();
     private IntArrayList tickPositions = new IntArrayList();
@@ -26,38 +27,17 @@ class AxisPainter {
     private int axisLength;
     private int widthOut;
 
-    public AxisPainter(Scale scale, AxisConfig axisConfig, Orientation orientation, RenderContext renderContext, String title, double tickInterval,  boolean isRoundingEnabled) {
+    public AxisPainter(Scale scale, AxisConfig axisConfig, Orientation orientation, RenderContext renderContext, String title, double tickInterval, TickLabelFormat tickLabelPrefixAndSuffix, boolean isRoundingEnabled) {
         this.config = axisConfig;
         this.orientation = orientation;
         axisLength = (int) scale.getLength();
         axisLine = orientation.createAxisLine((int)Math.round(scale.getStart()), (int)Math.round(scale.getEnd()));
+        this.tickLabelPrefixAndSuffix = tickLabelPrefixAndSuffix;
         createAxisElements(renderContext, scale, tickInterval, isRoundingEnabled, title);
     }
 
     public int getWidthOut() {
         return widthOut;
-    }
-
-    public static double getBestExtent(RenderContext renderContext, Scale scale, AxisConfig config, Orientation orientation, int length) {
-        if (scale instanceof CategoryScale) {
-            TextMetric tm = renderContext.getTextMetric(config.getTickLabelTextStyle());
-            StringSequence labels = ((CategoryScale) scale).getLabels();
-            if(labels != null && labels.size() > 0) {
-                List<Tick> ticks = new ArrayList<>(labels.size());
-                for (int i = 0; i < labels.size(); i++) {
-                    ticks.add(new Tick(i, labels.get(i)));
-                }
-
-                int requiredSpaceForTickLabel = getRequiredSpaceForTickLabel(tm, config, orientation, ticks);
-                int bestLength = labels.size() * requiredSpaceForTickLabel + getInterLabelGap(config);
-                bestLength = Math.max(bestLength, length);
-                Scale s = new CategoryScale(labels);
-                s.setMinMax(0, labels.size());
-                s.setStartEnd(0, bestLength);
-                return s.invert(length);
-            }
-        }
-        return -1;
     }
 
     public void drawCrosshair(BCanvas canvas, BRectangle area, int position) {
@@ -183,14 +163,14 @@ class AxisPainter {
         TickProvider tickProvider;
         // if tick interval specified (tickInterval > 0)
         if (tickInterval > 0) {
-            tickProvider = scale.getTickProviderByInterval(tickInterval, config.getTickLabelPrefixAndSuffix());
+            tickProvider = scale.getTickProviderByInterval(tickInterval, tickLabelPrefixAndSuffix);
         } else {
             int tickIntervalCount;
             int fontFactor = 4;
             double tickPixelInterval = fontFactor * config.getTickLabelTextStyle().getSize();
             tickIntervalCount = (int)(scale.getLength() / tickPixelInterval);
             tickIntervalCount = Math.max(tickIntervalCount, MIN_TICK_COUNT);
-            tickProvider = scale.getTickProviderByIntervalCount(tickIntervalCount, config.getTickLabelPrefixAndSuffix());
+            tickProvider = scale.getTickProviderByIntervalCount(tickIntervalCount, tickLabelPrefixAndSuffix);
         }
 
         double min = scale.getMin();
