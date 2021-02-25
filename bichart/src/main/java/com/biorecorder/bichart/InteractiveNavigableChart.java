@@ -80,9 +80,7 @@ public class InteractiveNavigableChart implements InteractiveDrawable {
         } else {
             boolean isChanged = false;
             for (XAxisPosition xPosition : XAxisPosition.values()) {
-                if(chart.hasScroll(xPosition)) {
-                    isChanged = chart.zoomScrollExtent(xPosition, scaleFactor) || isChanged;
-                }
+                isChanged = chart.zoomScrollExtent(xPosition, scaleFactor) || isChanged;
             }
             return isChanged;
         }
@@ -108,15 +106,11 @@ public class InteractiveNavigableChart implements InteractiveDrawable {
             double scrollTranslation = 0;
             if(chart.isChartTraceSelected()) {
                 XAxisPosition xPosition = chart.getChartSelectedTraceX();
-                if(chart.hasScroll(xPosition)) {
-                    scrollTranslation = chart.getScrollWidth(xPosition) / chart.getWidth();
-                }
+                scrollTranslation = chart.getScrollWidth(xPosition) / chart.getWidth();
             } else {
                 for (XAxisPosition xPosition : XAxisPosition.values()) {
-                    if(chart.hasScroll(xPosition)) {
-                        double translation = chart.getScrollWidth(xPosition) / chart.getWidth();
-                        scrollTranslation = Math.max(scrollTranslation, translation);
-                    }
+                    double translation = chart.getScrollWidth(xPosition) / chart.getWidth();
+                    scrollTranslation = Math.max(scrollTranslation, translation);
                 }
             }
             chart.translateScrolls(dx * scrollTranslation);

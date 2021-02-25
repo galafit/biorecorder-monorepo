@@ -227,6 +227,11 @@ public class Chart {
         return traceList.isXAxisUsed(xAxisList.get(xPositionToIndex(xPosition)));
     }
 
+    Range getXMinMax(XAxisPosition xPosition) {
+        AxisWrapper axis = xAxisList.get(xPositionToIndex(xPosition));
+        return new Range(axis.getMin(), axis.getMax());
+    }
+
 
     int getStacksSumWeight() {
         int weightSum = 0;
