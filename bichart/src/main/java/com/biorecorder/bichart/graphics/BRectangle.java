@@ -27,7 +27,7 @@ public class BRectangle {
 
     // taken from
     // http://hg.openjdk.java.net/jdk7/jdk7/jdk/file/00cd9dc3c2b5/src/share/classes/java/awt/Rectangle.java
-    public boolean contains(int X, int Y) {
+    public boolean contain(int X, int Y) {
         int w = this.width;
         int h = this.height;
         if ((w | h) < 0) {

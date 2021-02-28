@@ -22,6 +22,8 @@ public class Chart {
     private boolean isLegendAttachedToStacks = true;
     private Insets fixedMargin;
     private Insets margin;
+    private Insets spacing = new Insets(5);
+
     /*
      * 2 X-axis: 0(even) - BOTTOM and 1(odd) - TOP
      * 2 Y-axis for every section(stack): even - LEFT and odd - RIGHT;
@@ -36,6 +38,8 @@ public class Chart {
     private Legend legend;
     private Title title;
     private Tooltip tooltip;
+    private int x;
+    private int y;
     private int width;
     private int height;
     private boolean isValid = false;
@@ -71,7 +75,7 @@ public class Chart {
         if (graphAreaWidth < 0) {
             graphAreaWidth = 0;
         }
-        return new BRectangle(margin.left(), margin.top(), graphAreaWidth, graphAreaHeight);
+        return new BRectangle(x + margin.left(), y + margin.top(), graphAreaWidth, graphAreaHeight);
     }
 
     private void setXStartEnd(int areaX, int areaWidth) {
@@ -250,7 +254,7 @@ public class Chart {
     }
 
     int getStack(BPoint point) {
-        if (new BRectangle(0, 0, width, height).contains(point.getX(), point.getY())) {
+        if (new BRectangle(0, 0, width, height).contain(point.getX(), point.getY())) {
             // find point stack
             int stackCount = yAxisList.size() / 2;
             for (int i = 0; i < stackCount; i++) {
@@ -263,7 +267,7 @@ public class Chart {
     }
 
     YAxisPosition getYAxisPosition(int stack, BPoint point) {
-        if (new BRectangle(0, 0, width, height).contains(point.getX(), point.getY())) {
+        if (new BRectangle(0, 0, width, height).contain(point.getX(), point.getY())) {
             // find axis position
             AxisWrapper leftAxis = yAxisList.get(yPositionToIndex(stack, YAxisPosition.LEFT));
             AxisWrapper rightAxis = yAxisList.get(yPositionToIndex(stack, YAxisPosition.RIGHT));
@@ -290,7 +294,7 @@ public class Chart {
     }
 
     XAxisPosition getXAxisPosition(BPoint point) {
-        if (new BRectangle(0, 0, width, height).contains(point.getX(), point.getY())) {
+        if (new BRectangle(0, 0, width, height).contain(point.getX(), point.getY())) {
             AxisWrapper bottomAxis = xAxisList.get(xPositionToIndex(XAxisPosition.BOTTOM));
             AxisWrapper topAxis = xAxisList.get(xPositionToIndex(XAxisPosition.TOP));
             int stack = getStack(point);
@@ -320,6 +324,18 @@ public class Chart {
      * Base methods to interact
      * ==================================================
      */
+    public boolean contain(int x, int y) {
+        return  getBounds().contain(x, y);
+    }
+
+    public void setSpacing(Insets spacing) {
+        if(spacing == null) {
+            this.spacing = new Insets(0);
+        }
+        this.spacing = spacing;
+        invalidate();
+    }
+
     public Insets getMargin(RenderContext renderContext) {
         if (!isValid) {
             revalidate(renderContext);
@@ -334,6 +350,10 @@ public class Chart {
     public void setMargin(@Nullable Insets margin) {
         this.fixedMargin = margin;
         invalidate();
+    }
+
+    public BRectangle getBounds() {
+        return new BRectangle(x, y, width, height);
     }
 
     public void invalidate() {
@@ -352,10 +372,6 @@ public class Chart {
             return;
         }
 
-        Insets spacing = config.getSpacing();
-        if (spacing == null) {
-            spacing = new Insets(0);
-        }
         int top = spacing.top();
         int bottom = spacing.bottom();
         int left = spacing.left();
@@ -363,7 +379,7 @@ public class Chart {
         int width1 = width - left - right;
         if (title != null) {
             title.setWidth(width1);
-            title.moveTo(left, top);
+            title.moveTo(x + left, y + top);
             top += title.getPrefferedSize(renderContext).height;;
         }
 
@@ -374,13 +390,13 @@ public class Chart {
             if (!isLegendAttachedToStacks) {
                 BDimension legendPrefSize = legend.getPrefferedSize(renderContext);
                 if (legend.isTop()) {
-                    legend.moveTo(left, top);
+                    legend.moveTo(x + left, y + top);
                     top += legendPrefSize.height;
                 } else if (legend.isBottom()) {
-                    legend.moveTo(left, height - legendPrefSize.height - bottom);
+                    legend.moveTo(x + left, y + height - legendPrefSize.height - bottom);
                     bottom += legendPrefSize.height;
                 } else {
-                    legend.moveTo(left, top + (height - top - bottom - legendPrefSize.height) / 2);
+                    legend.moveTo(x + left, y + top + (height - top - bottom - legendPrefSize.height) / 2);
                 }
             }
         }
@@ -392,8 +408,9 @@ public class Chart {
             setYStartEnd(graphArea.y, graphArea.height);
             return;
         }
-
-        setXStartEnd(left, width1);
+        margin = new Insets(top, right, bottom, left);
+        BRectangle graphArea = graphArea();
+        setXStartEnd(graphArea.x, graphArea.width);
         AxisWrapper topAxis = xAxisList.get(xPositionToIndex(XAxisPosition.TOP));
         AxisWrapper bottomAxis = xAxisList.get(xPositionToIndex(XAxisPosition.BOTTOM));
         if (traceList.isXAxisUsed(topAxis)) {
@@ -404,7 +421,7 @@ public class Chart {
         }
 
         margin = new Insets(top, right, bottom, left);
-        BRectangle graphArea = graphArea();
+        graphArea = graphArea();
         setYStartEnd(graphArea.y, graphArea.height);
 
         for (int i = 0; i < yAxisList.size(); i++) {
@@ -430,7 +447,7 @@ public class Chart {
     }
 
     public boolean hoverOn(int x, int y) {
-        if (!graphArea().contains(x, y)) {
+        if (!graphArea().contain(x, y)) {
             return hoverOff();
         }
         return tooltip.setHoverPoint(traceList.getNearest(x, y));
@@ -446,7 +463,7 @@ public class Chart {
         }
         canvas.enableAntiAliasAndHinting();
         canvas.setColor(config.getMarginColor());
-        canvas.fillRect(0, 0, width, height);
+        canvas.fillRect(x, y, width, height);
         //draw title
         if (title != null) {
             title.draw(canvas);
@@ -653,16 +670,13 @@ public class Chart {
         traceList.remove(traceIndex);
     }
 
-    public void setSize(int width, int height) {
-        if(this.width != width) {
-            this.width = width;
-            legend = null;
-            invalidate();
-        }
-        if(this.height != height) {
-            this.height = height;
-            invalidate();
-        }
+    public void setBounds(int x, int y, int width, int height) {
+        this.x = x;
+        this.y = y;
+        this.height = height;
+        this.width = width;
+        legend = null;
+        invalidate();
     }
 
     public int traceCount() {

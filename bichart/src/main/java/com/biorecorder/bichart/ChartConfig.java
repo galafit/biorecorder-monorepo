@@ -19,17 +19,13 @@ public class ChartConfig {
     private LegendConfig legendConfig = new LegendConfig();
     private TooltipConfig tooltipConfig = new TooltipConfig();
 
-    private Insets spacing;
-    private int autoSpacing = 10; //px taken into account only if spacing is null
-
-    private int stackGap = 4; //px
-
     private AxisConfig yAxisConfig = new AxisConfig();
     private AxisConfig xAxisConfig = new AxisConfig();
 
     private XAxisPosition primaryXPosition = XAxisPosition.BOTTOM;
     private YAxisPosition primaryYPosition = YAxisPosition.LEFT;
 
+    private int stackGap = 4; //px
     private int defaultStackWeight = 4;
 
     public ChartConfig() {
@@ -61,8 +57,6 @@ public class ChartConfig {
         titleConfig = new TitleConfig(chartConfig.titleConfig);
         legendConfig = new LegendConfig(chartConfig.legendConfig);
         tooltipConfig = new TooltipConfig(chartConfig.tooltipConfig);
-        spacing = chartConfig.spacing;
-        autoSpacing = chartConfig.autoSpacing;
         stackGap = chartConfig.stackGap;
         yAxisConfig = new AxisConfig(chartConfig.yAxisConfig);
         xAxisConfig = new AxisConfig(chartConfig.xAxisConfig);
@@ -77,28 +71,6 @@ public class ChartConfig {
 
     public void setStackGap(int stackGap) {
         this.stackGap = stackGap;
-    }
-
-    public Insets getSpacing() {
-        if(spacing == null) {
-            return new Insets(autoSpacing);
-        }
-        return spacing;
-    }
-
-    /**
-     * if null (default) spaces will be calculated automatically on the base of autoSpacing
-     */
-    public void setSpacing(@Nullable Insets spacing) {
-        this.spacing = spacing;
-    }
-
-    public int getAutoSpacing() {
-        return autoSpacing;
-    }
-
-    public void setAutoSpacing(int autoSpacing) {
-        this.autoSpacing = autoSpacing;
     }
 
     public XAxisPosition getPrimaryXPosition() {

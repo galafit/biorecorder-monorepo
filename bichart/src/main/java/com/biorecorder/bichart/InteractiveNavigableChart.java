@@ -28,8 +28,8 @@ public class InteractiveNavigableChart implements InteractiveDrawable {
         if(chart.selectTrace(x, y)) {
             return true;
         } else {
-            if(chart.isNavigatorContains(new BPoint(x, y)))  {
-                return chart.setScrollsPosition(x, y);
+            if(chart.navigatorContain(x, y))  {
+                return chart.setScrollsPosition(x);
             }
             return false;
         }
@@ -94,15 +94,14 @@ public class InteractiveNavigableChart implements InteractiveDrawable {
         }
         if(startPoint != null && !startPoint.equals(lastStartPoint)){
             lastStartPoint = startPoint;
-            isScrollMoving = chart.isScrollContain(startPoint.getX(), startPoint.getY());
+            isScrollMoving = chart.scrollContain(startPoint.getX(), startPoint.getY());
         }
 
         if(isScrollMoving) {
-            chart.translateScrolls(-dx);
-            return true;
+            return chart.translateScrolls(-dx);
         }
 
-        if(startPoint == null || chart.isChartContains(startPoint.getX(), startPoint.getY())) {
+        if(startPoint == null || chart.chartContain(startPoint.getX(), startPoint.getY())) {
             double scrollTranslation = 0;
             if(chart.isChartTraceSelected()) {
                 XAxisPosition xPosition = chart.getChartSelectedTraceX();
@@ -113,8 +112,7 @@ public class InteractiveNavigableChart implements InteractiveDrawable {
                     scrollTranslation = Math.max(scrollTranslation, translation);
                 }
             }
-            chart.translateScrolls(dx * scrollTranslation);
-            return true;
+            return chart.translateScrolls(dx * scrollTranslation);
         }
 
         return false;
@@ -125,7 +123,7 @@ public class InteractiveNavigableChart implements InteractiveDrawable {
         if (startPoint == null || scaleFactor == 0 || scaleFactor == 1) {
             return false;
         }
-        if(chart.isChartContains(startPoint.getX(), startPoint.getY())) {
+        if(chart.chartContain(startPoint.getX(), startPoint.getY())) {
             if(chart.isChartTraceSelected()) {
                 chart.zoomChartSelectedTraceY(scaleFactor);
                 return true;
@@ -164,7 +162,7 @@ public class InteractiveNavigableChart implements InteractiveDrawable {
         if(dy == 0 || startPoint == null) {
             return false;
         }
-        if(chart.isChartContains(startPoint.getX(), startPoint.getY())) {
+        if(chart.chartContain(startPoint.getX(), startPoint.getY())) {
             if(chart.isChartTraceSelected()) {
                 chart.translateChartSelectedTraceY(dy);
                 return true;

@@ -19,7 +19,7 @@ public class InteractiveChart implements InteractiveDrawable {
 
     @Override
     public void onResize(int width, int height) {
-        chart.setSize(width, height);
+        chart.setBounds(0, 0, width, height);
     }
 
     @Override

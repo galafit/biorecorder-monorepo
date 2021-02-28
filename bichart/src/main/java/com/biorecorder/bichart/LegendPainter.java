@@ -155,7 +155,7 @@ public class LegendPainter {
      */
     public int findButton(int x, int y) {
         for (int i = 0; i < buttons.size(); i++) {
-            if (buttons.get(i).getBounds().contains(x, y)) {
+            if (buttons.get(i).getBounds().contain(x, y)) {
                 return i;
             }
         }

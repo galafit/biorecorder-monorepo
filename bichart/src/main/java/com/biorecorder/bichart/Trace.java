@@ -129,7 +129,7 @@ public class Trace {
    public int distanceSqw(int pointIndex,  int x, int y) {
         BRectangle hoverRect = tracePainter.getHoverArea(data, pointIndex, xAxis.getScale(), yAxis.getScale());
         if (hoverRect.width > 0 && hoverRect.height > 0) {
-            if (hoverRect.contains(x, y)) {
+            if (hoverRect.contain(x, y)) {
                 return 0;
             } else {
                 return -1;

@@ -14,9 +14,6 @@ public class NavigableChartConfig {
     private ScrollConfig scrollConfig;
 
     private BColor backgroundColor = BColor.WHITE_OBSCURE;
-    private int gap = 0; // between Chart and Preview px
-    private Insets spacing = new Insets(0);
-    private int navigatorHeightMin = 16; // px
 
     public NavigableChartConfig() {
         BColor navigatorBgColor = BColor.WHITE_OBSCURE;
@@ -53,11 +50,7 @@ public class NavigableChartConfig {
         chartConfig = new ChartConfig(config.chartConfig);
         navigatorConfig = new ChartConfig(config.navigatorConfig);
         scrollConfig = new ScrollConfig(config.scrollConfig);
-
         backgroundColor = config.backgroundColor;
-        gap = config.gap;
-        spacing = config.spacing;
-        navigatorHeightMin = config.navigatorHeightMin;
     }
 
     public ChartConfig getChartConfig() {
@@ -78,29 +71,5 @@ public class NavigableChartConfig {
 
     public void setBackgroundColor(BColor backgroundColor) {
         this.backgroundColor = backgroundColor;
-    }
-
-    public int getGap() {
-        return gap;
-    }
-
-    public void setGap(int gap) {
-        this.gap = gap;
-    }
-
-    public Insets getSpacing() {
-        return spacing;
-    }
-
-    public void setSpacing(Insets spacing) {
-        this.spacing = spacing;
-    }
-
-    public int getNavigatorHeightMin() {
-        return navigatorHeightMin;
-    }
-
-    public void setNavigatorHeightMin(int navigatorHeightMin) {
-        this.navigatorHeightMin = navigatorHeightMin;
     }
 }
