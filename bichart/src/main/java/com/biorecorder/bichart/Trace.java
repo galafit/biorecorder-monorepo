@@ -1,5 +1,7 @@
 package com.biorecorder.bichart;
 
+import com.biorecorder.bichart.axis.XAxisPosition;
+import com.biorecorder.bichart.axis.YAxisPosition;
 import com.biorecorder.bichart.graphics.*;
 import com.biorecorder.bichart.traces.TracePainter;
 import com.biorecorder.bichart.traces.TraceType;
@@ -7,6 +9,8 @@ import com.biorecorder.bichart.traces.TraceType;
 public class Trace {
     private ChartData data;
     private final TracePainter tracePainter;
+    private final XAxisPosition xAxisPosition;
+    private final YAxisPosition yAxisPosition;
     private final AxisWrapper xAxis;
     private final AxisWrapper yAxis;
     private String name;
@@ -14,13 +18,15 @@ public class Trace {
 
     private int[] sortedIndices;
 
-    public Trace(ChartData data, TracePainter tracePainter, AxisWrapper xAxis, AxisWrapper yAxis, BColor traceColor, String name) {
+    public Trace(ChartData data, TracePainter tracePainter, XAxisPosition xAxisPosition, YAxisPosition yAxisPosition, AxisWrapper xAxis, AxisWrapper yAxis, BColor traceColor, String name) {
         this.data = data;
         this.tracePainter = tracePainter;
         this.xAxis = xAxis;
         this.yAxis = yAxis;
         this.name = name;
         this.color = traceColor;
+        this.xAxisPosition = xAxisPosition;
+        this.yAxisPosition = yAxisPosition;
     }
 
     public String getName() {
@@ -45,6 +51,14 @@ public class Trace {
 
     public AxisWrapper getYAxis() {
         return yAxis;
+    }
+
+    public XAxisPosition getXAxisPosition() {
+        return xAxisPosition;
+    }
+
+    public YAxisPosition getYAxisPosition() {
+        return yAxisPosition;
     }
 
     private int nearest(double xValue) {

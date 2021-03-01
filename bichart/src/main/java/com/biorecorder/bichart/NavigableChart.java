@@ -45,8 +45,8 @@ public class NavigableChart {
             Scroll scroll = axisToScrolls.get(xPosition);
             if (chart.isXAxisUsed(xPosition)) {
                 if (scroll == null) {
-                    //chart.autoScaleY();
-                    //navigator.autoScaleY();
+                    chart.autoScaleY();
+                    navigator.autoScaleY();
                     ScrollScale scrollScale = new ScrollScale() {
                         @Override
                         public double positionToValue(double x) {
@@ -114,9 +114,10 @@ public class NavigableChart {
         BRectangle navigatorArea = new BRectangle(left, height - navigatorHeight, width1, navigatorHeight);
         chart.setBounds(chartArea.x, chartArea.y, chartArea.width, chartArea.height);
         navigator.setBounds(navigatorArea.x, navigatorArea.y, navigatorArea.width, navigatorArea.height);
-        //  выравниваем маргины
+        //  зануляем маргины чтобы они считались автоматом
         chart.setMargin(null);
         navigator.setMargin(null);
+        //  выравниваем маргины
         Insets chartMargin = chart.getMargin(renderContext);
         Insets navigatorMargin = navigator.getMargin(renderContext);
         if (chartMargin.left() != navigatorMargin.left() ||
@@ -129,81 +130,10 @@ public class NavigableChart {
         updateScrolls();
     }
 
-
-    double navigatorScale(double value) {
-        return navigator.scale(XAxisPosition.BOTTOM, value);
-    }
-
-    double navigatorInvert(double value) {
-        return navigator.invert(XAxisPosition.BOTTOM, value);
-    }
-
-
-    /**
-     * =============================================================*
-     * Protected method for careful use                            *
-     * ==============================================================
-     */
-
-    boolean hoverOff() {
-        if (chart.hoverOff()) {
-            return true;
-        }
-        if (navigator.hoverOff()) {
-            return true;
-        }
-        return false;
-    }
-
-    boolean hoverOn(int x, int y) {
-        if (chart.hoverOn(x, y)) {
-            return true;
-        }
-        if (navigator.hoverOn(x, y)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    boolean chartContain(int x, int y) {
-        return chart.contain(x, y);
-    }
-
-    public boolean scrollContain(int x, int y) {
-        if (!navigator.contain(x, y)) {
-            return false;
-        }
-        for (XAxisPosition xPosition : axisToScrolls.keySet()) {
-            if (axisToScrolls.get(xPosition).contain(x)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    int getChartStack(BPoint point) {
-        return chart.getStack(point);
-    }
-
-    YAxisPosition getChartYAxis(int stack, BPoint point) {
-        return chart.getYAxisPosition(stack, point);
-    }
-
-    int getNavigatorStack(BPoint point) {
-        return chart.getStack(point);
-    }
-
-
-    YAxisPosition getNavigatorYAxis(int stack, BPoint point) {
-        return navigator.getYAxisPosition(stack, point);
-    }
-
-
     /**
      * ==================================================*
-     * Base methods to interact           *
-     * ==================================================
+     * Base methods to interact                          *
+     * ==================================================*
      */
 
     public void draw(BCanvas canvas) {
@@ -237,68 +167,6 @@ public class NavigableChart {
         invalidate();
     }
 
-
-    public boolean setScrollsPosition(double x) {
-        isChanged = false;
-        for (XAxisPosition xPosition : axisToScrolls.keySet()) {
-            axisToScrolls.get(xPosition).setPosition(x);
-        }
-        return isChanged;
-    }
-
-    public boolean translateScrolls(double dx) {
-        isChanged = false;
-        for (XAxisPosition xPosition : axisToScrolls.keySet()) {
-            axisToScrolls.get(xPosition).translatePosition(dx);
-        }
-        return isChanged;
-    }
-
-    public boolean zoomScrollExtent(XAxisPosition xAxisPosition, double zoomFactor) {
-        isChanged = false;
-        Scroll scroll = axisToScrolls.get(xAxisPosition);
-        if (scroll != null) {
-            scroll.zoomExtent(zoomFactor);
-        }
-        return isChanged;
-    }
-
-    public double getScrollWidth(XAxisPosition xAxisPosition) throws IllegalArgumentException {
-        Scroll scroll = axisToScrolls.get(xAxisPosition);
-        if (scroll != null) {
-            return scroll.getWidth();
-        }
-        return 0;
-    }
-
-    public void autoScaleScrollExtent() {
-        for (XAxisPosition xPosition : axisToScrolls.keySet()) {
-            axisToScrolls.get(xPosition).setExtent(chart.getBestExtent(xPosition));
-        }
-    }
-
-    public void autoScaleSelectedTraceXScrollExtent() {
-        XAxisPosition xPosition = chart.getSelectedTraceX();
-        axisToScrolls.get(xPosition).setExtent(chart.getSelectedTraceXBestExtent());
-
-    }
-
-    public XAxisPosition getChartSelectedTraceX() {
-        return chart.getSelectedTraceX();
-    }
-
-    public int getWidth() {
-        return width;
-    }
-
-    public boolean selectTrace(int x, int y) {
-        if (chart.selectTrace(x, y)) {
-            return true;
-        } else {
-            return navigator.selectTrace(x, y);
-        }
-    }
-
     public void setTitle(String title) {
         chart.setTitle(title);
     }
@@ -307,45 +175,6 @@ public class NavigableChart {
     /**
      * =======================Base methods to interact with chart ==========================
      **/
-    public int chartStackCount() {
-        return chart.stackCount();
-    }
-
-    public boolean isChartTraceSelected() {
-        return chart.isTraceSelected();
-    }
-
-    public void zoomChartY(int stack, YAxisPosition yPosition, double zoomFactor) {
-        chart.zoomY(stack, yPosition, zoomFactor);
-    }
-
-    public void zoomChartSelectedTraceY(double zoomFactor) {
-        chart.zoomSelectedTraceY(zoomFactor);
-    }
-
-    public void zoomChartX(XAxisPosition xPosition, double zoomFactor) {
-        chart.zoomX(xPosition, zoomFactor);
-    }
-
-    public void zoomChartSelectedTraceX(double zoomFactor) {
-        chart.zoomSelectedTraceX(zoomFactor);
-    }
-
-    public void translateChartY(int stack, YAxisPosition yPosition, int dy) {
-        chart.translateY(stack, yPosition, dy);
-    }
-
-    public void translateChartSelectedTraceY(int dy) {
-        chart.translateSelectedTraceY(dy);
-    }
-
-    public void translateChartX(XAxisPosition xPosition, int dy) {
-        chart.translateX(xPosition, dy);
-    }
-
-    public void translateChartSelectedTraceX(int dy) {
-        chart.translateSelectedTraceX(dy);
-    }
 
     public void autoScaleChartY(int stack, YAxisPosition yPosition) {
         chart.autoScaleY(stack, yPosition);
@@ -353,14 +182,6 @@ public class NavigableChart {
 
     public void autoScaleChartY() {
         chart.autoScaleY();
-    }
-
-    public void autoScaleChartSelectedTraceY() {
-        chart.autoScaleSelectedTraceY();
-    }
-
-    public void autoScaleChartSelectedTraceX() {
-        chart.autoScaleSelectedTraceX();
     }
 
     public void addChartStack(int weight) {
@@ -373,35 +194,39 @@ public class NavigableChart {
         invalidate();
     }
 
-    public void setChartStackWeight(int stack, int weight) {
+    public void setChartStackWeight(int stack, int weight) throws IllegalArgumentException {
         chart.setStackWeight(stack, weight);
         invalidate();
     }
 
     /**
      * @throws IllegalStateException if stack axis are used by some trace traces and
-     *                               therefor can not be deleted
+     *                               therefore can not be deleted
      */
-    public void removeChartStack(int stackNumber) throws IllegalStateException {
+    public void removeChartStack(int stackNumber) throws IllegalStateException, IllegalArgumentException {
         chart.removeStack(stackNumber);
         invalidate();
     }
 
     public void addChartTrace(ChartData data, TracePainter tracePainter) {
         chart.addTrace(data, tracePainter);
+        invalidate();
     }
 
 
     public void addChartTrace(ChartData data, TracePainter tracePainter, XAxisPosition xPosition, YAxisPosition yPosition) {
         chart.addTrace(data, tracePainter, xPosition, yPosition);
+        invalidate();
     }
 
     public void addChartTrace(ChartData data, TracePainter tracePainter, int stackNumber) {
         chart.addTrace(data, tracePainter, stackNumber);
+        invalidate();
     }
 
     public void addChartTrace(ChartData data, TracePainter tracePainter, int stackNumber, XAxisPosition xPosition, YAxisPosition yPosition) {
         chart.addTrace(data, tracePainter, stackNumber, xPosition, yPosition);
+        invalidate();
     }
 
     public void removeChartTrace(int traceNumber) {
@@ -450,33 +275,14 @@ public class NavigableChart {
         chart.setYMinMax(stack, yPosition, min, max);
     }
 
+    public int chartStackCount() {
+        return chart.stackCount();
+    }
+
+
     /**
      * =======================Base methods to interact with navigator==========================
      **/
-    public boolean isNavigatorTraceSelected() {
-        return navigator.isTraceSelected();
-    }
-
-    public boolean navigatorContain(int x, int y) {
-        return navigator.contain(x, y);
-    }
-
-    public void zoomNavigatorY(int stack, YAxisPosition yPosition, double zoomFactor) {
-        navigator.zoomY(stack, yPosition, zoomFactor);
-    }
-
-    public void zoomNavigatorSelectedTraceY(double zoomFactor) {
-        navigator.zoomSelectedTraceY(zoomFactor);
-    }
-
-    public void translateNavigatorY(int stack, YAxisPosition yPosition, int dy) {
-        navigator.translateY(stack, yPosition, dy);
-    }
-
-    public void translateNavigatorSelectedTraceY(int dy) {
-        navigator.translateSelectedTraceY(dy);
-    }
-
 
     public int navigatorStackCount() {
         return navigator.stackCount();
@@ -501,7 +307,7 @@ public class NavigableChart {
      * @throws IllegalStateException if stack axis are used by some trace traces and
      *                               therefor can not be deleted
      */
-    public void removeNavigatorStack(int stack) throws IllegalStateException {
+    public void removeNavigatorStack(int stack) throws IllegalStateException, IllegalArgumentException {
         navigator.removeStack(stack);
         invalidate();
     }
@@ -562,12 +368,183 @@ public class NavigableChart {
         navigator.autoScaleY(stack, yPosition);
     }
 
-    public void autoScaleNavigatorSelectedTraceY() {
-        navigator.autoScaleSelectedTraceY();
-    }
-
     public void autoScaleNavigatorY() {
         navigator.autoScaleY();
     }
 
+    /**
+     * =============================================================*
+     * Protected method for careful use                            *
+     * ==============================================================
+     */
+
+    boolean hoverOff() {
+        if (chart.hoverOff()) {
+            return true;
+        }
+        if (navigator.hoverOff()) {
+            return true;
+        }
+        return false;
+    }
+
+    boolean hoverOn(int x, int y) {
+        if (chart.hoverOn(x, y)) {
+            return true;
+        }
+        if (navigator.hoverOn(x, y)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    boolean chartContain(int x, int y) {
+        return chart.getBounds().contain(x, y);
+    }
+
+    boolean navigatorContain(int x, int y) {
+        return navigator.getBounds().contain(x, y);
+    }
+
+    public boolean scrollContain(int x, int y) {
+        if (!navigator.getBounds().contain(x, y)) {
+            return false;
+        }
+        for (XAxisPosition xPosition : axisToScrolls.keySet()) {
+            if (axisToScrolls.get(xPosition).contain(x)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    int getChartStack(BPoint point) {
+        return chart.getStack(point);
+    }
+
+    int getNavigatorStack(BPoint point) {
+        return navigator.getStack(point);
+    }
+
+    YAxisPosition getChartYAxis(int stack, BPoint point) {
+        return chart.getYAxisPosition(stack, point);
+    }
+
+    YAxisPosition getNavigatorYAxis(int stack, BPoint point) {
+        return navigator.getYAxisPosition(stack, point);
+    }
+
+    boolean setScrollsPosition(double x) {
+        isChanged = false;
+        for (XAxisPosition xPosition : axisToScrolls.keySet()) {
+            axisToScrolls.get(xPosition).setPosition(x);
+        }
+        return isChanged;
+    }
+
+    boolean translateScrolls(double dx) {
+        isChanged = false;
+        for (XAxisPosition xPosition : axisToScrolls.keySet()) {
+            axisToScrolls.get(xPosition).translatePosition(dx);
+        }
+        return isChanged;
+    }
+
+    boolean translateScrollsViewport(double dx) {
+        isChanged = false;
+        double viewport_dx = dx;
+        double scrolls_dx = dx;
+        for (XAxisPosition xPosition : axisToScrolls.keySet()) {
+            scrolls_dx = Math.min(viewport_dx * axisToScrolls.get(xPosition).getWidth() / width, viewport_dx);
+        }
+        for (XAxisPosition xPosition : axisToScrolls.keySet()) {
+             axisToScrolls.get(xPosition).translatePosition(scrolls_dx);
+        }
+        return isChanged;
+    }
+
+
+    boolean zoomScrollExtent(XAxisPosition xAxisPosition, double zoomFactor) {
+        isChanged = false;
+        Scroll scroll = axisToScrolls.get(xAxisPosition);
+        if (scroll != null) {
+            scroll.zoomExtent(zoomFactor);
+        }
+        return isChanged;
+    }
+
+    boolean zoomScrollExtent(double zoomFactor) {
+        isChanged = false;
+        for (XAxisPosition xPosition : axisToScrolls.keySet()) {
+            axisToScrolls.get(xPosition).zoomExtent(zoomFactor);
+        }
+        return isChanged;
+    }
+
+    boolean autoScaleScrollExtent() {
+        isChanged = false;
+        for (XAxisPosition xPosition : axisToScrolls.keySet()) {
+            axisToScrolls.get(xPosition).setExtent(chart.getBestExtent(xPosition));
+        }
+        return isChanged;
+    }
+
+    boolean autoScaleScrollExtent(XAxisPosition xPosition) {
+        isChanged = false;
+        axisToScrolls.get(xPosition).setExtent(chart.getBestExtent(xPosition));
+        return isChanged;
+    }
+
+    XAxisPosition getChartSelectedTraceX() {
+        return chart.getSelectedTraceX();
+    }
+
+    boolean selectTrace(int x, int y) {
+        if (chart.selectTrace(x, y)) {
+            return true;
+        } else {
+            return navigator.selectTrace(x, y);
+        }
+    }
+
+    boolean zoomChartY(int stack, YAxisPosition yPosition, double zoomFactor) {
+        return chart.zoomY(stack, yPosition, zoomFactor);
+    }
+
+    boolean translateChartY(int stack, YAxisPosition yPosition, int dy) {
+        return chart.translateY(stack, yPosition, dy);
+    }
+
+    int getChartSelectedTraceStack() {
+        return chart.getSelectedTraceStack();
+    }
+
+    YAxisPosition getChartSelectedTraceY() {
+        return chart.getSelectedTraceY();
+    }
+
+    int getNavigatorSelectedTraceStack() {
+        return navigator.getSelectedTraceStack();
+    }
+
+    YAxisPosition getNavigatorSelectedTraceY() {
+        return navigator.getSelectedTraceY();
+    }
+
+    boolean isNavigatorTraceSelected() {
+        return navigator.isTraceSelected();
+    }
+
+    public boolean isChartTraceSelected() {
+        return chart.isTraceSelected();
+    }
+
+    boolean zoomNavigatorY(int stack, YAxisPosition yPosition, double zoomFactor) {
+        return navigator.zoomY(stack, yPosition, zoomFactor);
+    }
+
+    boolean translateNavigatorY(int stack, YAxisPosition yPosition, int dy) {
+        return navigator.translateY(stack, yPosition, dy);
+    }
 }

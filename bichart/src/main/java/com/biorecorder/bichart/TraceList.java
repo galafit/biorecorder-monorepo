@@ -1,5 +1,7 @@
 package com.biorecorder.bichart;
 
+import com.biorecorder.bichart.axis.XAxisPosition;
+import com.biorecorder.bichart.axis.YAxisPosition;
 import com.biorecorder.bichart.graphics.BCanvas;
 import com.biorecorder.bichart.graphics.BColor;
 import com.biorecorder.bichart.graphics.BRectangle;
@@ -23,15 +25,19 @@ public class TraceList {
         }
     }
 
-    public boolean isTraceSelected() {
-        return selectedTrace >= 0;
+    public XAxisPosition getTraceXPosition(int traceIndex) {
+        return traces.get(traceIndex).getXAxisPosition();
     }
 
-    AxisWrapper getTraceX(int traceIndex) {
+    public YAxisPosition getTraceYPosition(int traceIndex) {
+        return traces.get(traceIndex).getYAxisPosition();
+    }
+
+    public AxisWrapper getTraceX(int traceIndex) {
         return traces.get(traceIndex).getXAxis();
     }
 
-    AxisWrapper getTraceY(int traceIndex) {
+    public AxisWrapper getTraceY(int traceIndex) {
         return traces.get(traceIndex).getYAxis();
     }
 
@@ -110,6 +116,7 @@ public class TraceList {
         int y =  (int) Math.min(yAxis.getStart(), yAxis.getEnd());
         return  new BRectangle(x, y, (int) xAxis.length(), (int) yAxis.length());
     }
+
     public boolean isXAxisUsedByStack(AxisWrapper x, AxisWrapper y1, AxisWrapper y2) {
         List<Trace> xTraces = xAxisToTraces.get(x);
         if(xTraces != null) {
@@ -154,8 +161,6 @@ public class TraceList {
         return minMax;
     }
 
-
-
     public Range getAllTracesXMinMax() {
         Range minMax = null;
         for (Trace trace : traces) {
@@ -163,24 +168,6 @@ public class TraceList {
             minMax = Range.join(minMax, traceXMinMax);
         }
         return minMax;
-    }
-
-    /**
-     * find and return xAxis used by traces belonging to the stack o null
-     * if there is no traces belonging to stack
-     *
-     * @param yAxis1, yAxis2 - right and left axis of the given stack
-     */
-    public AxisWrapper getUsedXAxis(AxisWrapper yAxis1, AxisWrapper yAxis2) {
-        List<Trace> yTraces1 = yAxisToTraces.get(yAxis1);
-        if(yTraces1 != null) {
-            return yTraces1.get(0).getXAxis();
-        }
-        List<Trace> yTraces2 = yAxisToTraces.get(yAxis2);
-        if(yTraces2 != null) {
-            return yTraces2.get(0).getXAxis();
-        }
-        return null;
     }
 
     public double getTracesBestExtent(AxisWrapper xAxis, int width) {
@@ -198,39 +185,12 @@ public class TraceList {
         return extent;
     }
 
-    public double getSelectedTraceXBestExtent(int width) {
-        double extent = -1;
-        if(selectedTrace > 0) {
-            AxisWrapper xAxis = traces.get(selectedTrace).getXAxis();
-            for (Trace trace : traces) {
-                if (trace.getXAxis() == xAxis) {
-                    double traceExtent = trace.getBestExtent(width);
-                    if (extent < 0) {
-                        extent = traceExtent;
-                    } else if (traceExtent > 0) {
-                        extent = Math.min(extent, traceExtent);
-                    }
-                }
-            }
-        }
-        return extent;
-    }
-
     public int getSelection() {
         return selectedTrace;
     }
 
     public void setSelection(int selectedTraceIndex) {
         selectedTrace = selectedTraceIndex;
-    }
-
-    public int getTraceIndex(String traceName) {
-        for (int i = 0; i < traces.size(); i++) {
-            if(traces.get(i).getName().equals(traceName)) {
-                return i;
-            }
-        }
-        return -1;
     }
 
     public TracePoint getNearest(int x, int y) {
