@@ -14,7 +14,6 @@ public interface Column {
     Column view(int from, int length);
     Column view(int[] order);
     Column append(Column col) throws UnsupportedOperationException, IllegalArgumentException;
-    Column aggregateAndAppend(Aggregation agg, IntSequence groups, Column col);
     /**
      * Returns a sorted view of the underlying data without modifying the order
      * of the underlying data.

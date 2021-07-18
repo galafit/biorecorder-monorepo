@@ -7,6 +7,10 @@ public class DataTable {
     private String name;
     private List<Column> columns = new ArrayList<>();
 
+    public DataTable() {
+        this("DataTable");
+    }
+
     public DataTable(String name) {
         this.name = name;
     }

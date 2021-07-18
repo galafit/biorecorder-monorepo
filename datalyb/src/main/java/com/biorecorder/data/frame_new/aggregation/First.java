@@ -1,16 +1,14 @@
 package com.biorecorder.data.frame_new.aggregation;
 
-public class Min implements Aggregation {
-    int minInt;
-    double minDouble;
+public class First implements Aggregation {
+    int firstInt;
+    double firstDouble;
     int count = 0;
 
     @Override
     public void addInt(int value) {
         if(count == 0) {
-            minInt = value;
-        } else {
-            minInt = Math.min(minInt, value);
+            firstInt = value;
         }
         count++;
 
@@ -19,24 +17,22 @@ public class Min implements Aggregation {
     @Override
     public void addDouble(double value) {
         if(count == 0) {
-            minDouble = value;
-        } else {
-            minDouble = Math.min(minDouble, value);
+            firstDouble = value;
         }
         count++;
     }
     @Override
     public String name() {
-        return "MIN";
+        return "FIRST";
     }
     @Override
     public int getInt() {
-        return minInt;
+        return firstInt;
     }
 
     @Override
     public double getDouble() {
-        return minDouble;
+        return firstDouble;
     }
 
     @Override
@@ -48,4 +44,5 @@ public class Min implements Aggregation {
     public void reset() {
         count = 0;
     }
+
 }

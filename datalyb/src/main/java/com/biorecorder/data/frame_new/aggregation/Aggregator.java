@@ -1,6 +1,8 @@
 package com.biorecorder.data.frame_new.aggregation;
+import com.biorecorder.data.frame_new.BaseType;
 import com.biorecorder.data.frame_new.Column;
 import com.biorecorder.data.frame_new.DataTable;
+import com.biorecorder.data.frame_new.IntColumn;
 import com.biorecorder.data.list.IntArrayList;
 import com.biorecorder.data.sequence.IntSequence;
 
@@ -76,22 +78,51 @@ public class Aggregator {
             resultantTable = new DataTable(tableToAggregate.name());
             for (int i = 0; i < tableToAggregate.columnCount(); i++) {
                 Column col = tableToAggregate.getColumn(i);
-                resultantTable.addColumn(col.type().create(col.name()));
+                Aggregation[] aggregations = columnsToAgg.get(i);
+                for (int j = 0; j < aggregations.length; j++) {
+                    resultantTable.addColumn(col.type().create(col.name()+":" + aggregations[j].name()));
+                }
             }
         }
-
         IntSequence groups = grouper.group(tableToAggregate.getColumn(0));
         for (int i = 0; i < tableToAggregate.columnCount(); i++) {
-            resultantTable.getColumn(i).aggregateAndAppend(columnsToAgg.get(i)[0], groups, tableToAggregate.getColumn(i));
+           Aggregation[] aggregations = columnsToAgg.get(i);
+            for (int j = 0; j < aggregations.length; j++) {
+                aggregateAndAppend(aggregations[j], groups, tableToAggregate.getColumn(i), resultantTable.getColumn(i + j));
+            }
         }
         return resultantTable;
     }
 
-
+    private Column aggregateAndAppend(Aggregation agg, IntSequence groups, Column colToAgg, Column resultantCol) throws IllegalArgumentException {
+        int groupCounter = 0;
+        int groupStart = colToAgg.size();
+        if(groups.size() > 0) {
+            groupStart = groups.get(groupCounter);
+        }
+        if(colToAgg.type().getBaseType() == BaseType.INT) {
+            System.out.println("  ");
+            for (int i = 0; i < groups.size(); i++) {
+               // System.out.println(i+" group start "+groups.get(i));
+            }
+            IntColumn intColToAgg = (IntColumn) colToAgg;
+            IntColumn intResultantCol = (IntColumn) resultantCol;
+            for (int i = 0; i < colToAgg.size(); i++) {
+                if(i == groupStart) {
+                    intResultantCol.append(agg.getInt());
+                    agg.reset();
+                    if(groupCounter < groups.size()) {
+                        groupStart = groups.get(groupCounter);
+                    }
+                }
+                agg.addInt(intColToAgg.intValue(i));
+            }
+        }
+        return resultantCol;
+    }
 
     static class EqualIntervalGrouper implements Grouper {
         private IntervalProvider intervalProvider;
-
         public EqualIntervalGrouper(IntervalProvider intervalProvider) {
             this.intervalProvider = intervalProvider;
         }
@@ -112,11 +143,11 @@ public class Aggregator {
                     }
                 }
             }
+
             return groupStarts;
         }
     }
-
-
+    
     static class EqualPointsGrouper  implements Grouper{
         private int pointsInGroup;
         private int pointsAdded;
@@ -128,14 +159,19 @@ public class Aggregator {
         public IntSequence group(Column column) {
             final int firstGroupPoints = pointsInGroup - pointsAdded;
             final int numberOfGroups;
-            if(firstGroupPoints <= column.size()) {
+            if(firstGroupPoints >= column.size()) {
                 pointsAdded += column.size();
                 numberOfGroups = 0;
             } else {
-                numberOfGroups = (column.size() - firstGroupPoints) / pointsInGroup;
-                pointsAdded = (column.size() - firstGroupPoints) % pointsInGroup;
+                int groups = 1;
+                groups += (column.size() - firstGroupPoints) / pointsInGroup;
+                int lastGroupPoints = (column.size() - firstGroupPoints) % pointsInGroup;
+                if(lastGroupPoints == 0) {
+                    groups--;
+                }
+                numberOfGroups = groups;
+                pointsAdded = lastGroupPoints;
             }
-
             return new IntSequence() {
                 @Override
                 public int size() {
@@ -147,11 +183,156 @@ public class Aggregator {
                     if (index == 0) {
                         return firstGroupPoints;
                     } else {
-                        return pointsInGroup;
+                        return firstGroupPoints + pointsInGroup * index;
                     }
-
                 }
             };
         }
+    }
+
+    public static void main(String[] args) {
+        DataTable dt = new DataTable("test table");
+        int[] xData = {2, 4, 5, 9, 12, 33, 34, 35, 40};
+        int[] yData = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+
+        dt.addColumn(new IntColumn("x", xData));
+        dt.addColumn(new IntColumn("y", yData));
+        Aggregator aggPoints = Aggregator.createEqualPointsAggregator(4);
+        aggPoints.addColumnAggregations(0, new First());
+        aggPoints.addColumnAggregations(1, new Average());
+
+        Aggregator aggInterval = Aggregator.createEqualIntervalAggregator(4);
+        aggInterval.addColumnAggregations(0, new First());
+        aggInterval.addColumnAggregations(1, new Average());
+
+        DataTable rt1 = aggPoints.aggregate(dt);
+
+        int[] expectedX1 = {2, 12, 40};
+        int[] expectedY1 = {2, 6, 9};
+
+        int[] expectedX2 = {2, 4, 9, 12, 33, 40};
+        int[] expectedY2 = {1, 2, 4, 5, 7, 9};
+
+        for (int i = 0; i < rt1.rowCount(); i++) {
+            if (rt1.value(i, 0) != expectedX1[i]) {
+                String errMsg = "ResampleByEqualFrequency error: " + i + " expected x =  " + expectedX1[i] + "  resultant x = " + rt1.value(i, 0);
+                throw new RuntimeException(errMsg);
+            }
+            if (rt1.value(i, 1) != expectedY1[i]) {
+                String errMsg = "ResampleByEqualFrequency error: " + i + " expected y =  " + expectedY1[i] + "  resultant y = " + rt1.value(i, 1);
+                throw new RuntimeException(errMsg);
+            }
+        }
+
+        System.out.println("ResampleByEqualFrequency is OK ");
+
+        DataTable rt2 = aggInterval.aggregate(dt);
+        for (int i = 0; i < rt2.rowCount(); i++) {
+            if (rt2.value(i, 0) != expectedX2[i]) {
+                String errMsg = "ResampleByEqualInterval error: " + i + " expected x =  " + expectedX2[i] + "  resultant x = " + rt2.value(i, 0);
+                throw new RuntimeException(errMsg);
+            }
+            if (rt2.value(i, 1) != expectedY2[i]) {
+                String errMsg = "ResampleByEqualInterval error: " + i + " expected y =  " + expectedY2[i] + "  resultant y = " + rt2.value(i, 1);
+                throw new RuntimeException(errMsg);
+            }
+        }
+        System.out.println("ResampleByEqualInterval is OK");
+
+        int size = 130;
+        int[] xData1 = new int[size];
+        int[] yData1 = new int[size];
+        for (int i = 0; i < size; i++) {
+            xData1[i] = i;
+            yData1[i] = i;
+        }
+
+        DataTable dataTable = new DataTable();
+        dataTable.addColumn(new IntColumn("x", xData1));
+        dataTable.addColumn(new IntColumn("y", yData1));
+        Aggregator aggPoints1 = Aggregator.createEqualPointsAggregator(5);
+        aggPoints1.addColumnAggregations(0, new Min());
+        aggPoints1.addColumnAggregations(1, new Max());
+
+        Aggregator aggInterval1 = Aggregator.createEqualIntervalAggregator(5);
+        aggInterval1.addColumnAggregations(0, new Min());
+        aggInterval1.addColumnAggregations(1, new Max());
+
+        DataTable resTable1 = aggPoints1.aggregate(dataTable);
+        DataTable resTable2 = aggInterval1.aggregate(dataTable);
+        for (int i = 0; i < resTable1.rowCount(); i++) {
+            if (resTable2.value(i, 0) != resTable1.value(i, 0)) {
+                String errMsg = "column 0:  resampling by interval and points are not equal" + i;
+                     throw new RuntimeException(errMsg);
+            }
+            if (resTable2.value(i, 1) != resTable1.value(i, 1)) {
+                String errMsg = "column 1:  resampling by interval and points are not equal" + i;
+                throw new RuntimeException(errMsg);
+            }
+        }
+        System.out.println("Resampling by interval and points are equal. Test done!");
+
+
+        Aggregator aggPoints2 = Aggregator.createEqualPointsAggregator(5);
+        aggPoints2.addColumnAggregations(0, new Min());
+        aggPoints2.addColumnAggregations(1, new Max());
+
+        Aggregator aggInterval2 = Aggregator.createEqualIntervalAggregator(5);
+        aggInterval2.addColumnAggregations(0, new Min());
+        aggInterval2.addColumnAggregations(1, new Max());
+
+        DataTable resTab1 = new DataTable();
+        DataTable resTab2 = new DataTable();
+
+        size = 13;
+        int[] xData2 = new int[size];
+        int[] yData2 = new int[size];
+        for (int i = 0; i < 10; i++) {
+            for (int j = 0; j < size; j++) {
+                xData2[j] = i * size + j;
+                yData2[j] = i * size + j;
+            }
+            DataTable dataTable1 = new DataTable();
+            dataTable1.addColumn(new IntColumn("x", xData2));
+            dataTable1.addColumn(new IntColumn("y", yData2));
+            resTab1 = aggPoints2.aggregate(dataTable1);
+            resTab2 = aggInterval2.aggregate(dataTable1);
+        }
+
+        for (int i = 0; i < resTable1.rowCount(); i++) {
+            if (resTable1.value(i, 0) != resTab1.value(i, 0)) {
+                String errMsg = "column 0:  one aggregation and multiples are not equal" + i;
+                throw new RuntimeException(errMsg);
+            }
+            if (resTable1.value(i, 1) != resTab1.value(i, 1)) {
+                String errMsg = "column 1:  one aggregation and multiples are not equal" + i;
+                throw new RuntimeException(errMsg);
+            }
+        }
+
+        for (int i = 0; i < resTab1.rowCount(); i++) {
+            if (resTab2.value(i, 0) != resTab1.value(i, 0)) {
+                String errMsg = "column 0:  multiple resampling by interval and points are not equal" + i;
+                throw new RuntimeException(errMsg);
+            }
+            if (resTab2.value(i, 1) != resTab1.value(i, 1)) {
+                String errMsg = "column 1:  multiple resampling by interval and points are not equal" + i;
+                throw new RuntimeException(errMsg);
+            }
+        }
+        System.out.println("Multiple resampling by interval and points are equal. Test done!");
+
+       for (int i = 0; i < resTable2.rowCount(); i++) {
+            if (resTable2.value(i, 0) != resTab2.value(i, 0)) {
+                String errMsg = "column 0:  one aggregation and multiples are not equal" + i;
+                throw new RuntimeException(errMsg);
+            }
+            if (resTable2.value(i, 1) != resTab2.value(i, 1)) {
+                String errMsg = "column 1:  one aggregation and multiples are not equal" + i;
+                throw new RuntimeException(errMsg);
+            }
+        }
+        System.out.println("One aggregation and multiples are equal. Test done");
+
     }
 }

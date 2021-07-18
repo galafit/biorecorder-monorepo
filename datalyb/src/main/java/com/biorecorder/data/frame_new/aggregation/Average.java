@@ -1,16 +1,16 @@
 package com.biorecorder.data.frame_new.aggregation;
 
-public class Min implements Aggregation {
-    int minInt;
-    double minDouble;
+public class Average implements Aggregation {
+    long sumInt;
+    double sumDouble;
     int count = 0;
 
     @Override
     public void addInt(int value) {
         if(count == 0) {
-            minInt = value;
+            sumInt = value;
         } else {
-            minInt = Math.min(minInt, value);
+            sumInt = sumInt + value;
         }
         count++;
 
@@ -19,24 +19,24 @@ public class Min implements Aggregation {
     @Override
     public void addDouble(double value) {
         if(count == 0) {
-            minDouble = value;
+            sumDouble = value;
         } else {
-            minDouble = Math.min(minDouble, value);
+            sumDouble = sumDouble + value;
         }
         count++;
     }
     @Override
     public String name() {
-        return "MIN";
+        return "AVG";
     }
     @Override
     public int getInt() {
-        return minInt;
+        return (int) sumInt/count;
     }
 
     @Override
     public double getDouble() {
-        return minDouble;
+        return sumDouble/count;
     }
 
     @Override
@@ -48,4 +48,5 @@ public class Min implements Aggregation {
     public void reset() {
         count = 0;
     }
+
 }

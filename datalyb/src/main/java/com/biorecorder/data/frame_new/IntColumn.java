@@ -13,6 +13,11 @@ public class IntColumn implements Column {
     String name;
     EditableIntSequence data;
 
+    public IntColumn(String name, int[] arrData) {
+        this.name = name;
+        this.data = new IntArrayList(arrData);
+    }
+
     public IntColumn(String name, EditableIntSequence data) {
         this.name = name;
         this.data = data;
@@ -54,6 +59,11 @@ public class IntColumn implements Column {
         return Integer.toString(data.get(index));
     }
 
+    public Column append(int value) {
+        data.add(value);
+        return this;
+    }
+
     @Override
     public Column append(Column col) throws UnsupportedOperationException, IllegalArgumentException {
         if(col.type() != type) {
@@ -93,28 +103,6 @@ public class IntColumn implements Column {
         }
         String errMsg = "Column of different type can not be append: "+ type + " and " + col.type();
         throw new IllegalArgumentException(errMsg);
-    }
-
-    @Override
-    public Column aggregateAndAppend(Aggregation agg, IntSequence groups, Column col) throws IllegalArgumentException {
-        if(col.type() != type) {
-            String msg = "Column of different type can not be append: " + type + " and "+col.type();
-        }
-        IntColumn ic = (IntColumn) col;
-        int groupCounter = 0;
-        int groupStart = col.size();
-        if(groups.size() > 0) {
-            groupStart = groups.get(groupCounter);
-        }
-        for (int i = 0; i < col.size(); i++) {
-            if(i == groupStart && groupCounter++ < groups.size()) {
-                groupStart = groups.get(groupCounter);
-                data.add(agg.getInt());
-                agg.reset();
-            }
-            agg.addInt(ic.intValue(i));
-        }
-        return this;
     }
 
     @Override

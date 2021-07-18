@@ -6,6 +6,11 @@ public class Max implements Aggregation {
     int count = 0;
 
     @Override
+    public String name() {
+        return "MAX";
+    }
+
+    @Override
     public void addInt(int value) {
         if(count == 0) {
             maxInt = value;
