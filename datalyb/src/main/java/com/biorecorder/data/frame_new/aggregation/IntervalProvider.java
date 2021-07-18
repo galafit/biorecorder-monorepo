@@ -1,4 +1,4 @@
-package com.biorecorder.data.frame;
+package com.biorecorder.data.frame_new.aggregation;
 
 /**
  * Created by galafit on 28/4/19.

@@ -1,4 +1,4 @@
-package com.biorecorder.data.frame;
+package com.biorecorder.data.frame_new.aggregation;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,8 +24,6 @@ import java.util.List;
     %I:%M - for minute boundaries, such as 01:23.
     :%S - for second boundaries, such as :45.
     .%L - milliseconds for all other times, such as .012.
-
-
  */
 public enum TimeInterval {
     MILLISECOND_1(TimeUnit.MILLISECOND, 1),

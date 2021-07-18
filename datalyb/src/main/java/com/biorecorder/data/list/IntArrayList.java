@@ -1,5 +1,6 @@
 package com.biorecorder.data.list;
 
+import com.biorecorder.data.frame_new.EditableIntSequence;
 import com.biorecorder.data.sequence.IntSequence;
 
 /**
@@ -10,7 +11,7 @@ import com.biorecorder.data.sequence.IntSequence;
  * <br> and trove ArrayListTemplate -
  * https://bitbucket.org/trove4j/trove/src/24dd57f48bf385fa41a878f8fad7ac44d8b1d53a/core/src/main/templates/gnu/trove/list/array/_E_ArrayList.template?at=master&fileviewer=file-view-default
  */
-public class IntArrayList implements IntSequence {
+public class IntArrayList implements EditableIntSequence {
     private int[] data;
     private int size;
     /**

@@ -15,7 +15,7 @@ public interface ChartFrame extends ChartData {
 
     int columnCount();
 
-    String getColumnName(int columnNumber);
+    String columnName(int columnNumber);
 
     boolean isNumberColumn(int columnNumber);
 

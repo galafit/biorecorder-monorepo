@@ -247,7 +247,7 @@ public class XYData implements ChartFrame {
     }
 
     @Override
-    public String getColumnName(int columnNumber) {
+    public String columnName(int columnNumber) {
         return dataFrame.getColumnName(columnNumber);
     }
 
@@ -343,6 +343,8 @@ public class XYData implements ChartFrame {
     public ChartFrame resampleByEqualTimeInterval(int columnNumber, TimeInterval timeInterval) {
         return new XYData(dataFrame.resampleByEqualTimeInterval(columnNumber, timeInterval, true));
     }
+
+
 
     @Override
     public void appendData() {

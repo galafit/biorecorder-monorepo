@@ -13,9 +13,7 @@ import com.sun.istack.internal.Nullable;
 import java.util.*;
 import java.util.List;
 
-/**
- * Created by hdablin on 24.03.17.
- */
+
 public class Chart {
     private ChartConfig config;
     private boolean isLegendEnabled = true;

@@ -1,6 +1,6 @@
-package com.biorecorder.data.frame;
+package com.biorecorder.data.frame_new.aggregation;
+
 import java.util.Calendar;
-import java.util.Date;
 
 public class TimeIntervalProvider implements IntervalProvider {
     private Calendar calendar;
@@ -124,39 +124,12 @@ public class TimeIntervalProvider implements IntervalProvider {
             this.start = start;
             this.nextIntervalStart = nextIntervalStart;
         }
-        
-        /*
-        * As we will use methods contains only on INCREASING data
-        * we do only one check (value < nextIntervalStart) instead of both
-        */
-        @Override
-        public boolean contains(byte value) {
-            // return value >= start && value < nextIntervalStart;
-            return value < nextIntervalStart;
-        }
-
-        @Override
-        public boolean contains(short value) {
-            return value < nextIntervalStart;
-        }
-
-        @Override
-        public boolean contains(int value) {
-            return value < nextIntervalStart;
-        }
-
-        @Override
-        public boolean contains(long value) {
-            return value < nextIntervalStart;
-        }
-
-        @Override
-        public boolean contains(float value) {
-            return value < nextIntervalStart;
-        }
 
         @Override
         public boolean contains(double value) {
+            // return value >= start && value < nextIntervalStart;
+            // As we will use methods contains only on INCREASING data
+            //we do only one check (value < nextIntervalStart) instead of both
             return value < nextIntervalStart;
         }
     }

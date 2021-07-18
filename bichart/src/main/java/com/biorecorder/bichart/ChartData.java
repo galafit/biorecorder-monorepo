@@ -12,7 +12,7 @@ public interface ChartData {
 
     int columnCount();
 
-    String getColumnName(int columnIndex);
+    String columnName(int columnIndex);
 
     boolean isNumberColumn(int columnIndex);
 
