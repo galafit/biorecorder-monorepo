@@ -4,7 +4,6 @@ public class IntColumnType implements ColumnType {
     private static final int BYTE_SIZE = 4;
     private static final String NAME = "INTEGER";
     private static final BaseType baseType = BaseType.INT;
-
     private static IntColumnType INSTANCE;
 
     private IntColumnType() {

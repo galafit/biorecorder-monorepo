@@ -1,7 +1,5 @@
 package com.biorecorder.data.frame_new;
 
-import com.biorecorder.data.frame_new.aggregation.Aggregation;
-import com.biorecorder.data.sequence.IntSequence;
 
 public interface Column {
     String name();
@@ -14,6 +12,7 @@ public interface Column {
     Column view(int from, int length);
     Column view(int[] order);
     Column append(Column col) throws UnsupportedOperationException, IllegalArgumentException;
+    Column emptyCopy();
     /**
      * Returns a sorted view of the underlying data without modifying the order
      * of the underlying data.

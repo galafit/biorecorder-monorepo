@@ -3,33 +3,37 @@ package com.biorecorder.data.frame_new;
 import com.biorecorder.data.frame_new.aggregation.Aggregation;
 import com.biorecorder.data.frame_new.aggregation.Max;
 import com.biorecorder.data.frame_new.aggregation.Min;
-import com.biorecorder.data.list.IntArrayList;
+import com.biorecorder.data.list.DoubleArrayList;
 import com.biorecorder.data.sequence.SequenceUtils;
 import com.biorecorder.data.utils.PrimitiveUtils;
 
-public class IntColumn implements Column {
-    ColumnType type = IntColumnType.instance();
-    String name;
-    EditableIntSequence data;
+public class DoubleColumn implements Column {
+    ColumnType type = DoubleColumnType.instance();
+    String name = "";
+    EditableDoubleSequence data;
 
-    public IntColumn(String name, int[] arrData) {
+    public DoubleColumn(String name, double[] arrData) {
         this.name = name;
-        this.data = new IntArrayList(arrData);
+        this.data = new DoubleArrayList(arrData);
     }
 
-    public IntColumn(String name, EditableIntSequence data) {
+    public DoubleColumn(String name, EditableDoubleSequence data) {
         this.name = name;
         this.data = data;
     }
 
-    public IntColumn(String name) {
+    public DoubleColumn(EditableDoubleSequence data) {
+        this.data = data;
+    }
+
+    public DoubleColumn(String name) {
         this.name = name;
-        data = new IntArrayList();
+        data = new DoubleArrayList();
     }
 
     @Override
     public Column emptyCopy() {
-        return new IntColumn(name);
+        return new DoubleColumn(name);
     }
 
     @Override
@@ -52,18 +56,12 @@ public class IntColumn implements Column {
         return data.get(index);
     }
 
-
-    public int intValue(int index) {
-        return data.get(index);
-    }
-
-
     @Override
     public String label(int index) {
-        return Integer.toString(data.get(index));
+        return Double.toString(data.get(index));
     }
 
-    public Column append(int value) {
+    public Column append(double value) {
         data.add(value);
         return this;
     }
@@ -71,9 +69,8 @@ public class IntColumn implements Column {
     @Override
     public Column append(Column col) throws UnsupportedOperationException, IllegalArgumentException {
         if(col.type() != type) {
-            IntColumn ic = (IntColumn) col;
             for (int i = 0; i < col.size(); i++) {
-                data.add(ic.intValue(i));
+                data.add(col.value(i));
             }
             return this;
             /*try {
@@ -114,9 +111,9 @@ public class IntColumn implements Column {
         Aggregation agg = new Min();
         if(size() > 0) {
             for (int i = 0; i < size(); i++) {
-               agg.addInt(data.get(i));
+                agg.addDouble(data.get(i));
             }
-            return agg.getInt();
+            return agg.getDouble();
         }
         return Double.NaN;
     }
@@ -126,16 +123,16 @@ public class IntColumn implements Column {
         Aggregation agg = new Max();
         if(size() > 0) {
             for (int i = 0; i < size(); i++) {
-                agg.addInt(data.get(i));
+                agg.addDouble(data.get(i));
             }
-            return agg.getInt();
+            return agg.getDouble();
         }
         return Double.NaN;
     }
 
     @Override
     public Column view(int from, int length) {
-        EditableIntSequence subSequence = new BaseIntSequence() {
+        EditableDoubleSequence subSequence = new BaseDoubleSequence() {
             int size = Math.min(data.size() - from, length);
             @Override
             public int size() {
@@ -143,28 +140,28 @@ public class IntColumn implements Column {
             }
 
             @Override
-            public int get(int index) {
+            public double get(int index) {
                 return data.get(index + from);
             }
         };
-        return new IntColumn(name, subSequence);
+        return new DoubleColumn(name, subSequence);
     }
 
     @Override
     public Column view(int[] order) {
-        EditableIntSequence subSequence = new BaseIntSequence() {
+        EditableDoubleSequence subSequence = new BaseDoubleSequence() {
             @Override
             public int size() {
                 return order.length;
             }
 
             @Override
-            public int get(int index) {
+            public double get(int index) {
                 return data.get(order[index]);
             }
         };
 
-        return new IntColumn(name, subSequence);
+        return new DoubleColumn(name, subSequence);
     }
 
     @Override
@@ -190,3 +187,4 @@ public class IntColumn implements Column {
         return SequenceUtils.bisectRight(data, PrimitiveUtils.roundDouble2int(value), 0, data.size());
     }
 }
+

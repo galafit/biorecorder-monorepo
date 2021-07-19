@@ -31,6 +31,10 @@ public class DataTable {
         columns.add(column);
     }
 
+    public void addColumn(int position, Column col) {
+        columns.add(position, col);
+    }
+
     public int rowCount() {
         if(columns.size() > 0) {
           return columns.get(0).size();

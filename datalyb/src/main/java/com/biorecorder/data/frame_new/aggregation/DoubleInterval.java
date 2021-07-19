@@ -16,4 +16,9 @@ public class DoubleInterval implements Interval {
     public boolean contains(double value) {
         return value < nextIntervalStart;
     }
+
+    @Override
+    public String toString() {
+        return new String("Interval: "+start + " "+ nextIntervalStart);
+    }
 }
