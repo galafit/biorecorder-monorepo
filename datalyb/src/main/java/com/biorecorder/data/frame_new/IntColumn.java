@@ -22,10 +22,17 @@ public class IntColumn implements Column {
         this.data = data;
     }
 
+    @Override
+    public boolean isNumberColumn() {
+        return type.isNumberType();
+    }
+
     public IntColumn(String name) {
         this.name = name;
         data = new IntArrayList();
     }
+
+
 
     @Override
     public Column emptyCopy() {

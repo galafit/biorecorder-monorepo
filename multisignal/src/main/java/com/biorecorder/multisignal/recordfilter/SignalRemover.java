@@ -93,11 +93,11 @@ public class SignalRemover extends FilterRecordStream {
         // 0 channel 1 sample, 1 channel 2 samples, 2 channel 3 samples, 3 channel 4 samples
         int[] dataRecord = {1,  2,3,  4,5,6,  7,8,9,0};
 
-        DataHeader dataConfig = new DataHeader(FormatVersion.BDF_24BIT, 4);
-        dataConfig.setNumberOfSamplesInEachDataRecord(0, 1);
-        dataConfig.setNumberOfSamplesInEachDataRecord(1, 2);
-        dataConfig.setNumberOfSamplesInEachDataRecord(2, 3);
-        dataConfig.setNumberOfSamplesInEachDataRecord(3, 4);
+        DataHeader dataConfig = new DataHeader(FormatVersion.BDF_24BIT);
+        dataConfig.addSignal(1);
+        dataConfig.addSignal(2);
+        dataConfig.addSignal(3);
+        dataConfig.addSignal(4);
 
         // remove signals 0 and 2
 

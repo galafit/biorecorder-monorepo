@@ -1,5 +1,6 @@
 package com.biorecorder.bichart.dataprocessing;
 
+import com.biorecorder.bichart.GroupingApproximation;
 import com.biorecorder.bichart.graphics.Range;
 import com.biorecorder.data.frame.*;
 import com.biorecorder.data.sequence.*;
@@ -9,76 +10,76 @@ import java.util.List;
 /**
  * Created by galafit on 21/1/19.
  */
-public class XYData implements ChartFrame {
+public class XYDataOld implements ChartFrame {
     private DataFrame dataFrame;
     private String xColumnName = "x";
 
-    private XYData(DataFrame dataFrame) {
+    private XYDataOld(DataFrame dataFrame) {
         this.dataFrame = dataFrame;
     }
 
-    public XYData(double xStart, double xStep, boolean isDataAppendMode) {
+    public XYDataOld(double xStart, double xStep, boolean isDataAppendMode) {
         dataFrame = new DataFrame(isDataAppendMode);
         dataFrame.addColumn(xColumnName, xStart, xStep);
     }
 
-    public XYData(double xStart, double xStep, int length) {
+    public XYDataOld(double xStart, double xStep, int length) {
         dataFrame = new DataFrame(false);
         dataFrame.addColumn(xColumnName, xStart, xStep);
     }
 
-    public XYData(List<String> xData, boolean isDataAppendMode) {
+    public XYDataOld(List<String> xData, boolean isDataAppendMode) {
         dataFrame = new DataFrame(isDataAppendMode);
         dataFrame.addColumn(xColumnName, xData);
     }
 
-    public XYData(ShortSequence xData, boolean isDataAppendMode) {
+    public XYDataOld(ShortSequence xData, boolean isDataAppendMode) {
         dataFrame = new DataFrame(isDataAppendMode);
         dataFrame.addColumn(xColumnName, xData);
 
     }
 
-    public XYData(short[] xData) {
+    public XYDataOld(short[] xData) {
         dataFrame = new DataFrame(false);
         dataFrame.addColumn(xColumnName, xData);
     }
 
-    public XYData(IntSequence xData, boolean isDataAppendMode) {
+    public XYDataOld(IntSequence xData, boolean isDataAppendMode) {
         dataFrame = new DataFrame(isDataAppendMode);
         dataFrame.addColumn(xColumnName, xData);
     }
 
-    public XYData(int[] xData) {
+    public XYDataOld(int[] xData) {
         dataFrame = new DataFrame(false);
         dataFrame.addColumn(xColumnName, xData);
     }
 
-    public XYData(LongSequence xData, boolean isDataAppendMode) {
+    public XYDataOld(LongSequence xData, boolean isDataAppendMode) {
         dataFrame = new DataFrame(isDataAppendMode);
         dataFrame.addColumn(xColumnName, xData);
     }
 
-    public XYData(long[] xData) {
+    public XYDataOld(long[] xData) {
         dataFrame = new DataFrame(false);
         dataFrame.addColumn(xColumnName, xData);
     }
 
-    public XYData(FloatSequence xData, boolean isDataAppendMode) {
+    public XYDataOld(FloatSequence xData, boolean isDataAppendMode) {
         dataFrame = new DataFrame(isDataAppendMode);
         dataFrame.addColumn(xColumnName, xData);
     }
 
-    public XYData(float[] xData) {
+    public XYDataOld(float[] xData) {
         dataFrame = new DataFrame(false);
         dataFrame.addColumn(xColumnName, xData);
     }
 
-    public XYData(DoubleSequence xData, boolean isDataAppendMode) {
+    public XYDataOld(DoubleSequence xData, boolean isDataAppendMode) {
         dataFrame = new DataFrame(isDataAppendMode);
         dataFrame.addColumn(xColumnName, xData);
     }
 
-    public XYData(double[] xData) {
+    public XYDataOld(double[] xData) {
         dataFrame = new DataFrame(false);
         dataFrame.addColumn(xColumnName, xData);
     }
@@ -131,7 +132,7 @@ public class XYData implements ChartFrame {
         dataFrame.setColumnName(columnNumber, columnName);
     }
 
-    private GroupApproximation aggregationsToAproximation(Aggregation[] aggregations) throws IllegalArgumentException {
+    private GroupingApproximation aggregationsToAproximation(Aggregation[] aggregations) throws IllegalArgumentException {
         switch (aggregations.length) {
             case 0: {
                 return null;
@@ -139,24 +140,24 @@ public class XYData implements ChartFrame {
             case 1: {
                 switch (aggregations[0]) {
                     case FIRST:
-                        return GroupApproximation.OPEN;
+                        return GroupingApproximation.OPEN;
                     case LAST:
-                        return GroupApproximation.CLOSE;
+                        return GroupingApproximation.CLOSE;
                     case MIN:
-                        return GroupApproximation.LOW;
+                        return GroupingApproximation.LOW;
                     case MAX:
-                        return GroupApproximation.HIGH;
+                        return GroupingApproximation.HIGH;
                     case AVERAGE:
-                        return GroupApproximation.AVERAGE;
+                        return GroupingApproximation.AVERAGE;
                     case SUM:
-                        return GroupApproximation.SUM;
+                        return GroupingApproximation.SUM;
                 }
                 break;
             }
             case 2: {
                 if(aggregations[0] == Aggregation.MIN
                         && aggregations[1]  == Aggregation.MAX) {
-                    return GroupApproximation.RANGE;
+                    return GroupingApproximation.RANGE;
                 }
                 break;
             }
@@ -165,7 +166,7 @@ public class XYData implements ChartFrame {
                         && aggregations[1]  == Aggregation.MAX
                         && aggregations[2]  == Aggregation.MIN
                         && aggregations[3]  == Aggregation.LAST) {
-                    return GroupApproximation.OHLC;
+                    return GroupingApproximation.OHLC;
                 }
                 break;
             }
@@ -177,7 +178,7 @@ public class XYData implements ChartFrame {
         throw new IllegalArgumentException(errMsg.toString());
     }
 
-    private Aggregation[] aproximationToAggregations(GroupApproximation approximation) throws IllegalArgumentException {
+    private Aggregation[] aproximationToAggregations(GroupingApproximation approximation) throws IllegalArgumentException {
         if(approximation == null) {
             return new Aggregation[0];
         }
@@ -222,12 +223,12 @@ public class XYData implements ChartFrame {
 
 
     @Override
-    public void setColumnGroupApproximation(int columnNumber, GroupApproximation groupApproximation) {
-        dataFrame.setColumnAggFunctions(columnNumber, aproximationToAggregations(groupApproximation));
+    public void setColumnGroupApproximation(int columnNumber, GroupingApproximation groupingApproximation) {
+        dataFrame.setColumnAggFunctions(columnNumber, aproximationToAggregations(groupingApproximation));
     }
 
     @Override
-    public GroupApproximation getColumnGroupApproximation(int columnNumber) {
+    public GroupingApproximation getColumnGroupApproximation(int columnNumber) {
         return aggregationsToAproximation(dataFrame.getColumnAggFunctions(columnNumber));
     }
 
@@ -271,8 +272,8 @@ public class XYData implements ChartFrame {
     }
 
     @Override
-    public int[] sortedIndices(int sortColumn) {
-        return dataFrame.sortedIndices(sortColumn);
+    public int[] sortedIndices() {
+        return dataFrame.sortedIndices(0);
     }
 
     @Override
@@ -301,47 +302,47 @@ public class XYData implements ChartFrame {
 
     @Override
     public ChartFrame slice(int fromRowNumber, int length) {
-        return new XYData(dataFrame.slice(fromRowNumber, length));
+        return new XYDataOld(dataFrame.slice(fromRowNumber, length));
     }
 
     @Override
     public ChartFrame slice(int fromRowNumber) {
-        return new XYData(dataFrame.slice(fromRowNumber));
+        return new XYDataOld(dataFrame.slice(fromRowNumber));
     }
 
 
     @Override
     public ChartFrame concat(ChartFrame data) {
-        if(data instanceof XYData) {
-            return new XYData(dataFrame.concat(((XYData)data).dataFrame));
+        if(data instanceof XYDataOld) {
+            return new XYDataOld(dataFrame.concat(((XYDataOld)data).dataFrame));
         }
         throw new IllegalArgumentException("XYData can be concatenated only with XYData");
     }
 
     @Override
     public ChartFrame view(int fromRowNumber) {
-        return new XYData(dataFrame.view(fromRowNumber));
+        return new XYDataOld(dataFrame.view(fromRowNumber));
     }
 
 
     @Override
     public ChartFrame view(int fromRowNumber, int length) {
-        return new XYData(dataFrame.view(fromRowNumber, length));
+        return new XYDataOld(dataFrame.view(fromRowNumber, length));
     }
 
     @Override
     public ChartFrame resampleByEqualPointsNumber(int points) {
-        return new XYData(dataFrame.resampleByEqualPointsNumber(points, true));
+        return new XYDataOld(dataFrame.resampleByEqualPointsNumber(points, true));
     }
 
     @Override
     public ChartFrame resampleByEqualInterval(int columnNumber, double interval) {
-        return new XYData(dataFrame.resampleByEqualInterval(columnNumber, interval, true));
+        return new XYDataOld(dataFrame.resampleByEqualInterval(columnNumber, interval, true));
     }
 
     @Override
     public ChartFrame resampleByEqualTimeInterval(int columnNumber, TimeInterval timeInterval) {
-        return new XYData(dataFrame.resampleByEqualTimeInterval(columnNumber, timeInterval, true));
+        return new XYDataOld(dataFrame.resampleByEqualTimeInterval(columnNumber, timeInterval, true));
     }
 
 

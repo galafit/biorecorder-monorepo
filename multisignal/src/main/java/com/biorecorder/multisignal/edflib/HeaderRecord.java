@@ -271,7 +271,7 @@ public class HeaderRecord {
             throw new HeaderException(HeaderException.TYPE_RECORD_DURATION_INVALID, recordDurationString);
         }
 
-        DataHeader edfHeader = new DataHeader(formatVersion, realNumberOfSignals);
+        DataHeader edfHeader = new DataHeader(formatVersion);
         edfHeader.setPatientIdentification(patientIdentification());
         edfHeader.setRecordingIdentification(recordingIdentification());
         edfHeader.setRecordingStartTimeMs(startingDateTime);
@@ -283,6 +283,19 @@ public class HeaderRecord {
  *******************************************************************************/
 
         for (int i = 0; i < realNumberOfSignals; i++) {
+/******************** NUMBER OF SAMPLES PER RECORD *********************************************/
+            String samplesString = signalNumberOfSamplesInDataRecord(i);
+            int samples;
+            try {
+                samples = Integer.valueOf(samplesString);
+            } catch (NumberFormatException ex) {
+                throw new HeaderException(HeaderException.TYPE_SIGNAL_NUMBER_OF_SAMPLES_IN_RECORD_INVALID, samplesString, i);
+            }
+            if(samples < 0) {
+                throw new HeaderException(HeaderException.TYPE_SIGNAL_NUMBER_OF_SAMPLES_IN_RECORD_INVALID, samplesString, i);
+            }
+            edfHeader.addSignal(samples);
+
 /******************** PHYSICAL MAX AND MIN *********************************************/
            String physMinString = signalPhysicalMin(i);
            double physMin;
@@ -327,18 +340,8 @@ public class HeaderRecord {
             if(digMax <= digMin) {
                 throw new HeaderException(HeaderException.TYPE_SIGNAL_DIGITAL_MAX_LOWER_OR_EQUAL_MIN, "max: "+digMax + ", min: "+digMin, i);
             }
-/******************** NUMBER OF SAMPLES PER RECORD *********************************************/
-            String samplesString = signalNumberOfSamplesInDataRecord(i);
-            int samples;
-            try {
-                samples = Integer.valueOf(samplesString);
-            } catch (NumberFormatException ex) {
-                throw new HeaderException(HeaderException.TYPE_SIGNAL_NUMBER_OF_SAMPLES_IN_RECORD_INVALID, samplesString, i);
-            }
-            if(samples < 0) {
-                throw new HeaderException(HeaderException.TYPE_SIGNAL_NUMBER_OF_SAMPLES_IN_RECORD_INVALID, samplesString, i);
-            }
-            edfHeader.setNumberOfSamplesInEachDataRecord(i, samples);
+/******************** SET SIGNAL VALUES *********************************************/
+
             edfHeader.setPhysicalDimension(i, signalPhysicalDimension(i));
             edfHeader.setPhysicalRange(i, physMin, physMax);
             edfHeader.setDigitalRange(i, digMin, digMax);

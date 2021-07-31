@@ -32,6 +32,11 @@ public class DoubleColumn implements Column {
     }
 
     @Override
+    public boolean isNumberColumn() {
+        return type.isNumberType();
+    }
+
+    @Override
     public Column emptyCopy() {
         return new DoubleColumn(name);
     }

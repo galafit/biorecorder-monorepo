@@ -138,11 +138,11 @@ public class SignalFilter extends FilterRecordStream {
         // 0 channel 1 sample, 1 channel 6 samples, 2 channel 2 samples
         int[] dataRecord = {1,  2,4,8,6,0,8,  3,5};
 
-        DataHeader dataConfig = new DataHeader(FormatVersion.BDF_24BIT, 3);
+        DataHeader dataConfig = new DataHeader(FormatVersion.BDF_24BIT);
 
-        dataConfig.setNumberOfSamplesInEachDataRecord(0, 1);
-        dataConfig.setNumberOfSamplesInEachDataRecord(1, 6);
-        dataConfig.setNumberOfSamplesInEachDataRecord(2, 2);
+        dataConfig.addSignal(1);
+        dataConfig.addSignal(6);
+        dataConfig.addSignal( 2);
 
 
         // Moving average filter to channel 1

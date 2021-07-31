@@ -1,9 +1,9 @@
-package com.biorecorder.bichart.dataprocessing;
+package com.biorecorder.bichart;
 
 /**
  * Created by galafit on 23/5/19.
  */
-public enum GroupApproximation {
+public enum GroupingApproximation {
     AVERAGE,
     SUM,
     OPEN,
@@ -13,15 +13,15 @@ public enum GroupApproximation {
     RANGE,
     OHLC;
 
-    public GroupApproximation[] getAsArray() {
+    public GroupingApproximation[] getAsArray() {
        if(this == RANGE) {
-           GroupApproximation[] approximations = {LOW, HIGH};
+           GroupingApproximation[] approximations = {LOW, HIGH};
            return approximations;
        } else if (this == OHLC) {
-           GroupApproximation[] approximations = {OPEN, HIGH, LOW, CLOSE};
+           GroupingApproximation[] approximations = {OPEN, HIGH, LOW, CLOSE};
            return approximations;
        } else {
-           GroupApproximation[] approximations = {this};
+           GroupingApproximation[] approximations = {this};
            return approximations;
        }
     }

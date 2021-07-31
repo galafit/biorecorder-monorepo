@@ -38,18 +38,11 @@ class DataManager {
         this.data = data;
         this.processingConfig = dataProcessingConfig;
         switch (processingConfig.getGroupingType()) {
-            case EQUAL_POINTS_NUMBER:
+            case EQUAL_POINTS:
                 isEqualFrequencyGrouping = true;
                 break;
             case EQUAL_INTERVALS:
                 isEqualFrequencyGrouping = false;
-                break;
-            case AUTO:
-                if (data.isRegular()) {
-                    isEqualFrequencyGrouping = true;
-                } else {
-                    isEqualFrequencyGrouping = false;
-                }
                 break;
             default:
                 isEqualFrequencyGrouping = true;
@@ -76,7 +69,7 @@ class DataManager {
 
         if (isSorterNeedUpdate || sorter == null) {
             if (!data.isIncreasing()) {
-                sorter = data.sortedIndices(0);
+                sorter = data.sortedIndices();
             } else {
                 sorter = null;
             }

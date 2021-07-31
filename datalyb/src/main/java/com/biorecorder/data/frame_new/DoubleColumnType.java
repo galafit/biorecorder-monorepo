@@ -25,4 +25,8 @@ public class DoubleColumnType implements ColumnType {
     public Column create(String name) {
         return new DoubleColumn(name);
     }
+
+    public boolean isNumberType() {
+        return true;
+    }
 }

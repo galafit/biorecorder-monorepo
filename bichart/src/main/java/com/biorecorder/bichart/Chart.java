@@ -42,14 +42,10 @@ public class Chart {
     private int height;
     private boolean isValid = false;
 
-    public Chart() {
-        this(DarkTheme.getChartConfig());
-    }
-
-    public Chart(ChartConfig config) {
+    public Chart(ChartConfig config, Scale xScale) {
         this.config = new ChartConfig(config);
-        AxisWrapper bottomAxis = new AxisWrapper(new Axis(new LinearScale(), config.getXAxisConfig(), XAxisPosition.BOTTOM));
-        AxisWrapper topAxis = new AxisWrapper(new Axis(new LinearScale(), config.getXAxisConfig(), XAxisPosition.TOP));
+        AxisWrapper bottomAxis = new AxisWrapper(new Axis(xScale.copy(), config.getXAxisConfig(), XAxisPosition.BOTTOM));
+        AxisWrapper topAxis = new AxisWrapper(new Axis(xScale.copy(), config.getXAxisConfig(), XAxisPosition.TOP));
         xAxisList.add(bottomAxis);
         xAxisList.add(topAxis);
         addStack();
@@ -428,11 +424,11 @@ public class Chart {
         traceList.setData(traceIndex, data);
     }
 
-    public void setStackWeight(int stack, int weight) {
+    /*public void setStackWeight(int stack, int weight) {
         checkStackNumber(stack);
         stackWeights.set(stack, weight);
         invalidate();
-    }
+    }*/
 
     public void addStack() {
         addStack(config.getDefaultStackWeight());
@@ -470,9 +466,9 @@ public class Chart {
     /**
      * add trace to the last stack
      */
-    public void addTrace(ChartData data, TracePainter tracePainter) {
+    public void addTrace(String name, ChartData data, TracePainter tracePainter) {
         int stack = Math.max(0, yAxisList.size() / 2 - 1);
-        addTrace(data, tracePainter, stack);
+        addTrace(name, data, tracePainter, stack);
     }
 
     /**
@@ -480,13 +476,13 @@ public class Chart {
      * @param stack number of the stack to add trace
      * @throws IllegalArgumentException if stack number > total number of stacks in the chart
      */
-    public void addTrace(ChartData data, TracePainter tracePainter, int stack) throws IllegalArgumentException{
-        addTrace(data, tracePainter, stack, config.getPrimaryXPosition(), config.getPrimaryYPosition());
+    public void addTrace(String name,ChartData data, TracePainter tracePainter, int stack) throws IllegalArgumentException{
+        addTrace(name, data, tracePainter, stack, config.getPrimaryXPosition(), config.getPrimaryYPosition());
     }
 
-    public void addTrace(ChartData data, TracePainter tracePainter, XAxisPosition xPosition, YAxisPosition yPosition) {
+    public void addTrace(String name, ChartData data, TracePainter tracePainter, XAxisPosition xPosition, YAxisPosition yPosition) {
         int stack = Math.max(0, yAxisList.size() / 2 - 1);
-        addTrace(data, tracePainter, stack, xPosition, yPosition);
+        addTrace(name, data, tracePainter, stack, xPosition, yPosition);
     }
 
 
@@ -495,7 +491,7 @@ public class Chart {
      * @param stack number of the stack to add trace
      * @throws IllegalArgumentException if stack number > total number of stacks in the chart
      */
-    public void addTrace(ChartData data, TracePainter tracePainter, int stack, XAxisPosition xPosition, YAxisPosition yPosition) throws IllegalArgumentException {
+    public void addTrace(String name, ChartData data, TracePainter tracePainter, int stack, XAxisPosition xPosition, YAxisPosition yPosition) throws IllegalArgumentException {
         if (yAxisList.size() == 0) {
             addStack(); // add stack if there is no stack
         }
@@ -511,7 +507,7 @@ public class Chart {
         }
 
         BColor[] colors = config.getTraceColors();
-        Trace trace = new Trace(data, tracePainter, xIndexToPosition(xIndex), yIndexToPosition(yIndex), xAxis, yAxis, colors[traceList.size() % colors.length], "Trace " + traceList.size());
+        Trace trace = new Trace(name, data, tracePainter, xIndexToPosition(xIndex), yIndexToPosition(yIndex), xAxis, yAxis, colors[traceList.size() % colors.length]);
         traceList.add(trace);
     }
 

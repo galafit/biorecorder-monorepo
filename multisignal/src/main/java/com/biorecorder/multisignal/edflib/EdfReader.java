@@ -1,6 +1,7 @@
 package com.biorecorder.multisignal.edflib;
 
 import java.io.*;
+import java.util.Arrays;
 
 // TODO make it  partially thread safe like EdfWriter!!!
 
@@ -164,8 +165,6 @@ public class EdfReader {
         int sampleStartOffset = (int) (samplesPositionList[signal] % samplesPerRecord);
 
 
-
-
         long fileReadPosition = numberOfBytesInHeaderRecord +
                 (recordNumber * recordSize + signalStartPositionInRecord + sampleStartOffset) * bytesPerSample;
 
@@ -177,8 +176,7 @@ public class EdfReader {
         int sampleCount = 0;
         while (totalReadBytes < n * bytesPerSample) {
             int readBytes = fileInputStream.read(byteData, 0, bytesToRead);
-            int maxOffset = readBytes - bytesPerSample;
-            for (int offset = 0; offset < maxOffset; offset += bytesPerSample) {
+            for (int offset = 0; offset < readBytes; offset += bytesPerSample) {
                 if (physBuffer != null) {
                     physBuffer[sampleCount] = header.digitalValueToPhysical(signal, EndianBitConverter.littleEndianBytesToInt(byteData, offset, bytesPerSample));
                 }
@@ -229,9 +227,8 @@ public class EdfReader {
         }
         int readRecords = readBytes / (recordSize * bytesPerSample);
         recordPosition += readRecords;
-        int maxOffset = readBytes - bytesPerSample;
         int sampleCount = 0;
-        for (int offset = 0; offset < maxOffset; offset += bytesPerSample) {
+        for (int offset = 0; offset < readBytes; offset += bytesPerSample) {
             buffer[sampleCount] = EndianBitConverter.littleEndianBytesToInt(byteData, offset, bytesPerSample);
             sampleCount++;
         }
@@ -301,6 +298,98 @@ public class EdfReader {
      */
     public void close() throws IOException {
         fileInputStream.close();
+    }
+
+    /**
+     * Unit Test. Usage Example.
+     */
+    public static void main(String[] args) {
+        String filename = "05-07-2021_09-40.bdf";
+        File dir = new File(System.getProperty("user.dir"), "records");
+        File edfFile = new File(dir, filename);
+        try {
+            EdfReader edfReader = new EdfReader(edfFile);
+            DataHeader header = edfReader.getHeader();
+            // Print some header info from original file
+            System.out.println("header info");
+            System.out.println(header);
+
+            System.out.println("Test checks that readSamples() and readDataRecords() read the same");
+            int n = 13;
+            int sampleStartPos = 0;
+            int signalNumber = 3;
+            int[] samplesBuffer = new int[n];
+            int[] samplesFromRecords = new int[n];
+
+            // read by samples
+            edfReader.setSamplePosition(signalNumber, sampleStartPos);
+            int readSamples = edfReader.readSamples(signalNumber, n, samplesBuffer);
+
+            // read by record
+            int recordSize = header.getRecordSize();
+            int numberOfSamplesInRecord = header.getNumberOfSamplesInEachDataRecord(signalNumber);
+            int startRecord = sampleStartPos / numberOfSamplesInRecord;
+            int samplesToSkip = sampleStartPos % numberOfSamplesInRecord;
+            int samplesInFirstRecord = numberOfSamplesInRecord;
+            int recordsToRead = 1;
+            if(samplesToSkip > 0) {
+                samplesInFirstRecord = Math.min((numberOfSamplesInRecord - samplesToSkip), n);
+            }
+            int fullRecords = (n - samplesInFirstRecord) / numberOfSamplesInRecord;
+            recordsToRead += fullRecords;
+            int samplesInLastRecord = (n - samplesInFirstRecord) % numberOfSamplesInRecord;
+            if(samplesInLastRecord > 0) {
+                recordsToRead++;
+            }
+
+
+            if(recordsToRead > 0) {
+                int[] recordsBuffer = new int[recordSize * recordsToRead];
+                edfReader.setRecordPosition(startRecord);
+                int readRecords = edfReader.readDataRecords(recordsToRead, recordsBuffer);
+
+                System.out.println(Arrays.toString(recordsBuffer));
+
+
+                int samplesOffsetInRecord = header.getSignalOffsetInDataRecord(signalNumber);
+                int sampleCounter = 0;
+                int recordBufferOffset = samplesOffsetInRecord + samplesToSkip;
+                // first record
+                for (int j = 0; j < samplesInFirstRecord; j++) {
+                    samplesFromRecords[sampleCounter++] = recordsBuffer[recordBufferOffset + j];
+                }
+                recordBufferOffset = samplesOffsetInRecord + recordSize;
+
+                // full records
+                for (int record = 0; record < fullRecords; record++) {
+                    //     System.out.println("samplesOffsetInDataRecord "+samplesOffsetInDataRecord);
+                    for (int j = 0; j < numberOfSamplesInRecord; j++) {
+                        samplesFromRecords[sampleCounter++] = recordsBuffer[recordBufferOffset + j];
+                    }
+                    recordBufferOffset += recordSize;
+                }
+                // last record
+                System.out.println(samplesInFirstRecord + " samples first and last rec " + samplesInLastRecord);
+                 for (int j = 0; j < samplesInLastRecord; j++) {
+                    samplesFromRecords[sampleCounter++] = recordsBuffer[recordBufferOffset + j];
+                }
+            }
+
+
+            for (int i = 0; i < samplesFromRecords.length; i++) {
+                if(samplesBuffer[i] != samplesFromRecords[i]) {
+                    throw new RuntimeException(i + " sample read by readSamples() are not equal sample read by readDataRecord(): "
+                            + samplesBuffer[i] + "  " + samplesFromRecords[i]);
+                }
+            }
+            System.out.println("Test is done!");
+
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+
+
+
     }
 }
 

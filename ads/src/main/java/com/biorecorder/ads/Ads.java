@@ -453,73 +453,66 @@ public class Ads {
      * @return object describing data records structure
      */
     public DataHeader getDataHeader(AdsConfig adsConfig) {
-        DataHeader edfConfig = new DataHeader(FormatVersion.BDF_24BIT, 0);
+        DataHeader edfConfig = new DataHeader(FormatVersion.BDF_24BIT);
         edfConfig.setDurationOfDataRecord(adsConfig.getDurationOfDataRecord());
         for (int i = 0; i < adsConfig.getAdsChannelsCount(); i++) {
             if (adsConfig.isAdsChannelEnabled(i)) {
-                edfConfig.addSignal();
-                int signalNumber = edfConfig.numberOfSignals() - 1;
                 int channelSampleRate = adsConfig.getSampleRate().getValue() / adsConfig.getAdsChannelDivider(i);
+                int nrOfSamplesInEachDataRecord = (int) Math.round(adsConfig.getDurationOfDataRecord() * channelSampleRate);
+                edfConfig.addSignal(nrOfSamplesInEachDataRecord);
+                int signalNumber = edfConfig.numberOfSignals() - 1;
                 edfConfig.setTransducer(signalNumber, "Unknown");
                 edfConfig.setPhysicalDimension(signalNumber, getAdsChannelsPhysicalDimension());
                 edfConfig.setPhysicalRange(signalNumber, getAdsChannelPhysicalMin(adsConfig.getAdsChannelGain(i)), getAdsChannelPhysicalMax(adsConfig.getAdsChannelGain(i)));
                 edfConfig.setDigitalRange(signalNumber, getAdsChannelsDigitalMin(adsConfig.getNoiseDivider()), getAdsChannelsDigitalMax(adsConfig.getNoiseDivider()));
-                int nrOfSamplesInEachDataRecord = (int) Math.round(adsConfig.getDurationOfDataRecord() * channelSampleRate);
-                edfConfig.setNumberOfSamplesInEachDataRecord(signalNumber, nrOfSamplesInEachDataRecord);
                 edfConfig.setLabel(signalNumber, adsConfig.getAdsChannelName(i));
             }
         }
 
         if (adsConfig.isAccelerometerEnabled()) {
             int accSampleRate = adsConfig.getSampleRate().getValue() / adsConfig.getAccelerometerDivider();
-
+            int nrOfSamplesInEachDataRecord = (int) Math.round(adsConfig.getDurationOfDataRecord() * accSampleRate);
             if (adsConfig.isAccelerometerOneChannelMode()) { // 1 accelerometer channels
-                edfConfig.addSignal();
+                 edfConfig.addSignal(nrOfSamplesInEachDataRecord);
                 int signalNumber = edfConfig.numberOfSignals() - 1;
                 edfConfig.setLabel(signalNumber, "Accelerometer");
                 edfConfig.setTransducer(signalNumber, "None");
                 edfConfig.setPhysicalDimension(signalNumber, getAccelerometerPhysicalDimension(adsConfig.isAccelerometerOneChannelMode()));
                 edfConfig.setPhysicalRange(signalNumber, getAccelerometerPhysicalMin(), getAccelerometerPhysicalMax());
                 edfConfig.setDigitalRange(signalNumber, getAccelerometerDigitalMin(adsConfig.isAccelerometerOneChannelMode()), getAccelerometerDigitalMax(adsConfig.isAccelerometerOneChannelMode()));
-                int nrOfSamplesInEachDataRecord = (int) Math.round(adsConfig.getDurationOfDataRecord() * accSampleRate);
-                edfConfig.setNumberOfSamplesInEachDataRecord(signalNumber, nrOfSamplesInEachDataRecord);
             } else {
                 String[] accelerometerChannelNames = {"Accelerometer X", "Accelerometer Y", "Accelerometer Z"};
                 for (int i = 0; i < 3; i++) {     // 3 accelerometer channels
-                    edfConfig.addSignal();
+                    edfConfig.addSignal(nrOfSamplesInEachDataRecord);
                     int signalNumber = edfConfig.numberOfSignals() - 1;
                     edfConfig.setLabel(signalNumber, accelerometerChannelNames[i]);
                     edfConfig.setTransducer(signalNumber, "None");
                     edfConfig.setPhysicalDimension(signalNumber, getAccelerometerPhysicalDimension(adsConfig.isAccelerometerOneChannelMode()));
                     edfConfig.setPhysicalRange(signalNumber, getAccelerometerPhysicalMin(), getAccelerometerPhysicalMax());
                     edfConfig.setDigitalRange(signalNumber, getAccelerometerDigitalMin(adsConfig.isAccelerometerOneChannelMode()), getAccelerometerDigitalMax(adsConfig.isAccelerometerOneChannelMode()));
-                    int nrOfSamplesInEachDataRecord = (int) Math.round(adsConfig.getDurationOfDataRecord() * accSampleRate);
-                    edfConfig.setNumberOfSamplesInEachDataRecord(signalNumber, nrOfSamplesInEachDataRecord);
-                }
+                   }
             }
         }
         if (adsConfig.isBatteryVoltageMeasureEnabled()) {
-            edfConfig.addSignal();
+            int nrOfSamplesInEachDataRecord = 1;
+            edfConfig.addSignal(nrOfSamplesInEachDataRecord);
             int signalNumber = edfConfig.numberOfSignals() - 1;
             edfConfig.setLabel(signalNumber, "Battery voltage");
             edfConfig.setTransducer(signalNumber, "None");
             edfConfig.setPhysicalDimension(signalNumber, getBatteryVoltageDimension());
             edfConfig.setPhysicalRange(signalNumber, getBatteryVoltagePhysicalMin(), getBatteryVoltagePhysicalMax());
             edfConfig.setDigitalRange(signalNumber, getBatteryVoltageDigitalMin(), getBatteryVoltageDigitalMax());
-            int nrOfSamplesInEachDataRecord = 1;
-            edfConfig.setNumberOfSamplesInEachDataRecord(signalNumber, nrOfSamplesInEachDataRecord);
         }
         if (adsConfig.isLeadOffEnabled()) {
-            edfConfig.addSignal();
+            int nrOfSamplesInEachDataRecord = 1;
+            edfConfig.addSignal(nrOfSamplesInEachDataRecord);
             int signalNumber = edfConfig.numberOfSignals() - 1;
             edfConfig.setLabel(signalNumber, "Lead Off Status");
             edfConfig.setTransducer(signalNumber, "None");
             edfConfig.setPhysicalDimension(signalNumber, getLeadOffStatusDimension());
             edfConfig.setPhysicalRange(signalNumber, getLeadOffStatusPhysicalMin(), getLeadOffStatusPhysicalMax());
             edfConfig.setDigitalRange(signalNumber, getLeadOffStatusDigitalMin(), getLeadOffStatusDigitalMax());
-            int nrOfSamplesInEachDataRecord = 1;
-            edfConfig.setNumberOfSamplesInEachDataRecord(signalNumber, nrOfSamplesInEachDataRecord);
-        }
+         }
         return edfConfig;
     }
 

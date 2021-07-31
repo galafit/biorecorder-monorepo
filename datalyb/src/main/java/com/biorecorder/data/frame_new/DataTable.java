@@ -19,20 +19,20 @@ public class DataTable {
         return name;
     }
 
-    public Column getColumn(int index) {
-        return columns.get(index);
-    }
-
-    public void removeColumn(int columnNumber) {
-        columns.remove(columnNumber);
-    }
-
     public void addColumn(Column column) {
         columns.add(column);
     }
 
     public void addColumn(int position, Column col) {
         columns.add(position, col);
+    }
+
+    public Column getColumn(int index) {
+        return columns.get(index);
+    }
+
+    public void removeColumn(int columnNumber) {
+        columns.remove(columnNumber);
     }
 
     public int rowCount() {
@@ -44,6 +44,10 @@ public class DataTable {
 
     public int columnCount() {
         return columns.size();
+    }
+
+    public boolean isNumberColumn(int columnNumber) {
+        return columns.get(columnNumber).isNumberColumn();
     }
 
     public double value(int rowNumber, int columnNumber) {
@@ -76,6 +80,27 @@ public class DataTable {
         return column.bisect(value);
     }
 
+    public int bisectLeft(int columnNumber, double value) {
+        Column column = columns.get(columnNumber);
+        return column.bisectLeft(value);
+    }
+
+    public int bisectRight(int columnNumber, double value) {
+        Column column = columns.get(columnNumber);
+        return column.bisectRight(value);
+    }
+
+    public String getColumnName(int columnNumber) {
+        return columns.get(columnNumber).name();
+    }
+
+    public double min(int columnNumber) {
+        return columns.get(columnNumber).min();
+    }
+
+    public double max(int columnNumber) {
+        return columns.get(columnNumber).max();
+    }
 
     /**
      * This method returns a sorted view of the data frame
@@ -103,6 +128,14 @@ public class DataTable {
         DataTable resultantTable = new DataTable(name);
         for (int i = 0; i < columns.size(); i++) {
             resultantTable.columns.add(columns.get(i).view(rowOrder));
+        }
+        return resultantTable;
+    }
+
+    public DataTable view(int from, int length) {
+        DataTable resultantTable = new DataTable(name);
+        for (int i = 0; i < columns.size(); i++) {
+            resultantTable.columns.add(columns.get(i).view(from, length));
         }
         return resultantTable;
     }

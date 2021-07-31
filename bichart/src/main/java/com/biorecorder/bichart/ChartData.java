@@ -24,7 +24,7 @@ public interface ChartData {
 
     int bisect( double value, int[] sorter);
 
-    int[] sortedIndices(int sortColumn);
+    int[] sortedIndices();
 
 }
 

@@ -15,7 +15,6 @@ import java.util.List;
  1- and 3-month.
  1-year.
 
-
     %Y - for year boundaries, such as 2011.
     %B - for month boundaries, such as February.
     %b %d - for week boundaries, such as Feb 06.

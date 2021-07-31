@@ -56,27 +56,18 @@ public class DataHeader {
     private static final int SECOND_MS = 1000;
 
     private FormatVersion versionFormat;
-    protected double durationOfDataRecordSec = 1; // seconds
-    protected ArrayList<Signal> signals = new ArrayList<Signal>();
-    protected final int numberOfBytesInHeaderRecord;
+    private double durationOfDataRecordSec = 1; // seconds
+    private ArrayList<Signal> signals = new ArrayList<Signal>();
+    private ArrayList<Integer> signalsOffsetInDataRecord = new ArrayList<>();
+    protected int numberOfBytesInHeaderRecord;
 
     /**
      * This constructor creates an instance of RecordsHeader
      * with the specified  version format and number of measuring channels (signals)
      * @param versionFormat   16BIT or 24BIT
-     * @param numberOfSignals number of signals in data records
-     * @throws IllegalArgumentException if numberOfSignals < 0
      */
-    public DataHeader(FormatVersion versionFormat, int numberOfSignals) throws IllegalArgumentException {
-        if (numberOfSignals < 0) {
-            String errMsg = MessageFormat.format("Number of signals is invalid: {0}. Expected {1}", numberOfSignals, ">= 0");
-            throw new IllegalArgumentException(errMsg);
-        }
+    public DataHeader(FormatVersion versionFormat) throws IllegalArgumentException {
         this.versionFormat = versionFormat;
-        for (int i = 0; i < numberOfSignals; i++) {
-            addSignal();
-        }
-        numberOfBytesInHeaderRecord = 256 + (signals.size() * 256);
     }
 
 
@@ -127,7 +118,7 @@ public class DataHeader {
 
     /**
      * Gets the measuring time interval or duration of data records
-     * in milliseconds. 
+     * in milliseconds.
      *
      * @return duration of data record in milliseconds
      */
@@ -304,7 +295,7 @@ public class DataHeader {
      * @return label of the signal
      */
     public String getLabel(int signalNumber) {
-       
+
         return signals.get(signalNumber).getLabel();
     }
 
@@ -315,7 +306,7 @@ public class DataHeader {
      * @return String describing getTransducer (electrodes) used for measuring
      */
     public String getTransducer(int signalNumber) {
-       
+
         return signals.get(signalNumber).getTransducer();
     }
 
@@ -327,7 +318,7 @@ public class DataHeader {
      * @return String describing filters that were applied
      */
     public String getPrefiltering(int signalNumber) {
-       
+
         return signals.get(signalNumber).getPrefiltering();
     }
 
@@ -340,7 +331,7 @@ public class DataHeader {
      * signal that can occur in data records
      */
     public int getDigitalMin(int signalNumber) {
-       
+
         return signals.get(signalNumber).getDigitalMin();
     }
 
@@ -353,7 +344,7 @@ public class DataHeader {
      * signal that can occur in data records
      */
     public int getDigitalMax(int signalNumber) {
-       
+
         return signals.get(signalNumber).getDigitalMax();
     }
 
@@ -367,7 +358,7 @@ public class DataHeader {
      * that corresponds to its digital minimum
      */
     public double getPhysicalMin(int signalNumber) {
-       
+
         return signals.get(signalNumber).getPhysicalMin();
     }
 
@@ -381,7 +372,7 @@ public class DataHeader {
      * that corresponds to its digital  maximum
      */
     public double getPhysicalMax(int signalNumber) {
-       
+
         return signals.get(signalNumber).getPhysicalMax();
     }
 
@@ -392,7 +383,7 @@ public class DataHeader {
      * @return String describing units of physical values of the signal ("uV", "BPM", "mA", "Degr.", etc.)
      */
     public String getPhysicalDimension(int signalNumber) {
-       
+
         return signals.get(signalNumber).getPhysicalDimension();
     }
 
@@ -411,7 +402,7 @@ public class DataHeader {
      */
 
     public int getNumberOfSamplesInEachDataRecord(int signalNumber) {
-       
+
         return signals.get(signalNumber).getNumberOfSamplesInEachDataRecord();
     }
 
@@ -436,7 +427,7 @@ public class DataHeader {
      *                                  <br>digitalMin >= digitalMax
      */
     public void setDigitalRange(int signalNumber, int digitalMin, int digitalMax) throws IllegalArgumentException {
-       
+
         if (versionFormat == FormatVersion.EDF_16BIT && digitalMin < -32768) {
             String errMsg = MessageFormat.format("Signal {0}. Invalid digital min: {1}.  Expected: {2}", signalNumber, digitalMin, ">= -32768");
             throw new IllegalArgumentException(errMsg);
@@ -478,14 +469,13 @@ public class DataHeader {
      * @throws IllegalArgumentException if physicalMin >= physicalMax
      */
     public void setPhysicalRange(int signalNumber, double physicalMin, double physicalMax) throws IllegalArgumentException {
-       
+
         if (physicalMax <= physicalMin) {
             String errMsg = MessageFormat.format("Signal {0}. Physical min-max range is invalid. Min = {1}, Max = {2}. Expected: {3}", signalNumber, physicalMin, physicalMax, "max > min");
             throw new IllegalArgumentException(errMsg);
         }
         signals.get(signalNumber).setPhysicalRange(physicalMin, physicalMax);
     }
-
 
     /**
      * Sets the physical dimension (units) of the signal ("uV", "BPM", "mA", "Degr.", etc.).
@@ -495,7 +485,7 @@ public class DataHeader {
      * @param physicalDimension physical dimension of the signal ("uV", "BPM", "mA", "Degr.", etc.)
      */
     public void setPhysicalDimension(int signalNumber, String physicalDimension) {
-       
+
         signals.get(signalNumber).setPhysicalDimension(physicalDimension);
     }
 
@@ -507,7 +497,7 @@ public class DataHeader {
      * @param transducer   string describing getTransducer (electrodes) used for measuring
      */
     public void setTransducer(int signalNumber, String transducer) {
-       
+
         signals.get(signalNumber).setTransducer(transducer);
     }
 
@@ -518,7 +508,7 @@ public class DataHeader {
      * @param prefiltering string describing filters that were applied to the signal
      */
     public void setPrefiltering(int signalNumber, String prefiltering) {
-       
+
         signals.get(signalNumber).setPrefiltering(prefiltering);
     }
 
@@ -531,7 +521,7 @@ public class DataHeader {
      * @param label        getLabel of the signal
      */
     public void setLabel(int signalNumber, String label) {
-       
+
         signals.get(signalNumber).setLabel(label);
     }
 
@@ -555,6 +545,19 @@ public class DataHeader {
             throw new IllegalArgumentException(errMsg);
         }
         signals.get(signalNumber).setNumberOfSamplesInEachDataRecord(numberOfSamplesInEachDataRecord);
+        recalculateSignalsOffsetInDataRecord();
+    }
+
+    private void recalculateSignalsOffsetInDataRecord() {
+        signalsOffsetInDataRecord = new ArrayList<>(signals.size());
+        if(signals.size() > 0) {
+            int offset = 0;
+            signalsOffsetInDataRecord.add(offset);
+            for (int i = 0; i < signals.size() - 1; i++) {
+                offset += signals.get(i).numberOfSamplesInEachDataRecord;
+                signalsOffsetInDataRecord.add(offset);
+            }
+        }
     }
 
     /**
@@ -569,13 +572,28 @@ public class DataHeader {
     public int getNumberOfBytesPerSample() {
         return versionFormat.getNumberOfBytesPerSample();
     }
-    
+
+    /**
+     * Get the start position of the signal samples in each data record
+     *
+     * @param signalNumber number of the signal(channel). Numeration starts from 0
+     * @return position of first sample belonging to the signal in
+     * each data record
+     */
+    public int getSignalOffsetInDataRecord(int signalNumber) {
+        return signalsOffsetInDataRecord.get(signalNumber);
+    }
 
     /**
      * Add new signal.
      */
-    public void addSignal() {
-        Signal signal = new Signal();
+    public void addSignal(int numberOfSamplesInEachDataRecord) {
+        int signalOffset = 0;
+        if(signals.size() > 0) {
+            signalOffset = signalsOffsetInDataRecord.get(signals.size() - 1) + signals.get(signals.size() - 1).numberOfSamplesInEachDataRecord;
+        }
+        signalsOffsetInDataRecord.add(signalOffset);
+        Signal signal = new Signal(numberOfSamplesInEachDataRecord);
         signal.setLabel("Channel_" + signals.size());
         switch (versionFormat) {
             case EDF_16BIT:
@@ -593,6 +611,7 @@ public class DataHeader {
                 signal.setPhysicalRange(Integer.MIN_VALUE, Integer.MAX_VALUE);
         }
         signals.add(signal);
+        numberOfBytesInHeaderRecord = 256 + (signals.size() * 256);
     }
 
     /**
@@ -753,6 +772,7 @@ public class DataHeader {
         private double gain;
         private int offset;
 
+
         Signal(Signal signal) {
             numberOfSamplesInEachDataRecord = signal.numberOfSamplesInEachDataRecord;
             prefiltering = signal.prefiltering;
@@ -767,7 +787,9 @@ public class DataHeader {
             offset = signal.offset;
         }
 
-        public Signal() {
+
+        public Signal(int numberOfSamplesInEachDataRecord) {
+            this.numberOfSamplesInEachDataRecord = numberOfSamplesInEachDataRecord;
         }
 
         public int getDigitalMin() {
@@ -792,6 +814,10 @@ public class DataHeader {
 
         public int getNumberOfSamplesInEachDataRecord() {
             return numberOfSamplesInEachDataRecord;
+        }
+
+        public void setNumberOfSamplesInEachDataRecord(int numberOfSamplesInEachDataRecord) {
+            this.numberOfSamplesInEachDataRecord = numberOfSamplesInEachDataRecord;
         }
 
         public int physToDig(double physValue) {
@@ -840,11 +866,6 @@ public class DataHeader {
 
         public void setPhysicalDimension(String physicalDimension) {
             this.physicalDimension = physicalDimension;
-        }
-
-
-        public void setNumberOfSamplesInEachDataRecord(int numberOfSamplesInEachDataRecord) {
-            this.numberOfSamplesInEachDataRecord = numberOfSamplesInEachDataRecord;
         }
 
         public String getPrefiltering() {

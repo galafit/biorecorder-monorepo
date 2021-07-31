@@ -20,7 +20,7 @@ public class Trace {
     private Range xMinMax;
     private Range yMinMax;
 
-    public Trace(ChartData data, TracePainter tracePainter, XAxisPosition xAxisPosition, YAxisPosition yAxisPosition, AxisWrapper xAxis, AxisWrapper yAxis, BColor traceColor, String name) {
+    public Trace(String name, ChartData data, TracePainter tracePainter, XAxisPosition xAxisPosition, YAxisPosition yAxisPosition, AxisWrapper xAxis, AxisWrapper yAxis, BColor traceColor) {
         this.data = data;
         this.tracePainter = tracePainter;
         this.xAxis = xAxis;
@@ -70,7 +70,7 @@ public class Trace {
     private int nearest(double xValue) {
         // "lazy" sorting solo when "nearest" is called
         if (sortedIndices == null) {
-            sortedIndices = data.sortedIndices(0);
+            sortedIndices = data.sortedIndices();
         }
         int nearest = data.bisect(xValue, sortedIndices);
 

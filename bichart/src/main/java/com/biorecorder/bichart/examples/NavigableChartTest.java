@@ -2,8 +2,8 @@ package com.biorecorder.bichart.examples;
 
 import com.biorecorder.bichart.*;
 import com.biorecorder.bichart.dataprocessing.DataProcessingConfig;
-import com.biorecorder.bichart.dataprocessing.XYData;
-import com.biorecorder.bichart.graphics.BColor;
+import com.biorecorder.bichart.dataprocessing.XYDataOld;
+import com.biorecorder.bichart.scales.LinearScale;
 import com.biorecorder.bichart.themes.DarkTheme;
 import com.biorecorder.bichart.traces.LineTracePainter;
 import com.biorecorder.data.list.IntArrayList;
@@ -22,8 +22,8 @@ public class NavigableChartTest extends JFrame{
     java.util.List<String> labels = new ArrayList();
     ChartPanel chartPanel;
     NavigableChart chart;
-    XYData xyData;
-    XYData xyData1;
+    XYDataOld xyData;
+    XYDataOld xyData1;
 
     public NavigableChartTest() {
         int width = 400;
@@ -41,10 +41,10 @@ public class NavigableChartTest extends JFrame{
         }
 
 
-        xyData = new XYData(xData, true);
+        xyData = new XYDataOld(xData, true);
         xyData.addYColumn("y", yData);
 
-        xyData1 = new XYData(0, 1, true);
+        xyData1 = new XYDataOld(0, 1, true);
         xyData1.addYColumn("regular1", xData);
         xyData1.addYColumn("regular2", yData);
 
@@ -56,12 +56,12 @@ public class NavigableChartTest extends JFrame{
         navigatorProcessing.setGroupingEnabled(false);
         navigatorProcessing.setCropEnabled(false);
 
-        chart = new NavigableChart();
+        chart = new NavigableChart(DarkTheme.getNavigableChartConfig(), new LinearScale());
 
-        chart.addChartTrace(xyData, new LineTracePainter());
+        chart.addChartTrace("trace1", xyData, new LineTracePainter());
         chart.addChartStack();
-        chart.addChartTrace(xyData1, new LineTracePainter());
-        chart.addNavigatorTrace(xyData, new LineTracePainter());
+        chart.addChartTrace("trace2", xyData1, new LineTracePainter());
+        chart.addNavigatorTrace("trace3", xyData, new LineTracePainter());
 
         chartPanel = new ChartPanel(chart);
 

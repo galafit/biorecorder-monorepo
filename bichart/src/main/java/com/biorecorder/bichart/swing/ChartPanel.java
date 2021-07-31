@@ -189,4 +189,6 @@ public class ChartPanel extends JPanel implements KeyListener {
         super.paintComponent(g);
         chart.draw(new SwingCanvas((Graphics2D) g));
     }
+
+
 }

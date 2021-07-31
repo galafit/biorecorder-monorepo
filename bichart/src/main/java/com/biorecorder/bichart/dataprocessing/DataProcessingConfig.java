@@ -1,5 +1,7 @@
 package com.biorecorder.bichart.dataprocessing;
 
+import com.biorecorder.bichart.GroupingType;
+
 import java.util.Arrays;
 
 /**
@@ -17,7 +19,7 @@ public class DataProcessingConfig {
 
     // In case of GroupType.AUTO regular DataSeries will be grouped by equal points number
     // and non-regular by equal intervals
-    private GroupingType groupingType = GroupingType.AUTO;
+    private GroupingType groupingType = GroupingType.EQUAL_POINTS;
 
     // used  when groupingIntervals are not specified (null)
     private int groupingStep = 2;

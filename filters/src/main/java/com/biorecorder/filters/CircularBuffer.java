@@ -155,7 +155,7 @@ public class CircularBuffer {
      */
     public static void main(String[] args) {
         int bufferSize = 3;
-        IntCircularFifoBuffer buffer = new IntCircularFifoBuffer(bufferSize);
+        CircularBuffer buffer = new CircularBuffer(bufferSize);
         boolean isTestOk = true;
         for (int i = 1; i < 10; i++) {
             buffer.add(i);

@@ -1,6 +1,7 @@
 package com.biorecorder.bichart.dataprocessing;
 
 import com.biorecorder.bichart.ChartData;
+import com.biorecorder.bichart.GroupingApproximation;
 import com.biorecorder.bichart.graphics.Range;
 import com.biorecorder.data.frame.TimeInterval;
 
@@ -31,7 +32,7 @@ public interface ChartFrame extends ChartData {
 
     int bisect( double value, int[] sorter);
 
-    int[] sortedIndices(int sortColumn);
+    int[] sortedIndices();
 
     ChartFrame view(int fromRowNumber, int length);
 
@@ -43,9 +44,9 @@ public interface ChartFrame extends ChartData {
 
     ChartFrame concat(ChartFrame data);
 
-    void setColumnGroupApproximation(int columnNumber, GroupApproximation groupApproximation);
+    void setColumnGroupApproximation(int columnNumber, GroupingApproximation groupingApproximation);
 
-    GroupApproximation getColumnGroupApproximation(int columnNumber);
+    GroupingApproximation getColumnGroupApproximation(int columnNumber);
 
     ChartFrame resampleByEqualPointsNumber(int points);
 

@@ -13,6 +13,7 @@ public interface Column {
     Column view(int[] order);
     Column append(Column col) throws UnsupportedOperationException, IllegalArgumentException;
     Column emptyCopy();
+    boolean isNumberColumn();
     /**
      * Returns a sorted view of the underlying data without modifying the order
      * of the underlying data.

@@ -87,10 +87,10 @@ public class RecordsJoiner extends FilterRecordStream {
         // 0 channel 3 samples, 1 channel 2 samples, 3 channel 4 samples
         int[] dataRecord = {1,3,8,  2,4,  7,6,8,6};
 
-        DataHeader dataConfig = new DataHeader(FormatVersion.BDF_24BIT, 3);
-        dataConfig.setNumberOfSamplesInEachDataRecord(0, 3);
-        dataConfig.setNumberOfSamplesInEachDataRecord(1, 2);
-        dataConfig.setNumberOfSamplesInEachDataRecord(2, 4);
+        DataHeader dataConfig = new DataHeader(FormatVersion.BDF_24BIT);
+        dataConfig.addSignal(3);
+        dataConfig.addSignal(2);
+        dataConfig.addSignal(4);
 
         // join 2 records
         int numberOfRecordsToJoin = 2;

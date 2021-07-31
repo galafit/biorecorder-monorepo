@@ -4,10 +4,14 @@ public class RegularColumn extends DoubleColumn {
     private final double startValue;
     private final double step;
 
-    public RegularColumn(double startValue, double step, int size) {
-        super(regularSequence(startValue, step, size));
+    public RegularColumn(String name, double startValue, double step, int size) {
+        super(name, regularSequence(startValue, step, size));
         this.startValue = startValue;
         this.step = step;
+    }
+
+    public RegularColumn(double startValue, double step, int size) {
+        this("", startValue, step, size);
     }
 
     private static BaseDoubleSequence regularSequence(double startValue, double step, int size) {

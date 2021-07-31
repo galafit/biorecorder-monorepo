@@ -3,7 +3,9 @@ package com.biorecorder.bichart.examples;
 import com.biorecorder.bichart.*;
 import com.biorecorder.bichart.axis.XAxisPosition;
 import com.biorecorder.bichart.axis.YAxisPosition;
-import com.biorecorder.bichart.dataprocessing.XYData;
+import com.biorecorder.bichart.dataprocessing.XYDataOld;
+import com.biorecorder.bichart.scales.LinearScale;
+import com.biorecorder.bichart.themes.DarkTheme;
 import com.biorecorder.bichart.themes.WhiteTheme;
 import com.biorecorder.bichart.traces.LineTracePainter;
 import com.biorecorder.data.frame.SquareFunction;
@@ -62,19 +64,19 @@ public class ChartTest extends JFrame {
         yUnsort.add(300);
 
 
-        XYData regularData = new XYData(labels, true);
+        XYDataOld regularData = new XYDataOld(labels, true);
         regularData.addYColumn("reg", list1);
 
 
-        XYData noRegularData = new XYData(list1, true);
+        XYDataOld noRegularData = new XYDataOld(list1, true);
         noRegularData.addYColumn("non-reg", list1);
 
 
-        XYData noRegularData1 = new XYData(list1, true);
+        XYDataOld noRegularData1 = new XYDataOld(list1, true);
         noRegularData1.addYColumn("function", new SquareFunction());
 
 
-        XYData unsortedData = new XYData(xUnsort, false);
+        XYDataOld unsortedData = new XYDataOld(xUnsort, false);
         unsortedData.addYColumn("unsort", yUnsort);
 
         Calendar calendar = Calendar.getInstance();
@@ -84,16 +86,16 @@ public class ChartTest extends JFrame {
             timeArray.add(calendar.getTimeInMillis());
             calendar.add(Calendar.DAY_OF_MONTH, 1);
         }
-        XYData timeData = new XYData(timeArray, false);
+        XYDataOld timeData = new XYDataOld(timeArray, false);
         timeData.addYColumn("y", list1);
 
-        chart = new Chart();
+        chart = new Chart(DarkTheme.getChartConfig(), new LinearScale());
         chart.setTitle("как дела? все хорошо как поживаете вы олрдлорлор лорор лорлор");
         chart.setConfig(WhiteTheme.getChartConfig());
 
-        chart.addTrace(unsortedData, new LineTracePainter(),  XAxisPosition.TOP, YAxisPosition.RIGHT);
+        chart.addTrace("trace1", unsortedData, new LineTracePainter(),  XAxisPosition.TOP, YAxisPosition.RIGHT);
         chart.addStack();
-        chart.addTrace(regularData, new LineTracePainter());
+        chart.addTrace("trace2", regularData, new LineTracePainter());
         /*chart.addStack();
         chart.addTrace(noRegularData1, new LineTracePainter());
         chart.addTrace(regularData, new LineTracePainter(),  XAxisPosition.BOTTOM, YAxisPosition.RIGHT);

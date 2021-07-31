@@ -4,7 +4,6 @@ package com.biorecorder.filters;
  * Made on the base of BoundedFifoBuffer from apache.org.commons
  */
 public class IntCircularFifoBuffer {
-
     private final int[] elements;
     private int start = 0;
     private int end = 0;

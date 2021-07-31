@@ -1,10 +1,9 @@
-package com.biorecorder.bichart.dataprocessing;
+package com.biorecorder.bichart;
 
 /**
  * Created by galafit on 3/11/18.
  */
 public enum GroupingType {
-    AUTO,
-    EQUAL_POINTS_NUMBER,
+    EQUAL_POINTS,
     EQUAL_INTERVALS;
 }

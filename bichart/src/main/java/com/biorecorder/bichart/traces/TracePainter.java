@@ -1,10 +1,8 @@
 package com.biorecorder.bichart.traces;
 
 import com.biorecorder.bichart.ChartData;
-import com.biorecorder.bichart.dataprocessing.GroupApproximation;
 import com.biorecorder.bichart.graphics.*;
 import com.biorecorder.bichart.scales.Scale;
-import com.sun.istack.internal.Nullable;
 
 /**
  * https://js.devexpress.com/Documentation/ApiReference/Data_Visualization_Widgets/dxChart/Configuration/argumentAxis/.

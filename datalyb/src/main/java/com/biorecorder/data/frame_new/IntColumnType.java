@@ -25,4 +25,9 @@ public class IntColumnType implements ColumnType {
     public Column create(String name) {
         return new IntColumn(name);
     }
+
+    @Override
+    public boolean isNumberType() {
+        return true;
+    }
 }

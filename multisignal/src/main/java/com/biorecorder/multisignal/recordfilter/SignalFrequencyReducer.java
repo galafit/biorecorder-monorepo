@@ -119,10 +119,10 @@ public class SignalFrequencyReducer extends FilterRecordStream {
         // 0 channel 4 samples, 1 channel 2 samples, 2 channel 6 samples
         int[] dataRecord = {1,3,8,4,  2,4,  5,7,6,8,6,0};
 
-        DataHeader dataConfig = new DataHeader(FormatVersion.BDF_24BIT, 3);
-        dataConfig.setNumberOfSamplesInEachDataRecord(0, 4);
-        dataConfig.setNumberOfSamplesInEachDataRecord(1, 2);
-        dataConfig.setNumberOfSamplesInEachDataRecord(2, 6);
+        DataHeader dataConfig = new DataHeader(FormatVersion.BDF_24BIT);
+        dataConfig.addSignal(4);
+        dataConfig.addSignal(2);
+        dataConfig.addSignal(6);
 
 
         // reduce signals frequencies by 4, 2, 2

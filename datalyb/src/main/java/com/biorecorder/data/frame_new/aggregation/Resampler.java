@@ -54,6 +54,10 @@ public class Resampler {
         this.binning = binning;
     }
 
+    public DataTable resultantData() {
+        return resultantTable;
+    }
+
     public static Resampler createEqualPointsResampler(int pointsInGroup) {
         Binning binning = new EqualPointsBinning(pointsInGroup);
         return new Resampler(binning);
@@ -64,8 +68,8 @@ public class Resampler {
         return new Resampler(binning);
     }
 
-    public static Resampler createEqualTimeIntervalResampler(TimeUnit timeUnit, int unitMultiplier) {
-        Binning binning = new EqualIntervalBinning(new TimeIntervalProvider(timeUnit, unitMultiplier));
+    public static Resampler createEqualTimeIntervalResampler(TimeInterval timeInterval) {
+        Binning binning = new EqualIntervalBinning(new TimeIntervalProvider(timeInterval));
         return new Resampler(binning);
     }
 
@@ -73,7 +77,7 @@ public class Resampler {
         columnsToAgg.put(column, aggregations);
     }
 
-    public DataTable resample(DataTable tableToAggregate) {
+    /* public DataTable resample1(DataTable tableToAggregate) {
         if(resultantTable == null) {
             resultantTable = new DataTable(tableToAggregate.name());
             for (int i = 0; i < tableToAggregate.columnCount(); i++) {
@@ -92,9 +96,9 @@ public class Resampler {
             }
         }
         return resultantTable;
-    }
+    }*/
 
-    public DataTable resample1(DataTable tableToResample) {
+    public DataTable resampleAndAppend(DataTable tableToResample) {
         if(resultantTable == null) {
             resultantTable = new DataTable(tableToResample.name());
             for (int i = 0; i < tableToResample.columnCount(); i++) {
@@ -278,7 +282,7 @@ public class Resampler {
         aggInterval.addColumnAggregations(0, new First());
         aggInterval.addColumnAggregations(1, new Average());
 
-        DataTable rt1 = aggPoints.resample(dt);
+        DataTable rt1 = aggPoints.resampleAndAppend(dt);
 
         int[] expectedX1 = {2, 12, 40};
         int[] expectedY1 = {2, 6, 9};
@@ -299,7 +303,7 @@ public class Resampler {
         }
         System.out.println("ResampleByEqualFrequency is OK ");
 
-        DataTable rt2 = aggInterval.resample(dt);
+        DataTable rt2 = aggInterval.resampleAndAppend(dt);
         System.out.println("\nresultant table size "+ rt2.rowCount());
         for (int i = 0; i < rt2.rowCount(); i++) {
             if (rt2.value(i, 0) != expectedX2[i]) {
@@ -330,8 +334,8 @@ public class Resampler {
         aggInterval1.addColumnAggregations(0, new Min());
         aggInterval1.addColumnAggregations(1, new Max());
 
-        DataTable resTable1 = aggPoints1.resample(dataTable);
-        DataTable resTable2 = aggInterval1.resample(dataTable);
+        DataTable resTable1 = aggPoints1.resampleAndAppend(dataTable);
+        DataTable resTable2 = aggInterval1.resampleAndAppend(dataTable);
 
         System.out.println("\nresultant table sizes "+ resTable1.rowCount() + " "+ resTable2.rowCount());
         for (int i = 0; i < resTable2.rowCount(); i++) {
@@ -369,8 +373,8 @@ public class Resampler {
             dataTable1.addColumn(new RegularColumn(size * i, 1, size));
             //dataTable1.addColumn(new DoubleColumn("x", data1));
             dataTable1.addColumn(new DoubleColumn("y", data1));
-            resTab1 = aggPoints2.resample(dataTable1);
-            resTab2 = aggInterval2.resample(dataTable1);
+            resTab1 = aggPoints2.resampleAndAppend(dataTable1);
+            resTab2 = aggInterval2.resampleAndAppend(dataTable1);
         }
 
         System.out.println("\nresultant table sizes "+ resTab1.rowCount() + " "+ resTab2.rowCount());
