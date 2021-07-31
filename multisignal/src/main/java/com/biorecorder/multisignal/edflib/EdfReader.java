@@ -342,15 +342,12 @@ public class EdfReader {
                 recordsToRead++;
             }
 
-
             if(recordsToRead > 0) {
                 int[] recordsBuffer = new int[recordSize * recordsToRead];
                 edfReader.setRecordPosition(startRecord);
                 int readRecords = edfReader.readDataRecords(recordsToRead, recordsBuffer);
 
-                System.out.println(Arrays.toString(recordsBuffer));
-
-
+                // find and copy the signal samples from records
                 int samplesOffsetInRecord = header.getSignalOffsetInDataRecord(signalNumber);
                 int sampleCounter = 0;
                 int recordBufferOffset = samplesOffsetInRecord + samplesToSkip;
@@ -374,8 +371,7 @@ public class EdfReader {
                     samplesFromRecords[sampleCounter++] = recordsBuffer[recordBufferOffset + j];
                 }
             }
-
-
+           // compare samples
             for (int i = 0; i < samplesFromRecords.length; i++) {
                 if(samplesBuffer[i] != samplesFromRecords[i]) {
                     throw new RuntimeException(i + " sample read by readSamples() are not equal sample read by readDataRecord(): "
@@ -387,9 +383,6 @@ public class EdfReader {
         } catch (Throwable e) {
             e.printStackTrace();
         }
-
-
-
     }
 }
 
