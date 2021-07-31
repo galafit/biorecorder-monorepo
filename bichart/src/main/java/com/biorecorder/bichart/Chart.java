@@ -5,7 +5,6 @@ import com.biorecorder.bichart.graphics.*;
 import com.biorecorder.bichart.scales.CategoryScale;
 import com.biorecorder.bichart.scales.LinearScale;
 import com.biorecorder.bichart.scales.Scale;
-import com.biorecorder.bichart.themes.DarkTheme;
 import com.biorecorder.bichart.traces.TracePainter;
 import com.biorecorder.data.sequence.StringSequence;
 import com.sun.istack.internal.Nullable;
@@ -348,7 +347,7 @@ public class Chart {
             } else if (!isBottomAxesUsed) {
                 topAxis.drawGrid(canvas, stackArea);
             } else { // both axis used use primary axis
-                 xAxisList.get(xPositionToIndex(config.getPrimaryXPosition())).drawGrid(canvas, stackArea);;
+                 xAxisList.get(xPositionToIndex(config.getDefaultXPosition())).drawGrid(canvas, stackArea);;
             }
         }
         // draw Y axes grids
@@ -364,7 +363,7 @@ public class Chart {
             } else if (!isRightAxisUsed) {
                 leftAxis.drawGrid(canvas, graphArea);
             } else { // both axis is used we choose primary axis
-                yAxisList.get(yPositionToIndex(i, config.getPrimaryYPosition())).drawGrid(canvas, graphArea);
+                yAxisList.get(yPositionToIndex(i, config.getDefaultYPosition())).drawGrid(canvas, graphArea);
             }
         }
         // draw X axes
@@ -418,6 +417,10 @@ public class Chart {
         this.title = new Title(title, config.getTitleConfig());
         legend = null;
         invalidate();
+    }
+
+    public XAxisPosition getDefaultXAxisPosition() {
+        return config.getDefaultXPosition();
     }
 
     public void setTraceData(int traceIndex, ChartData data) {
@@ -477,7 +480,7 @@ public class Chart {
      * @throws IllegalArgumentException if stack number > total number of stacks in the chart
      */
     public void addTrace(String name,ChartData data, TracePainter tracePainter, int stack) throws IllegalArgumentException{
-        addTrace(name, data, tracePainter, stack, config.getPrimaryXPosition(), config.getPrimaryYPosition());
+        addTrace(name, data, tracePainter, stack, config.getDefaultXPosition(), config.getDefaultYPosition());
     }
 
     public void addTrace(String name, ChartData data, TracePainter tracePainter, XAxisPosition xPosition, YAxisPosition yPosition) {

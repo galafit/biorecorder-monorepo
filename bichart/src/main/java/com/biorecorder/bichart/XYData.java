@@ -33,8 +33,16 @@ public class XYData implements ChartData {
         return dataTable;
     }
 
+    public XYData getEmptyCopy() {
+        DataTable emptyData = new DataTable();
+        for (int i = 0; i < dataTable.columnCount(); i++) {
+            emptyData.addColumn(dataTable.getColumn(i).emptyCopy());
+        }
+        return new XYData(emptyData);
+    }
+
     public void appendData(XYData dataToAppend) {
-        dataTable.append(dataToAppend.getDataTable());
+        dataTable.append(dataToAppend.dataTable);
     }
 
     public GroupingApproximation getGroupingApproximationX() {

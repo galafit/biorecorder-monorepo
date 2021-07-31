@@ -4,8 +4,6 @@ import com.biorecorder.bichart.axis.AxisConfig;
 import com.biorecorder.bichart.axis.XAxisPosition;
 import com.biorecorder.bichart.axis.YAxisPosition;
 import com.biorecorder.bichart.graphics.BColor;
-import com.biorecorder.bichart.graphics.Insets;
-import com.sun.istack.internal.Nullable;
 
 /**
  * Created by galafit on 18/8/17.
@@ -22,8 +20,8 @@ public class ChartConfig {
     private AxisConfig yAxisConfig = new AxisConfig();
     private AxisConfig xAxisConfig = new AxisConfig();
 
-    private XAxisPosition primaryXPosition = XAxisPosition.BOTTOM;
-    private YAxisPosition primaryYPosition = YAxisPosition.LEFT;
+    private XAxisPosition defaultXPosition = XAxisPosition.BOTTOM;
+    private YAxisPosition defaultYPosition = YAxisPosition.LEFT;
 
     private int stackGap = 4; //px
     private int defaultStackWeight = 4;
@@ -60,8 +58,8 @@ public class ChartConfig {
         stackGap = chartConfig.stackGap;
         yAxisConfig = new AxisConfig(chartConfig.yAxisConfig);
         xAxisConfig = new AxisConfig(chartConfig.xAxisConfig);
-        primaryXPosition = chartConfig.primaryXPosition;
-        primaryYPosition = chartConfig.primaryYPosition;
+        defaultXPosition = chartConfig.defaultXPosition;
+        defaultYPosition = chartConfig.defaultYPosition;
         defaultStackWeight = chartConfig.defaultStackWeight;
     }
 
@@ -73,20 +71,20 @@ public class ChartConfig {
         this.stackGap = stackGap;
     }
 
-    public XAxisPosition getPrimaryXPosition() {
-        return primaryXPosition;
+    public XAxisPosition getDefaultXPosition() {
+        return defaultXPosition;
     }
 
-    public void setPrimaryXPosition(XAxisPosition primaryXPosition) {
-        this.primaryXPosition = primaryXPosition;
+    public void setDefaultXPosition(XAxisPosition defaultXPosition) {
+        this.defaultXPosition = defaultXPosition;
     }
 
-    public YAxisPosition getPrimaryYPosition() {
-        return primaryYPosition;
+    public YAxisPosition getDefaultYPosition() {
+        return defaultYPosition;
     }
 
-    public void setPrimaryYPosition(YAxisPosition primaryYPosition) {
-        this.primaryYPosition = primaryYPosition;
+    public void setDefaultYPosition(YAxisPosition defaultYPosition) {
+        this.defaultYPosition = defaultYPosition;
     }
 
     public int getDefaultStackWeight() {

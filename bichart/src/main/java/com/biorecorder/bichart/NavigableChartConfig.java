@@ -3,7 +3,6 @@ package com.biorecorder.bichart;
 import com.biorecorder.bichart.axis.XAxisPosition;
 import com.biorecorder.bichart.axis.YAxisPosition;
 import com.biorecorder.bichart.graphics.BColor;
-import com.biorecorder.bichart.graphics.Insets;
 
 /**
  * Created by galafit on 31/8/18.
@@ -24,11 +23,11 @@ public class NavigableChartConfig {
         scrollConfig = new ScrollConfig();
 
         chartConfig.getYAxisConfig().setTickLabelOutside(false);
-        chartConfig.setPrimaryYPosition(YAxisPosition.RIGHT);
-        chartConfig.setPrimaryXPosition(XAxisPosition.TOP);
+        chartConfig.setDefaultYPosition(YAxisPosition.RIGHT);
+        chartConfig.setDefaultXPosition(XAxisPosition.TOP);
 
         navigatorConfig.getYAxisConfig().setTickLabelOutside(false);
-        navigatorConfig.setPrimaryYPosition(YAxisPosition.RIGHT);
+        navigatorConfig.setDefaultYPosition(YAxisPosition.RIGHT);
         navigatorConfig.setBackgroundColor(navigatorBgColor);
         navigatorConfig.setMarginColor(navigatorMarginColor);
         navigatorConfig.setStackGap(0);

@@ -7,7 +7,6 @@ import com.biorecorder.bichart.scales.Scale;
 import com.biorecorder.bichart.scroll.Scroll;
 import com.biorecorder.bichart.scroll.ScrollListener;
 import com.biorecorder.bichart.scroll.ScrollScale;
-import com.biorecorder.bichart.themes.DarkTheme;
 import com.biorecorder.bichart.traces.TracePainter;
 import com.sun.istack.internal.Nullable;
 
@@ -18,6 +17,7 @@ public class NavigableChart1 {
     private int gap = 0; // between Chart and Preview px
     private Insets spacing = new Insets(5);
     private int navigatorHeightMin = 16; // px
+    private XAxisPosition navigatorXPosition = XAxisPosition.BOTTOM;
     private Chart chart;
     private Chart navigator;
     private NavigableChartConfig config;
@@ -35,7 +35,6 @@ public class NavigableChart1 {
         chart.setSpacing(new Insets(0));
         navigator.setSpacing(new Insets(0));
         for (XAxisPosition xPosition : XAxisPosition.values()) {
-            XAxisPosition navigatorXPosition = XAxisPosition.BOTTOM;
             ScrollScale scrollScale = new ScrollScale() {
                 @Override
                 public double positionToValue(double x) {
@@ -129,6 +128,13 @@ public class NavigableChart1 {
         }
     }
 
+    public XAxisPosition getChartDefaultXAxisPosition() {
+        return chart.getDefaultXAxisPosition();
+    }
+
+    public XAxisPosition getNavigatorXAxisPosition() {
+        return navigatorXPosition;
+    }
 
     public void setSize(int width, int height) {
         this.width = width;

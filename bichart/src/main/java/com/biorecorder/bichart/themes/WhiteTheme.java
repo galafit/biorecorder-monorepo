@@ -73,8 +73,8 @@ public class WhiteTheme {
         chartConfig.setXAxisConfig(xAxisConfig);
         chartConfig.getLegendConfig().setBackgroundColor(BG_COLOR);
         chartConfig.setDefaultStackWeight(CHART_STACK_WEIGHT);
-        chartConfig.setPrimaryYPosition(YAxisPosition.LEFT);
-        chartConfig.setPrimaryXPosition(XAxisPosition.BOTTOM);
+        chartConfig.setDefaultYPosition(YAxisPosition.LEFT);
+        chartConfig.setDefaultXPosition(XAxisPosition.BOTTOM);
 
         return chartConfig;
     }
@@ -93,16 +93,16 @@ public class WhiteTheme {
         navigatorConfig.setDefaultStackWeight(NAVIGATOR_STACK_WEIGHT);
         navigatorConfig.setStackGap(0);
         navigatorConfig.getYAxisConfig().setTickLabelOutside(false);
-        navigatorConfig.setPrimaryYPosition(YAxisPosition.RIGHT);
-        navigatorConfig.setPrimaryXPosition(XAxisPosition.BOTTOM);
+        navigatorConfig.setDefaultYPosition(YAxisPosition.RIGHT);
+        navigatorConfig.setDefaultXPosition(XAxisPosition.BOTTOM);
 
         ScrollConfig scrollConfig = new ScrollConfig();
         scrollConfig.setColor(scrollColor);
 
         ChartConfig chartConfig1 = getChartConfig();
         chartConfig1.getYAxisConfig().setTickLabelOutside(false);
-        chartConfig1.setPrimaryYPosition(YAxisPosition.RIGHT);
-        chartConfig1.setPrimaryXPosition(XAxisPosition.TOP);
+        chartConfig1.setDefaultYPosition(YAxisPosition.RIGHT);
+        chartConfig1.setDefaultXPosition(XAxisPosition.TOP);
 
         NavigableChartConfig navigableChartConfig = new NavigableChartConfig(chartConfig1, navigatorConfig, scrollConfig);
         navigableChartConfig.setBackgroundColor(bgColor);

@@ -1,18 +1,20 @@
 package com.biorecorder.bichart;
 
+import com.biorecorder.bichart.axis.XAxisPosition;
 import com.biorecorder.bichart.axis.YAxisPosition;
 import com.biorecorder.bichart.scales.LinearScale;
 import com.biorecorder.bichart.scales.Scale;
 import com.biorecorder.bichart.scales.TimeScale;
 import com.biorecorder.bichart.themes.DarkTheme;
 import com.biorecorder.bichart.traces.TracePainter;
-import com.biorecorder.data.frame_new.DataTable;
+
+import java.util.ArrayList;
 
 
 public class SmartChart {
     private DataProcessor dataProcessor;
     private NavigableChart1 navigableChart;
-    private boolean isValid = false;
+    private boolean isConfigured = false;
 
     public SmartChart(ProcessingConfig processingConfig, NavigableChartConfig chartConfig, Scale xScale, boolean isDateTime) {
         dataProcessor = new DataProcessor(processingConfig, isDateTime);
@@ -25,6 +27,11 @@ public class SmartChart {
 
     public static SmartChart createTimeChart() {
         return new SmartChart(new ProcessingConfig(), DarkTheme.getNavigableChartConfig(), new TimeScale(), true);
+    }
+
+    private void inti() {
+        int xLength;
+
     }
 
     public void setChartYMinMax(int stack, YAxisPosition yPosition, double min, double max) {
@@ -40,15 +47,7 @@ public class SmartChart {
     }
 
     public void addChartTrace(String name, XYData data, TracePainter tracePainter) {
-        DataTable emptyData = new DataTable();
-        DataTable dataTable = data.getDataTable();
-        for (int i = 0; i < data.columnCount(); i++) {
-            emptyData.addColumn(dataTable.getColumn(i).emptyCopy());
-        }
-      //  chartDataList.add(data);
-
-        navigableChart.addChartTrace(name, new XYData(emptyData), tracePainter);
-
+        navigableChart.addChartTrace(name, data.getEmptyCopy(), tracePainter);
     }
 
     public void addNavigatorStack() {
@@ -56,13 +55,7 @@ public class SmartChart {
     }
 
     public void addNavigatorTrace(String name, XYData data, TracePainter tracePainter) {
-        DataTable emptyData = new DataTable();
-        DataTable dataTable = data.getDataTable();
-        for (int i = 0; i < data.columnCount(); i++) {
-            emptyData.addColumn(dataTable.getColumn(i).emptyCopy());
-        }
-       // navigatorDataList.add(data);
-        navigableChart.addNavigatorTrace(name, new XYData(emptyData), tracePainter);
+        navigableChart.addNavigatorTrace(name, data.getEmptyCopy(), tracePainter);
     }
 
     public void setNavigatorYMinMax(int stack, YAxisPosition yPosition, double min, double max) {
@@ -72,4 +65,5 @@ public class SmartChart {
     public void autoScaleNavigatorY() {
         navigableChart.autoScaleNavigatorY();
     }
+
 }
