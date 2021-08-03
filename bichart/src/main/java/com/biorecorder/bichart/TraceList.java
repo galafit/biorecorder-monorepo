@@ -25,6 +25,10 @@ public class TraceList {
         }
     }
 
+    public int getMarkSize(int traceNumber) {
+        return traces.get(traceNumber).markSize();
+    }
+
     public XAxisPosition getTraceXPosition(int traceIndex) {
         return traces.get(traceIndex).getXAxisPosition();
     }

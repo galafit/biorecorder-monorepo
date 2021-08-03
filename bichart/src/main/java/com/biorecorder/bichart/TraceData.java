@@ -16,27 +16,6 @@ class TraceData {
         dataList.add(new RawData(xyData));
     }
 
-    public XYData getData(Range xMinMax, int xLength, int markSize) {
-        if(dataList.size() == 1) {
-            return dataList.get(0).getData();
-        } else {
-            for (int i = 0; i < dataList.size(); i++) {
-                XYData data = dataList.get(i).getData();
-                int dataPoints = (int) Math.round(data.xMinMax().length() / xMinMax.length()) * xLength / markSize;
-                if(data.rowCount() <= dataPoints) {
-                    return dataList.get(i).getData();
-                }
-            }
-            return dataList.get(dataList.size() - 1).getData();
-        }
-    }
-
-    public void appendData(XYData data) {
-        for (DataWrapper dataWrapper : dataList) {
-            dataWrapper.appendData(data);
-        }
-    }
-
     public TraceData(XYData xyData, GroupingType groupingType, double[] intervals) {
         dataList = new ArrayList<>(intervals.length);
         for (int i = 0; i < intervals.length; i++) {
@@ -77,6 +56,27 @@ class TraceData {
             } else {
                 dataList.add(new RawData(xyData));
             }
+        }
+    }
+
+    public XYData getData(Range xMinMax, int xLength, int markSize) {
+        if(dataList.size() == 1) {
+            return dataList.get(0).getData();
+        } else {
+            for (int i = 0; i < dataList.size(); i++) {
+                XYData data = dataList.get(i).getData();
+                int dataPoints = (int) Math.round(data.xMinMax().length() / xMinMax.length()) * xLength / markSize;
+                if(data.rowCount() <= dataPoints) {
+                    return dataList.get(i).getData();
+                }
+            }
+            return dataList.get(dataList.size() - 1).getData();
+        }
+    }
+
+    public void appendData(XYData data) {
+        for (DataWrapper dataWrapper : dataList) {
+            dataWrapper.appendData(data);
         }
     }
 

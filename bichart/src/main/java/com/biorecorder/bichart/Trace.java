@@ -41,6 +41,10 @@ public class Trace {
         this.name = name;
     }
 
+    public int markSize() {
+        return tracePainter.markSize();
+    }
+
     public void setColor(BColor color) {
         this.color = color;
     }
@@ -102,7 +106,7 @@ public class Trace {
     }
 
     double getBestExtent(int drawingAreaWidth) {
-        int markSize = tracePainter.markWidth();
+        int markSize = tracePainter.markSize();
         if (data.rowCount() > 1) {
             if (markSize <= 0) {
                 markSize = 1;

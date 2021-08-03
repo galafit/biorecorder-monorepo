@@ -128,13 +128,29 @@ public class NavigableChart1 {
         }
     }
 
+    public int getChartTraceMarkSize(int traceNumber) {
+        return  chart.getTraceMarkSize(traceNumber);
+    }
+
+    public int getNavigatorTraceMarkSize(int traceNumber) {
+        return  navigator.getTraceMarkSize(traceNumber);
+    }
+
+    public Scale getNavigatorXScale() {
+        return navigator.getXScale(navigatorXPosition);
+    }
+
+    public Scale getChartXScale(XAxisPosition xAxisPosition) {
+        return chart.getXScale(xAxisPosition);
+    }
+
+    public XAxisPosition getChartTraceXAxisPosition(int traceNumber) {
+        return chart.getTraceXAxisPosition(traceNumber);
+    }
     public XAxisPosition getChartDefaultXAxisPosition() {
         return chart.getDefaultXAxisPosition();
     }
 
-    public XAxisPosition getNavigatorXAxisPosition() {
-        return navigatorXPosition;
-    }
 
     public void setSize(int width, int height) {
         this.width = width;
@@ -359,8 +375,8 @@ public class NavigableChart1 {
      * Sets the visible amount of the scroll
      * (scroll  or corresponding chart X extent)
      */
-    public void setVisibleAmount(XAxisPosition xPosition, double extent) {
-        axisToScrolls.get(xPosition).setExtent(extent);
+    public void setScrollRange(XAxisPosition xPosition, Range range) {
+        axisToScrolls.get(xPosition).setRange(range);
     }
 
     public void autoScaleNavigatorY(int stack, YAxisPosition yPosition) {

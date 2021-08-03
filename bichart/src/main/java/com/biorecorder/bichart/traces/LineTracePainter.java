@@ -25,7 +25,7 @@ public class LineTracePainter implements TracePainter {
     }
 
    @Override
-    public int markWidth() {
+    public int markSize() {
         return traceConfig.getMarkSize();
     }
 

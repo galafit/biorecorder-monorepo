@@ -185,6 +185,22 @@ public class Chart {
      * ==================================================
      */
 
+    public XAxisPosition getTraceXAxisPosition(int traceNumber) {
+        if(traceList.getTraceX(traceNumber) == xAxisList.get(0)) {
+            return xIndexToPosition(0);
+        } else {
+            return xIndexToPosition(1);
+        }
+    }
+
+    public Scale getXScale(XAxisPosition xAxisPosition) {
+        return xAxisList.get(xPositionToIndex(xAxisPosition)).getScale();
+    }
+
+    public int getTraceMarkSize(int traceNumber) {
+        return traceList.getMarkSize(traceNumber);
+    }
+
     public void setSpacing(Insets spacing) {
         if(spacing == null) {
             this.spacing = new Insets(0);

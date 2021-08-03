@@ -16,7 +16,7 @@ public interface TracePainter {
        */
       TraceType traceType();
 
-      int markWidth();
+      int markSize();
 
       Range yMinMax(ChartData data);
 

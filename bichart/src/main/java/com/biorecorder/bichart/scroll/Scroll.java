@@ -46,6 +46,10 @@ public class Scroll {
         model.setRangeProperties(value, extent, min, max);
     }
 
+    public void setRange(Range range) {
+        setValues(range.getMin(), range.length(), getMin(), getMax());
+    }
+
     public void setExtent(double extent) {
         model.setExtent(extent);
     }
