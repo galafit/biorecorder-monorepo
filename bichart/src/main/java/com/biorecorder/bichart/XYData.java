@@ -101,12 +101,12 @@ public class XYData implements ChartData {
         return null;
     }
 
-    public Range xMinMax() {
-        return columnMinMax(0);
+    public double xValue(int rowIndex) {
+        return value(rowIndex, 0);
     }
 
-    public double dataAvgStep() {
-        return xMinMax().length() / rowCount();
+    public Range xMinMax() {
+        return columnMinMax(0);
     }
 
     @Override
