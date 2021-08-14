@@ -4,7 +4,6 @@ import com.biorecorder.bichart.axis.XAxisPosition;
 import com.biorecorder.bichart.axis.YAxisPosition;
 import com.biorecorder.bichart.graphics.*;
 import com.biorecorder.bichart.traces.TracePainter;
-import com.biorecorder.bichart.traces.TraceType;
 
 public class Trace {
     private ChartData data;
@@ -29,7 +28,7 @@ public class Trace {
         this.color = traceColor;
         this.xAxisPosition = xAxisPosition;
         this.yAxisPosition = yAxisPosition;
-        xMinMax = tracePainter.xMinMax(data);
+        xMinMax = data.columnMinMax(0);
         yMinMax = tracePainter.yMinMax(data);
     }
 
@@ -51,7 +50,7 @@ public class Trace {
 
     public void setData(ChartData data) {
         this.data = data;
-        xMinMax = tracePainter.xMinMax(data);
+        xMinMax = data.columnMinMax(0);
         yMinMax = tracePainter.yMinMax(data);
     }
 
@@ -103,26 +102,6 @@ public class Trace {
         double argumentValue;
         argumentValue = xAxis.invert(x);
         return nearest(argumentValue);
-    }
-
-    double getBestExtent(int drawingAreaWidth) {
-        int markSize = tracePainter.markSize();
-        if (data.rowCount() > 1) {
-            if (markSize <= 0) {
-                markSize = 1;
-            }
-            double traceExtent = getDataAvgStep(data) * drawingAreaWidth / markSize;
-            if(tracePainter.traceType() == TraceType.SCATTER) {
-                traceExtent = Math.sqrt(traceExtent);
-            }
-            return traceExtent;
-        }
-        return -1;
-    }
-
-    double getDataAvgStep(ChartData data) {
-        int dataSize = data.rowCount();
-        return (data.value(dataSize - 1, 0) - data.value(0, 0)) / (dataSize - 1);
     }
 
     public BColor getColor() {

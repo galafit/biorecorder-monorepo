@@ -635,9 +635,6 @@ public class Chart {
      * ==================================================
      */
 
-    double getBestExtent(XAxisPosition xAxisPosition) {
-        return traceList.getTracesBestExtent(xAxisList.get(xPositionToIndex(xAxisPosition)), width);
-    }
 
     boolean isXAxisUsed(XAxisPosition xPosition) {
         return traceList.isXAxisUsed(xAxisList.get(xPositionToIndex(xPosition)));

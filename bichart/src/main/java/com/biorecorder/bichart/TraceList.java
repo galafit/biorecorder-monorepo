@@ -199,21 +199,6 @@ public class TraceList {
         return minMax;
     }
 
-    public double getTracesBestExtent(AxisWrapper xAxis, int width) {
-        double extent = -1;
-        for (Trace trace : traces) {
-            if (trace.getXAxis() == xAxis) {
-                double traceExtent = trace.getBestExtent(width);
-                if (extent < 0) {
-                    extent = traceExtent;
-                } else if (traceExtent > 0) {
-                    extent = Math.min(extent, traceExtent);
-                }
-            }
-        }
-        return extent;
-    }
-
     public int getSelection() {
         return selectedTrace;
     }

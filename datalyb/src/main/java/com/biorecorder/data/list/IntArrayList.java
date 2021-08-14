@@ -164,6 +164,12 @@ public class IntArrayList implements EditableIntSequence {
         }
     }
 
+    public int[] toArray() {
+        int[] dest = new int[size];
+        System.arraycopy( data, 0, dest, 0, size );
+        return dest;
+    }
+
     private static int hugeCapacity(int minCapacity) {
         if (minCapacity < 0) // overflow
             throw new OutOfMemoryError();

@@ -19,11 +19,6 @@ public class LineTracePainter implements TracePainter {
         traceConfig = config;
     }
 
-    @Override
-    public TraceType traceType() {
-        return TraceType.LINEAR;
-    }
-
    @Override
     public int markSize() {
         return traceConfig.getMarkSize();
@@ -46,11 +41,6 @@ public class LineTracePainter implements TracePainter {
     @Override
     public Range yMinMax(ChartData data) {
         return data.columnMinMax(1);
-    }
-
-    @Override
-    public Range xMinMax(ChartData data) {
-        return data.columnMinMax(0);
     }
 
     @Override

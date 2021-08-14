@@ -10,17 +10,9 @@ import com.biorecorder.bichart.scales.Scale;
  * And only for inverted traces vice versa
  */
 public interface TracePainter {
-      /**
-       * LineTrace, AreaTrace, ColumnTrace... - TraceType.LINEAR
-       * ScatterTrace, BubbleTrace... - TraceType.SCATTER
-       */
-      TraceType traceType();
-
       int markSize();
 
       Range yMinMax(ChartData data);
-
-      Range xMinMax(ChartData data);
 
       BPoint getCrosshairPoint(ChartData data, int dataIndex, Scale xScale, Scale yScale);
 

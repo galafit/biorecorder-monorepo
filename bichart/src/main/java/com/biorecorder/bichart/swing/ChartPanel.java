@@ -72,6 +72,6 @@ public class ChartPanel extends InteractivePanel {
     }
 
     public void setSize(int width, int height) {
-        smartChart.setSize(width, height);
+        smartChart.onResize(width, height);
     }
 }

@@ -1,8 +1,6 @@
 package com.biorecorder.bichart.examples;
 
 import com.biorecorder.bichart.*;
-import com.biorecorder.bichart.dataprocessing.DataProcessingConfig;
-import com.biorecorder.bichart.dataprocessing.XYDataOld;
 import com.biorecorder.bichart.scales.LinearScale;
 import com.biorecorder.bichart.themes.DarkTheme;
 import com.biorecorder.bichart.traces.LineTracePainter;
@@ -22,8 +20,6 @@ public class NavigableChartTest extends JFrame{
     java.util.List<String> labels = new ArrayList();
     ChartPanelOld chartPanel;
     NavigableChart chart;
-    XYDataOld xyData;
-    XYDataOld xyData1;
 
     public NavigableChartTest() {
         int width = 400;
@@ -41,20 +37,8 @@ public class NavigableChartTest extends JFrame{
         }
 
 
-        xyData = new XYDataOld(xData, true);
-        xyData.addYColumn("y", yData);
-
-        xyData1 = new XYDataOld(0, 1, true);
-        xyData1.addYColumn("regular1", xData);
-        xyData1.addYColumn("regular2", yData);
-
-
-        DataProcessingConfig navigatorProcessing = new DataProcessingConfig();
-        double[] groupingIntervals = {20, 40};
-        navigatorProcessing.setGroupingIntervals(groupingIntervals);
-        navigatorProcessing.setGroupingForced(true);
-        navigatorProcessing.setGroupingEnabled(false);
-        navigatorProcessing.setCropEnabled(false);
+        XYData xyData = new XYData(xData.toArray(), yData.toArray());
+        XYData xyData1 = new XYData(0, 1, yData.toArray());
 
         chart = new NavigableChart(DarkTheme.getNavigableChartConfig(), new LinearScale());
 
@@ -72,35 +56,6 @@ public class NavigableChartTest extends JFrame{
         addKeyListener(chartPanel);
         setLocationRelativeTo(null);
         setVisible(true);
-
-     /*   Thread t1 = new Thread(new Runnable() {
-            int interval = 2000;
-            @Override
-            public void run() {
-
-                try {
-                    Thread.sleep(interval);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-
-                chart.setChartTraceColor(1, BColor.RED);
-                chart.setChartTraceName(1, "new Name");
-                chartPanel.repaint();
-
-                try {
-                    Thread.sleep(interval);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                NavigableChartConfig config = new DarkTheme().getNavigableChartConfig();
-                config.setGap(20);
-                chart.setConfig(config);
-                chartPanel.repaint();
-            }
-        });*/
-        //t1.start();
-
     }
 
 

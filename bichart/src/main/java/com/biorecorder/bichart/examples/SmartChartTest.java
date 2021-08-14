@@ -1,15 +1,8 @@
 package com.biorecorder.bichart.examples;
 
-import com.biorecorder.bichart.NavigableChart;
 import com.biorecorder.bichart.XYData;
-import com.biorecorder.bichart.dataprocessing.DataProcessingConfig;
-import com.biorecorder.bichart.dataprocessing.XYDataOld;
-import com.biorecorder.bichart.scales.LinearScale;
 import com.biorecorder.bichart.swing.ChartPanel;
-import com.biorecorder.bichart.swing.ChartPanelOld;
-import com.biorecorder.bichart.themes.DarkTheme;
 import com.biorecorder.bichart.traces.LineTracePainter;
-
 import javax.swing.*;
 import java.awt.*;
 

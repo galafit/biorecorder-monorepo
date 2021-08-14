@@ -1,7 +1,6 @@
 package com.biorecorder.bichart;
 
 import com.biorecorder.bichart.graphics.Range;
-import com.biorecorder.data.frame_new.DataTable;
 import com.biorecorder.data.frame_new.aggregation.TimeInterval;
 
 import java.util.ArrayList;
