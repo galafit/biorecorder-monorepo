@@ -280,12 +280,12 @@ class AxisPainter {
             }
             ticks.add(0, extraTick);
         }
-
         if(isRoundingEnabled) {
             Tick tickMin = ticks.get(1);
             Tick tickMax = ticks.get(ticks.size() - 2);
             scale.setMinMax(tickMin.getValue(), tickMax.getValue());
         }
+
         return ticks;
 
     }

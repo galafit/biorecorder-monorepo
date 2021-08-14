@@ -10,24 +10,15 @@ import com.sun.istack.internal.Nullable;
 
 class AxisWrapper {
     private Axis axis;
-    private boolean isStartEndOnTick;
-
+    private double min;
+    private double max;
+    private boolean isStartEndOnTick = false;
+    boolean isRounded = false;
 
     public AxisWrapper(Axis axis) {
         this.axis = axis;
-        isStartEndOnTick = axis.isStartEndOnTick();
-    }
-
-    private void deactivateRounding() {
-        axis.setStartEndOnTick(false);
-    }
-
-    private void activateRounding() {
-        axis.setStartEndOnTick(isStartEndOnTick);
-    }
-
-    public boolean isStartEndOnTick() {
-        return isStartEndOnTick;
+        min = axis.getMin();
+        max = axis.getMax();
     }
 
     public void setStartEndOnTick(boolean startEndOnTick) {
@@ -109,7 +100,12 @@ class AxisWrapper {
      * return true if axis start or end actually changed
      */
     public boolean setStartEnd(int start, int end) {
-        return axis.setStartEnd(start, end);
+        boolean isChanged = axis.setStartEnd(start, end);
+        if(isStartEndOnTick && isChanged) {
+            axis.setMinMax(min, max);
+            isRounded = false;
+        }
+        return isChanged;
     }
 
     /**
@@ -117,10 +113,12 @@ class AxisWrapper {
      */
     public boolean setMinMax(double min, double max, boolean isAutoscale) {
         if(isAutoscale) {
-            activateRounding();
+            isRounded = false;
         } else {
-            deactivateRounding();
+            isRounded = true;
         }
+        this.min = min;
+        this.max = max;
         return axis.setMinMax(min, max);
     }
 
@@ -152,18 +150,30 @@ class AxisWrapper {
         return axis.getEnd();
     }
 
+    private void round(RenderContext renderContext) {
+        if(isStartEndOnTick && !isRounded) {
+            axis.round(renderContext);
+            isRounded = true;
+        }
+
+    }
+
     public int getWidth(RenderContext renderContext) {
+        round(renderContext);
         return axis.getWidthOut(renderContext);
     }
 
     public void drawCrosshair(BCanvas canvas, BRectangle area, int position) {
+        round(canvas.getRenderContext());
         axis.drawCrosshair(canvas, area, position);
     }
     public void drawGrid(BCanvas canvas, BRectangle area) {
+        round(canvas.getRenderContext());
         axis.drawGrid(canvas, area);
     }
 
     public void drawAxis(BCanvas canvas, BRectangle area) {
+        round(canvas.getRenderContext());
         axis.drawAxis(canvas, area);
     }
 }

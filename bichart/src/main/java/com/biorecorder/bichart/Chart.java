@@ -457,6 +457,8 @@ public class Chart {
     public void addStack(int weight) {
         AxisWrapper leftAxis = new AxisWrapper(new Axis(new LinearScale(), config.getYAxisConfig(), YAxisPosition.LEFT));
         AxisWrapper rightAxis = new AxisWrapper(new Axis(new LinearScale(), config.getYAxisConfig(), YAxisPosition.RIGHT));
+        leftAxis.setStartEndOnTick(true);
+        rightAxis.setStartEndOnTick(true);
         yAxisList.add(leftAxis);
         yAxisList.add(rightAxis);
         stackWeights.add(weight);

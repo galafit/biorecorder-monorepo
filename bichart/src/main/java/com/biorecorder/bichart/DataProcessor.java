@@ -86,7 +86,6 @@ public class DataProcessor {
                 }
             }
             int extraPoints = pointsPerGroup * config.getCropShoulder();
-            System.out.println("extra points "+extraPoints);
             indexFrom -= extraPoints;
             indexTill += extraPoints;
             if(indexFrom < 0) {

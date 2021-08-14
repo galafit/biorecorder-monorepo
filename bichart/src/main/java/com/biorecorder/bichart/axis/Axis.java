@@ -19,7 +19,6 @@ public class Axis {
     private Orientation orientation;
     private TickLabelFormat tickLabelPrefixAndSuffix;
 
-    private boolean isStartEndOnTick = false;
     private double tickInterval = -1; // in axis domain units (If <= 0 will not be taken into account)
 
     public Axis(Scale scale, AxisConfig axisConfig, XAxisPosition xAxisPosition) {
@@ -44,7 +43,6 @@ public class Axis {
             case RIGHT:
                 orientation = new RightOrientation();
         }
-        isStartEndOnTick = true;
     }
 
     public void setTickLabelPrefixAndSuffix(@Nullable String prefix, @Nullable String suffix) {
@@ -117,15 +115,6 @@ public class Axis {
 
     public String getTitle() {
         return title;
-    }
-
-    public boolean isStartEndOnTick() {
-        return isStartEndOnTick;
-    }
-
-    public void setStartEndOnTick(boolean startEndOnTick) {
-        isStartEndOnTick = startEndOnTick;
-        invalidate();
     }
     
     /**
@@ -204,7 +193,15 @@ public class Axis {
     
     public void revalidate(RenderContext renderContext) {
         if(painter == null) {
-            painter = new AxisPainter(scale, config, orientation, renderContext, title, tickInterval, tickLabelPrefixAndSuffix, isStartEndOnTick);
+            boolean isRoundingEnabled = false;
+            painter = new AxisPainter(scale, config, orientation, renderContext, title, tickInterval, tickLabelPrefixAndSuffix, isRoundingEnabled);
+        }
+    }
+
+    public void round(RenderContext renderContext) {
+        if(painter == null) {
+            boolean isRoundingEnabled = true;
+            painter = new AxisPainter(scale, config, orientation, renderContext, title, tickInterval, tickLabelPrefixAndSuffix, isRoundingEnabled);
         }
     }
 
