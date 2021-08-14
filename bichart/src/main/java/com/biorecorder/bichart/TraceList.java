@@ -16,6 +16,7 @@ public class TraceList {
     private List<Trace> traces = new ArrayList<>();
     private Map<AxisWrapper, List<Trace>> xAxisToTraces = new HashMap<>();
     private Map<AxisWrapper, List<Trace>> yAxisToTraces = new HashMap<>();
+    private Map<XAxisPosition, List<Integer>> xPositionToTraceNumbers = new HashMap<>();
     private List<ChangeListener> changeListeners = new ArrayList<>(1);
     private int selectedTrace = -1; // -1 no selection
 
@@ -74,6 +75,28 @@ public class TraceList {
         traces.get(traceIndex).setData(data);
     }
 
+    public List<Integer> getTraces(XAxisPosition xAxisPosition) {
+        List<Integer> traceNumbers = xPositionToTraceNumbers.get(xAxisPosition);
+        if(traceNumbers == null) {
+            traceNumbers = new ArrayList<>(0);
+        }
+        return traceNumbers;
+    }
+
+    private void remadeXAxisPositionToTraces() {
+        xPositionToTraceNumbers = new HashMap<>();
+        for (int i = 0; i < traces.size(); i++) {
+            Trace trace = traces.get(i);
+            XAxisPosition xPosition = trace.getXAxisPosition();
+            List<Integer> traceNumbers = xPositionToTraceNumbers.get(xPosition);
+            if(traceNumbers == null) {
+                traceNumbers = new ArrayList<>();
+                xPositionToTraceNumbers.put(xPosition, traceNumbers);
+            }
+            traceNumbers.add(i);
+        }
+    }
+
     public void add(Trace trace) {
         traces.add(trace);
         AxisWrapper xAxis = trace.getXAxis();
@@ -91,6 +114,7 @@ public class TraceList {
             yAxisToTraces.put(yAxis, yTraces);
         }
         yTraces.add(trace);
+        remadeXAxisPositionToTraces();
         notifyChangeListeners();
     }
 
@@ -109,7 +133,8 @@ public class TraceList {
         if(yTraces.size() == 0) {
             yAxisToTraces.remove(yAxis);
         }
-         notifyChangeListeners();
+        remadeXAxisPositionToTraces();
+        notifyChangeListeners();
     }
 
     public BRectangle getTraceStackArea(int traceIndex) {

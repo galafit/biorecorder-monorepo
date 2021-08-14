@@ -11,6 +11,7 @@ import com.biorecorder.bichart.traces.TracePainter;
 import com.sun.istack.internal.Nullable;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class NavigableChart1 {
@@ -54,12 +55,29 @@ public class NavigableChart1 {
             scroll.setValues(navigatorRange.getMin(),scrollExtent, navigatorRange.getMin(), navigatorRange.getMax());
             scroll.addListener(new ScrollListener() {
                 @Override
-                public void onScrollChanged() {
+                public void onScrollChanged(double viewportMin, double viewportMax) {
                     isChanged = true;
+                    chart.setXMinMax(xPosition, viewportMin, viewportMax);
                 }
             });
             axisToScrolls.put(xPosition, scroll);
         }
+    }
+
+    public List<Integer> getChartTraces(XAxisPosition xAxisPosition) {
+        return chart.getTraces(xAxisPosition);
+    }
+
+    public void addScrollListener(XAxisPosition xAxisPosition, ScrollListener scrollListener) {
+        axisToScrolls.get(xAxisPosition).addListener(scrollListener);
+    }
+
+    public Insets getSpacing() {
+        return spacing;
+    }
+
+    public int getWidth() {
+        return width;
     }
 
     public void invalidate() {
@@ -134,14 +152,6 @@ public class NavigableChart1 {
 
     public int getNavigatorTraceMarkSize(int traceNumber) {
         return  navigator.getTraceMarkSize(traceNumber);
-    }
-
-    public Scale getNavigatorXScale() {
-        return navigator.getXScale(navigatorXPosition);
-    }
-
-    public Scale getChartXScale(XAxisPosition xAxisPosition) {
-        return chart.getXScale(xAxisPosition);
     }
 
     public XAxisPosition getChartTraceXAxisPosition(int traceNumber) {
@@ -280,6 +290,10 @@ public class NavigableChart1 {
         return chart.stackCount();
     }
 
+    public void setChartTraceData(int traceNumber, ChartData data) {
+        chart.setTraceData(traceNumber, data);
+    }
+
 
     /**
      * =======================Base methods to interact with navigator==========================
@@ -327,6 +341,14 @@ public class NavigableChart1 {
 
     public int navigatorTraceCount() {
         return navigator.traceCount();
+    }
+
+    public void setNavigatorTraceData(int traceNumber, ChartData data) {
+        navigator.setTraceData(traceNumber, data);
+    }
+
+    public Range getNavigatorXMinMax() {
+        return navigator.getXMinMax(navigatorXPosition);
     }
 
     public void setNavigatorTraceColor(int trace, BColor color) {
@@ -377,6 +399,7 @@ public class NavigableChart1 {
      */
     public void setScrollRange(XAxisPosition xPosition, Range range) {
         axisToScrolls.get(xPosition).setRange(range);
+
     }
 
     public void autoScaleNavigatorY(int stack, YAxisPosition yPosition) {
@@ -521,6 +544,10 @@ public class NavigableChart1 {
         } else {
             return navigator.selectTrace(x, y);
         }
+    }
+
+    public Range getChartXMinMax(XAxisPosition xAxisPosition) {
+        return chart.getXMinMax(xAxisPosition);
     }
 
     boolean zoomChartY(int stack, YAxisPosition yPosition, double zoomFactor) {

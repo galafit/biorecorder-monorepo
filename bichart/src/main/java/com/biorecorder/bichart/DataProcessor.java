@@ -1,17 +1,18 @@
 package com.biorecorder.bichart;
 
 import com.biorecorder.bichart.graphics.Range;
+import com.biorecorder.data.frame_new.DataTable;
 import com.biorecorder.data.frame_new.aggregation.TimeInterval;
 
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class DataProcessor {
     private ProcessingConfig config;
     private boolean isDateTime;
     private int minPointsForCrop = 100;
-    private List<XYData> chartData = new ArrayList<>();
+    private List<XYData> chartRowData = new ArrayList<>();
+    private List<XYData> navigatorRowData = new ArrayList<>();
     private List<GroupedData> navigatorGroupedData = new ArrayList<>();
 
     public DataProcessor(ProcessingConfig config, boolean isDateTime) {
@@ -19,56 +20,94 @@ public class DataProcessor {
         this.isDateTime = isDateTime;
     }
 
-    public void addChartTrace(XYData data) {
-        chartData.add(data);
+    public boolean isDateTime() {
+        return isDateTime;
     }
 
-    private GroupedData addNavigatorTrace(XYData data, int xLength, int markSize) {
-        if(isDateTime) {
-            return new GroupedData(data, config.getGroupingType(), config.getGroupingTimeIntervals(), xLength, markSize);
-        } else {
-            return new GroupedData(data, config.getGroupingType(), config.getGroupingIntervals(), xLength, markSize);
-       }
+    public void addChartTraceData(XYData data) {
+        chartRowData.add(data);
+    }
+
+    public void addNavigatorTraceData(XYData data) {
+       navigatorRowData.add(data);
+       navigatorGroupedData.add(null);
+    }
+
+    public void setChartTraceData(int traceNumber, XYData data) {
+        chartRowData.set(traceNumber, data);
     }
 
     public void appendNavigatorTraceData(int traceNumber, XYData data) {
-        navigatorGroupedData.get(traceNumber).appendData(data);
+        GroupedData groupedData = navigatorGroupedData.get(traceNumber);
+        if(groupedData != null) {
+            groupedData.appendData(data);
+        } else {
+            XYData rowData = navigatorRowData.get(traceNumber);
+            rowData.appendData(data);
+        }
+    }
+
+    public void appendChartTraceData(int traceNumber, XYData dataToAppend) {
+        XYData data = chartRowData.get(traceNumber);
+        data.appendData(dataToAppend);
     }
 
     public XYData getProcessedNavigatorData(int traceNumber, int xLength, int markSize) {
-        return navigatorGroupedData.get(traceNumber).getData(xLength, markSize);
+        if(!config.isDataGroupingEnabled()) {
+            return navigatorRowData.get(traceNumber);
+        }
+        GroupedData groupedData = navigatorGroupedData.get(traceNumber);
+        if(groupedData == null) {
+            XYData rowData = navigatorRowData.get(traceNumber);
+            if(isDateTime) {
+                groupedData = new GroupedData(rowData, config.getGroupingType(), config.getGroupingTimeIntervals(), xLength, markSize);
+            } else {
+                groupedData = new GroupedData(rowData, config.getGroupingType(), config.getGroupingIntervals(), xLength, markSize);
+            }
+            navigatorGroupedData.set(traceNumber, groupedData);
+            navigatorRowData.set(traceNumber, null);
+        }
+        return groupedData.getData(xLength, markSize);
     }
 
     public XYData getProcessedChartData(int traceNumber, Range xMinMax, int xLength, int markSize) {
-        XYData data = chartData.get(traceNumber);
+        XYData data = chartRowData.get(traceNumber);
         Range dataXRange = GroupedData.dataRange(data);
-        if(!config.isDataCropEnabled() || dataXRange == null ||
-              xMinMax.contains(dataXRange)  || data.rowCount() < minPointsForCrop) {
-            return data;
-        }
         int pointsPerGroup = 1;
-        if(config.isDataGroupingEnabled()) {
-            pointsPerGroup = GroupedData.bestPointsInGroup(data, xLength, markSize) + 1;
+        if(config.isDataCropEnabled() && dataXRange != null &&
+              !xMinMax.contains(dataXRange) && data.rowCount() > minPointsForCrop) {
+            int indexFrom = data.bisectLeft(xMinMax.getMin());
+            int indexTill = data.bisectRight(xMinMax.getMax());
+
+            if(config.isDataGroupingEnabled()) {
+                int dataSize = indexTill - indexFrom;
+                if(dataSize > 0) {
+                    pointsPerGroup = GroupedData.bestPointsInGroup(dataSize, xLength, markSize);
+                }
+            }
+            int extraPoints = pointsPerGroup * config.getCropShoulder();
+            System.out.println("extra points "+extraPoints);
+            indexFrom -= extraPoints;
+            indexTill += extraPoints;
+            if(indexFrom < 0) {
+                indexFrom = 0;
+            }
+            if(indexTill > data.rowCount()) {
+                indexTill = data.rowCount();
+            }
+            data = data.view(indexFrom, indexTill - indexFrom);
         }
-        int indexFrom = data.bisectLeft(dataXRange.getMin());
-        int indexTill = data.bisectRight(dataXRange.getMax());
-        int extraPoints = pointsPerGroup * config.getCropShoulder();
-        indexFrom -= extraPoints;
-        indexTill += extraPoints;
-        if(indexFrom < 0) {
-            indexFrom = 0;
-        }
-        if(indexTill > data.rowCount()) {
-            indexTill = data.rowCount();
-        }
-        XYData resultantData = data.view(indexFrom, indexTill - indexFrom);
-        if(config.isDataGroupingEnabled()) {
+        if(config.isDataGroupingEnabled() && pointsPerGroup > 1) {
             if(isDateTime) {
-                resultantData = new GroupedData(resultantData, config.getGroupingType(), new TimeInterval[0], xLength, markSize).getData(xLength, markSize);
+                data = new GroupedData(data, config.getGroupingType(), new TimeInterval[0], xLength, markSize).getData(xLength, markSize);
             } else {
-                resultantData = new GroupedData(resultantData, config.getGroupingType(), new double[0], xLength, markSize).getData(xLength, markSize);
+                data = new GroupedData(data, config.getGroupingType(), new double[0], xLength, markSize).getData(xLength, markSize);
             }
         }
-        return resultantData;
+        return data;
+    }
+
+    public XYData getChartRowData(int traceNumber) {
+        return chartRowData.get(traceNumber);
     }
 }

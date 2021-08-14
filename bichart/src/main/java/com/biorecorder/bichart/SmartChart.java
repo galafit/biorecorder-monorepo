@@ -1,41 +1,83 @@
 package com.biorecorder.bichart;
+
 import com.biorecorder.bichart.axis.XAxisPosition;
 import com.biorecorder.bichart.axis.YAxisPosition;
+import com.biorecorder.bichart.graphics.BCanvas;
+import com.biorecorder.bichart.graphics.BPoint;
 import com.biorecorder.bichart.graphics.Range;
+import com.biorecorder.bichart.graphics.RenderContext;
 import com.biorecorder.bichart.scales.LinearScale;
 import com.biorecorder.bichart.scales.Scale;
 import com.biorecorder.bichart.scales.TimeScale;
+import com.biorecorder.bichart.scroll.ScrollListener;
 import com.biorecorder.bichart.themes.DarkTheme;
 import com.biorecorder.bichart.traces.TracePainter;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-public class SmartChart {
-    private List<XYData> navigatorRowData = new ArrayList<>();
-    private List<XYData> chartRowData = new ArrayList<>();
+public class SmartChart implements InteractiveDrawable {
     private DataProcessor dataProcessor;
     private NavigableChart1 navigableChart;
-    private boolean isValid = false;
+    private boolean isConfigured = false;
+
+    private BPoint lastStartPoint;
+    private boolean isScrollMoving;
 
     public SmartChart(ProcessingConfig processingConfig, NavigableChartConfig chartConfig, Scale xScale, boolean isDateTime) {
         dataProcessor = new DataProcessor(processingConfig, isDateTime);
-        this.navigableChart = new NavigableChart1(chartConfig, xScale);
+        navigableChart = new NavigableChart1(chartConfig, xScale);
+        for (XAxisPosition xPosition : XAxisPosition.values()) {
+            ScrollListener l = new ScrollListener() {
+                @Override
+                public void onScrollChanged(double viewportMin, double viewportMax) {
+                    List<Integer> traceNumbers = navigableChart.getChartTraces(xPosition);
+                    for (int i = 0; i < traceNumbers.size(); i++) {
+                        int traceNumber = traceNumbers.get(i);
+                        XYData traceData = dataProcessor.getProcessedChartData(traceNumber, new Range(viewportMin, viewportMax), getXLength(), navigableChart.getChartTraceMarkSize(traceNumber));
+                        navigableChart.setChartTraceData(traceNumber, traceData);
+                    }
+                }
+            };
+            navigableChart.addScrollListener(xPosition, l);
+        }
     }
 
-    public static SmartChart createChart() {
-        return new SmartChart(new ProcessingConfig(), DarkTheme.getNavigableChartConfig(), new LinearScale(), false);
+    public SmartChart(boolean isDateTime) {
+        this(new ProcessingConfig(), DarkTheme.getNavigableChartConfig(), new LinearScale(), isDateTime);
     }
 
-    public static SmartChart createTimeChart() {
-        return new SmartChart(new ProcessingConfig(), DarkTheme.getNavigableChartConfig(), new TimeScale(), true);
+
+    private int getXLength() {
+        int xLength = navigableChart.getWidth() - navigableChart.getSpacing().left() - navigableChart.getSpacing().right();
+        if (xLength < 0) {
+            xLength = 0;
+        }
+        return xLength;
+    }
+
+    private void setChartTraceData(int traceNumber) {
+        Range minMax = navigableChart.getChartXMinMax(navigableChart.getChartTraceXAxisPosition(traceNumber));
+        XYData data = dataProcessor.getProcessedChartData(traceNumber, minMax, getXLength(), navigableChart.getChartTraceMarkSize(traceNumber));
+        navigableChart.setChartTraceData(traceNumber, data);
+    }
+
+    private void setNavigatorTraceData(int traceNumber) {
+        XYData data = dataProcessor.getProcessedNavigatorData(traceNumber, getXLength(), navigableChart.getNavigatorTraceMarkSize(traceNumber));
+        navigableChart.setNavigatorTraceData(traceNumber, data);
+    }
+
+    private Scale getXScale() {
+        if (dataProcessor.isDateTime()) {
+            return new TimeScale();
+        } else {
+            return new LinearScale();
+        }
     }
 
     // suppose that data is ordered
-    public Range dataMinMax(XYData data) {
-        if(data != null) {
+    private Range dataMinMax(XYData data) {
+        if (data != null) {
             return new Range(data.xValue(0), data.xValue(data.rowCount() - 1));
         }
         return null;
@@ -44,10 +86,10 @@ public class SmartChart {
     private Range dataBestRange(XYData data, int markSize, Scale xScale, int xLength, double min) {
         int dataSize = data.rowCount();
         Range dataRange = dataMinMax(data);
-        if(dataSize > 1 && dataRange != null && dataRange.length() > 0) {
+        if (xLength > 0 && dataSize > 1 && dataRange != null && dataRange.length() > 0) {
             xScale.setStartEnd(1, dataSize * markSize);
             xScale.setMinMax(dataRange.getMin(), dataRange.getMax());
-            int positionOfMin = (int)xScale.scale(min);
+            int positionOfMin = (int) xScale.scale(min);
             int positionOfMax = positionOfMin + xLength;
             double max = xScale.invert(positionOfMax);
             return new Range(min, max);
@@ -55,52 +97,82 @@ public class SmartChart {
         return null;
     }
 
-    private void autoScaleNavigatorX() {
-        Scale xScale = navigableChart.getNavigatorXScale();
-        int xLength = (int)Math.round(xScale.getLength());
-        Range xMinMax = null;
-        for (int i = 0; i < navigableChart.navigatorTraceCount(); i++) {
-            XYData data = navigatorRowData.get(i);
-            xMinMax = Range.join(xMinMax, dataMinMax(data));
+    private void updateNavigatorRange(XYData data) {
+        Range dataMinMax = dataMinMax(data);
+        Range navigatorRange = navigableChart.getNavigatorXMinMax();
+        navigatorRange = Range.join(navigatorRange, dataMinMax);
+        navigableChart.setNavigatorXMinMax(navigatorRange.getMin(), navigatorRange.getMax());
+    }
+
+    public void setChartTraceData(int traceNumber, XYData data) {
+        dataProcessor.setChartTraceData(traceNumber, data);
+        if (isConfigured) {
+            setChartTraceData(traceNumber);
+            updateNavigatorRange(data);
         }
-        if(xMinMax != null) {
+    }
+
+    public void appendNavigatorTraceData(int traceNumber, XYData dataToAppend) {
+        dataProcessor.appendNavigatorTraceData(traceNumber, dataToAppend);
+        if (isConfigured) {
+            setNavigatorTraceData(traceNumber);
+            updateNavigatorRange(dataToAppend);
+        }
+    }
+
+    public void autoScaleNavigatorX() {
+        int xLength = getXLength();
+        Scale xScale = getXScale();
+        Range xMinMax = null;
+        List<XYData> processedData = new ArrayList<>(navigableChart.navigatorTraceCount());
+        for (int i = 0; i < navigableChart.navigatorTraceCount(); i++) {
+            XYData data = dataProcessor.getProcessedNavigatorData(i, xLength, navigableChart.getNavigatorTraceMarkSize(i));
+            xMinMax = Range.join(xMinMax, dataMinMax(data));
+            processedData.add(data);
+        }
+        if (xMinMax != null) {
             for (int i = 0; i < navigableChart.navigatorTraceCount(); i++) {
-                Range dataBestRange = dataBestRange(navigatorRowData.get(i), navigableChart.getNavigatorTraceMarkSize(i), xScale, xLength, xMinMax.getMin());
-                if(dataBestRange != null && dataBestRange.length() > 0) {
-                    if(dataBestRange.getMax() > xMinMax.getMax()) {
+                Range dataBestRange = dataBestRange(processedData.get(i), navigableChart.getNavigatorTraceMarkSize(i), xScale, xLength, xMinMax.getMin());
+                if (dataBestRange != null && dataBestRange.length() > 0) {
+                    if (dataBestRange.getMax() > xMinMax.getMax()) {
                         xMinMax = new Range(xMinMax.getMin(), dataBestRange.getMax());
                     }
                 }
             }
+        } else {
+            for (int i = 0; i < navigableChart.chartTraceCount(); i++) {
+                XYData data = dataProcessor.getChartRowData(i);
+                xMinMax = Range.join(xMinMax, dataMinMax(data));
+            }
+        }
+        if (xMinMax != null) {
             navigableChart.setNavigatorXMinMax(xMinMax.getMin(), xMinMax.getMax());
         }
     }
 
-    private void autoScaleChartX() {
-        Map<XAxisPosition, List<Integer>> xPositionToTracesNumbers = new HashMap<>();
-        for (int i = 0; i < navigableChart.chartTraceCount(); i++) {
-            XAxisPosition xPosition = navigableChart.getChartTraceXAxisPosition(i);
-            List<Integer> traceNumbers = xPositionToTracesNumbers.get(xPosition);
-            if(traceNumbers == null) {
-                traceNumbers = new ArrayList<>();
-                xPositionToTracesNumbers.put(xPosition, traceNumbers);
-            }
-            traceNumbers.add(i);
-        }
-        for (XAxisPosition xPosition : xPositionToTracesNumbers.keySet()) {
-            List<Integer> traceNumbers = xPositionToTracesNumbers.get(xPosition);
-            Scale xScale = navigableChart.getChartXScale(xPosition);
-            int xLength = (int)Math.round(xScale.getLength());
+    public void autoScaleChartX() {
+        int xLength = getXLength();
+        Scale xScale = getXScale();
+        for (XAxisPosition xPosition : XAxisPosition.values()) {
+            List<Integer> traceNumbers = navigableChart.getChartTraces(xPosition);
             Range xMinMax = null;
             for (int i = 0; i < traceNumbers.size(); i++) {
-                Range dataBestRange = dataBestRange(chartRowData.get(traceNumbers.get(i)), navigableChart.getChartTraceMarkSize(traceNumbers.get(i)), xScale, xLength, xMinMax.getMin());
-                if(dataBestRange != null && dataBestRange.length() > 0) {
-                    if(xMinMax == null || (dataBestRange != null && dataBestRange.getMax() < xMinMax.getMax())) {
-                        xMinMax = dataBestRange;
+                int traceNumber = traceNumbers.get(i);
+                Range dataRange = dataMinMax(dataProcessor.getChartRowData(traceNumber));
+                xMinMax = Range.join(xMinMax, dataRange);
+            }
+            if (xMinMax != null && xMinMax.length() > 0) {
+                for (int i = 0; i < traceNumbers.size(); i++) {
+                    int traceNumber = traceNumbers.get(i);
+                    Range dataBestRange = dataBestRange(dataProcessor.getChartRowData(traceNumber), navigableChart.getChartTraceMarkSize(traceNumber), xScale, xLength, xMinMax.getMin());
+                    if (dataBestRange != null && dataBestRange.length() > 0) {
+                        if (xMinMax == null || (dataBestRange != null && dataBestRange.getMax() < xMinMax.getMax())) {
+                            xMinMax = dataBestRange;
+                        }
                     }
                 }
             }
-            if(xMinMax != null) {
+            if (xMinMax != null) {
                 navigableChart.setScrollRange(xPosition, xMinMax);
             }
         }
@@ -120,7 +192,7 @@ public class SmartChart {
 
     public void addChartTrace(String name, XYData data, TracePainter tracePainter) {
         navigableChart.addChartTrace(name, data.getEmptyCopy(), tracePainter);
-        dataProcessor.addChartTrace(data);
+        dataProcessor.addChartTraceData(data);
     }
 
     public void addNavigatorStack() {
@@ -129,6 +201,7 @@ public class SmartChart {
 
     public void addNavigatorTrace(String name, XYData data, TracePainter tracePainter) {
         navigableChart.addNavigatorTrace(name, data.getEmptyCopy(), tracePainter);
+        dataProcessor.addNavigatorTraceData(data);
     }
 
     public void setNavigatorYMinMax(int stack, YAxisPosition yPosition, double min, double max) {
@@ -137,5 +210,195 @@ public class SmartChart {
 
     public void autoScaleNavigatorY() {
         navigableChart.autoScaleNavigatorY();
+    }
+
+    public void setSize(int width, int height) {
+        navigableChart.setSize(width, height);
+    }
+
+    @Override
+    public void draw(BCanvas canvas) {
+        if (!isConfigured) {
+            autoScaleNavigatorX();
+            autoScaleChartX();
+
+            for (int i = 0; i < navigableChart.chartTraceCount(); i++) {
+                setChartTraceData(i);
+            }
+            for (int i = 0; i < navigableChart.navigatorTraceCount(); i++) {
+                setNavigatorTraceData(i);
+            }
+            navigableChart.autoScaleChartY();
+            navigableChart.autoScaleNavigatorY();
+            isConfigured = true;
+        }
+        navigableChart.draw(canvas);
+    }
+
+    @Override
+    public void onResize(int width, int height) {
+        navigableChart.setSize(width, height);
+    }
+
+    @Override
+    public boolean onTap(int x, int y) {
+        if (navigableChart.selectTrace(x, y)) {
+            return true;
+        } else {
+            if (navigableChart.navigatorContain(x, y)) {
+                return navigableChart.setScrollsPosition(x);
+            }
+            return false;
+        }
+    }
+
+    @Override
+    public boolean onDoubleTap(int x, int y) {
+        // AUTO SCALE both chart and navigator
+        if (navigableChart.isChartTraceSelected()) {
+            // if some trace is selected we auto scale only axis belonging to that trace
+            navigableChart.autoScaleScrollExtent(navigableChart.getChartSelectedTraceX());
+            navigableChart.autoScaleChartY(navigableChart.getChartSelectedTraceStack(), navigableChart.getChartSelectedTraceY());
+        } else {
+            // if no selected trace in chart we scale all x and y axis
+            navigableChart.autoScaleScrollExtent();
+            navigableChart.autoScaleChartY();
+        }
+        // do the same with navigator...
+        if (navigableChart.isNavigatorTraceSelected()) {
+            // if some trace is selected we auto scale only axis belonging to that trace
+            navigableChart.autoScaleNavigatorY(navigableChart.getNavigatorSelectedTraceStack(), navigableChart.getNavigatorSelectedTraceY());
+        } else {
+            // if no selected trace in navigator we scale all  y axis
+            navigableChart.autoScaleNavigatorY();
+        }
+        return true;
+    }
+
+    @Override
+    public boolean onTapUp(int x, int y) {
+        isScrollMoving = false;
+        return navigableChart.hoverOff();
+    }
+
+    @Override
+    public boolean onLongPress(int x, int y) {
+        return navigableChart.hoverOn(x, y);
+    }
+
+    @Override
+    public boolean onScaleX(BPoint startPoint, double scaleFactor) {
+        if (scaleFactor == 0 || scaleFactor == 1) {
+            return false;
+        }
+        if (navigableChart.isChartTraceSelected()) {
+            // if some trace is selected we auto scale only axis belonging to that trace
+            return navigableChart.zoomScrollExtent(navigableChart.getChartSelectedTraceX(), scaleFactor);
+        } else {
+            return navigableChart.zoomScrollExtent(scaleFactor);
+        }
+    }
+
+
+    @Override
+    public boolean onScrollX(BPoint startPoint, int dx) {
+        if (dx == 0) {
+            return false;
+        }
+        if (startPoint != null && !startPoint.equals(lastStartPoint)) {
+            lastStartPoint = startPoint;
+            isScrollMoving = navigableChart.scrollContain(startPoint.getX(), startPoint.getY());
+        }
+
+        if (isScrollMoving) {
+            return navigableChart.translateScrolls(-dx);
+        }
+
+        if (startPoint == null || navigableChart.chartContain(startPoint.getX(), startPoint.getY())) {
+            return navigableChart.translateScrollsViewport(dx);
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean onScaleY(BPoint startPoint, double scaleFactor) {
+        if (startPoint == null || scaleFactor == 0 || scaleFactor == 1) {
+            return false;
+        }
+        if (navigableChart.chartContain(startPoint.getX(), startPoint.getY())) {
+            if (navigableChart.isChartTraceSelected()) {
+                navigableChart.zoomChartY(navigableChart.getChartSelectedTraceStack(), navigableChart.getChartSelectedTraceY(), scaleFactor);
+                return true;
+            } else {
+                int stack = navigableChart.getChartStack(startPoint);
+                if (stack >= 0) {
+                    YAxisPosition yPosition = navigableChart.getChartYAxis(stack, startPoint);
+                    if (yPosition != null) {
+                        navigableChart.zoomChartY(stack, yPosition, scaleFactor);
+                        return true;
+                    }
+                }
+                return false;
+            }
+        } else {
+            if (navigableChart.isNavigatorTraceSelected()) {
+                navigableChart.zoomNavigatorY(navigableChart.getNavigatorSelectedTraceStack(), navigableChart.getNavigatorSelectedTraceY(), scaleFactor);
+                return true;
+            } else {
+                int stack = navigableChart.getNavigatorStack(startPoint);
+                if (stack >= 0) {
+                    YAxisPosition yPosition = navigableChart.getNavigatorYAxis(stack, startPoint);
+                    if (yPosition != null) {
+                        return navigableChart.zoomNavigatorY(stack, yPosition, scaleFactor);
+                    }
+                }
+                return false;
+            }
+        }
+    }
+
+
+    @Override
+    public boolean onScrollY(BPoint startPoint, int dy) {
+        if (dy == 0 || startPoint == null) {
+            return false;
+        }
+        if (navigableChart.chartContain(startPoint.getX(), startPoint.getY())) {
+            if (navigableChart.isChartTraceSelected()) {
+                navigableChart.translateChartY(navigableChart.getChartSelectedTraceStack(), navigableChart.getChartSelectedTraceY(), dy);
+                return true;
+            } else {
+                int stack = navigableChart.getChartStack(startPoint);
+                if (stack >= 0) {
+                    YAxisPosition yPosition = navigableChart.getChartYAxis(stack, startPoint);
+                    if (yPosition != null) {
+                        navigableChart.translateChartY(stack, yPosition, dy);
+                        return true;
+                    }
+                }
+                return false;
+            }
+        } else {
+            if (navigableChart.isNavigatorTraceSelected()) {
+                navigableChart.translateNavigatorY(navigableChart.getNavigatorSelectedTraceStack(), navigableChart.getNavigatorSelectedTraceY(), dy);
+                return true;
+            } else {
+                int stack = navigableChart.getNavigatorStack(startPoint);
+                if (stack >= 0) {
+                    YAxisPosition yPosition = navigableChart.getNavigatorYAxis(stack, startPoint);
+                    if (yPosition != null) {
+                        navigableChart.translateNavigatorY(stack, yPosition, dy);
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
+    }
+
+    @Override
+    public boolean update(RenderContext renderContext) {
+        return true;
     }
 }

@@ -20,7 +20,7 @@ public class ScrollModelDefault implements ScrollModel {
 
     private void fireListeners() {
         for (ScrollListener listener : eventListeners) {
-            listener.onScrollChanged();
+            listener.onScrollChanged(value, value + extent);
         }
     }
     @Override

@@ -26,6 +26,8 @@ class GroupedData {
                 } else {
                     resampler = Resampler.createEqualIntervalResampler(interval);
                 }
+                resampler.addColumnAggregations(0, xyData.getGroupingApproximationX().getAggregation());
+                resampler.addColumnAggregations(1, xyData.getGroupingApproximationY().getAggregation());
                 resampler.resampleAndAppend(xyData.getDataTable());
                 dataList.add(new ResampledData(resampler));
             } else {
@@ -50,6 +52,10 @@ class GroupedData {
                 } else {
                     resampler = Resampler.createEqualTimeIntervalResampler(timeInterval);
                 }
+
+                resampler.addColumnAggregations(0, xyData.getGroupingApproximationX().getAggregation());
+                resampler.addColumnAggregations(1, xyData.getGroupingApproximationY().getAggregation());
+
                 resampler.resampleAndAppend(xyData.getDataTable());
                 dataList.add(new ResampledData(resampler));
             } else {
@@ -91,8 +97,8 @@ class GroupedData {
         return dataRange(data).length() * markSize / xLength;
     }
 
-    static int bestPointsInGroup(XYData xyData, int xLength, int markSize) {
-        return (int)Math.round(1.0 * xyData.rowCount() * markSize / xLength);
+    static int bestPointsInGroup(int dataSize, int xLength, int markSize) {
+        return (int)Math.round(1.0 * dataSize * markSize / xLength);
     }
 
     // suppose that data is ordered

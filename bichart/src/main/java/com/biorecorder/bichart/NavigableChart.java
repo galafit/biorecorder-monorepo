@@ -65,7 +65,7 @@ public class NavigableChart {
                     }
                     scroll.addListener(new ScrollListener() {
                         @Override
-                        public void onScrollChanged() {
+                        public void onScrollChanged(double min, double max) {
                             isChanged = true;
                         }
                     });

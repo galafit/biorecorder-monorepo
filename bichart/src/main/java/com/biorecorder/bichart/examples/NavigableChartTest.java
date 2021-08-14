@@ -7,7 +7,7 @@ import com.biorecorder.bichart.scales.LinearScale;
 import com.biorecorder.bichart.themes.DarkTheme;
 import com.biorecorder.bichart.traces.LineTracePainter;
 import com.biorecorder.data.list.IntArrayList;
-import com.biorecorder.bichart.swing.ChartPanel;
+import com.biorecorder.bichart.swing.ChartPanelOld;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,7 +20,7 @@ public class NavigableChartTest extends JFrame{
     IntArrayList yData;
     IntArrayList xData;
     java.util.List<String> labels = new ArrayList();
-    ChartPanel chartPanel;
+    ChartPanelOld chartPanel;
     NavigableChart chart;
     XYDataOld xyData;
     XYDataOld xyData1;
@@ -63,7 +63,7 @@ public class NavigableChartTest extends JFrame{
         chart.addChartTrace("trace2", xyData1, new LineTracePainter());
         chart.addNavigatorTrace("trace3", xyData, new LineTracePainter());
 
-        chartPanel = new ChartPanel(chart);
+        chartPanel = new ChartPanelOld(chart);
 
         chartPanel.setPreferredSize(new Dimension(width, height));
         add(chartPanel, BorderLayout.CENTER);

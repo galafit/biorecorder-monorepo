@@ -65,11 +65,17 @@ public class RegularColumn extends DoubleColumn {
 
     @Override
     public double min() {
+        if(size() == 0 ) {
+            return Double.NaN;
+        }
         return value(0);
     }
 
     @Override
     public double max() {
+        if(size() == 0 ) {
+            return Double.NaN;
+        }
         return value(size() - 1);
     }
 

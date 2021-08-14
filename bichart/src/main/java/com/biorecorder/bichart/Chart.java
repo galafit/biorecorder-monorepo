@@ -185,16 +185,16 @@ public class Chart {
      * ==================================================
      */
 
+    public List<Integer> getTraces(XAxisPosition xAxisPosition) {
+       return  traceList.getTraces(xAxisPosition);
+    }
+
     public XAxisPosition getTraceXAxisPosition(int traceNumber) {
         if(traceList.getTraceX(traceNumber) == xAxisList.get(0)) {
             return xIndexToPosition(0);
         } else {
             return xIndexToPosition(1);
         }
-    }
-
-    public Scale getXScale(XAxisPosition xAxisPosition) {
-        return xAxisList.get(xPositionToIndex(xAxisPosition)).getScale();
     }
 
     public int getTraceMarkSize(int traceNumber) {
@@ -224,6 +224,7 @@ public class Chart {
         this.fixedMargin = margin;
         invalidate();
     }
+
 
     public BRectangle getBounds() {
         return new BRectangle(x, y, width, height);

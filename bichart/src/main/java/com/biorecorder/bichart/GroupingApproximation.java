@@ -1,5 +1,9 @@
 package com.biorecorder.bichart;
 
+import com.biorecorder.data.frame_new.aggregation.Aggregation;
+import com.biorecorder.data.frame_new.aggregation.Average;
+import com.biorecorder.data.frame_new.aggregation.First;
+
 /**
  * Created by galafit on 23/5/19.
  */
@@ -24,5 +28,15 @@ public enum GroupingApproximation {
            GroupingApproximation[] approximations = {this};
            return approximations;
        }
+    }
+
+    public Aggregation getAggregation() {
+        if(this == OPEN) {
+            return new First();
+        } else if (this == AVERAGE) {
+            return new Average();
+        } else {
+            return new First();
+        }
     }
 }

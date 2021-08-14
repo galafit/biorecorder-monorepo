@@ -10,7 +10,7 @@ import com.biorecorder.bichart.themes.WhiteTheme;
 import com.biorecorder.bichart.traces.LineTracePainter;
 import com.biorecorder.data.frame.SquareFunction;
 import com.biorecorder.data.list.IntArrayList;
-import com.biorecorder.bichart.swing.ChartPanel;
+import com.biorecorder.bichart.swing.ChartPanelOld;
 import com.biorecorder.data.list.LongArrayList;
 
 import javax.swing.*;
@@ -32,7 +32,7 @@ public class ChartTest extends JFrame {
     List<String> labels = new ArrayList();
 
     Chart chart;
-    ChartPanel chartPanel;
+    ChartPanelOld chartPanel;
 
     public ChartTest()  {
         int width = 500;
@@ -41,7 +41,7 @@ public class ChartTest extends JFrame {
         setTitle("Test chart");
 
         int value = 0;
-        for (int i = 0; i <= 5; i++) {
+        for (int i = 0; i <= 20; i++) {
             list1.add(value);
             list2.add(50);
             labels.add("lab_"+i);
@@ -102,7 +102,7 @@ public class ChartTest extends JFrame {
 */
         chart.autoScaleY();
         chart.autoScaleX();
-        chartPanel = new ChartPanel(chart);
+        chartPanel = new ChartPanelOld(chart);
 
         chartPanel.setPreferredSize(new Dimension(width, height));
         add(chartPanel, BorderLayout.CENTER);

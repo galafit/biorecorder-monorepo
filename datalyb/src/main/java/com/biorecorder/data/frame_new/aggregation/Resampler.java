@@ -49,7 +49,6 @@ public class Resampler {
     private Binning binning;
 
 
-
     private Resampler(Binning binning) {
         this.binning = binning;
     }
@@ -274,6 +273,11 @@ public class Resampler {
 
         dt.addColumn(new IntColumn("x", xData));
         dt.addColumn(new IntColumn("y", yData));
+
+        System.out.println("DataTable size + " + dt.rowCount() + " expected: " + xData.length);
+        System.out.println("DataTable max + " + dt.max(0) + " expected: " + xData[xData.length - 1]);
+
+
         Resampler aggPoints = Resampler.createEqualPointsResampler(4);
         aggPoints.addColumnAggregations(0, new First());
         aggPoints.addColumnAggregations(1, new Average());

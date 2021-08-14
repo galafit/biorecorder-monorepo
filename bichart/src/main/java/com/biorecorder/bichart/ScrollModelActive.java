@@ -27,7 +27,7 @@ public class ScrollModelActive implements ScrollModel {
 
     private void fireListeners() {
         for (ScrollListener listener : eventListeners) {
-            listener.onScrollChanged();
+            listener.onScrollChanged(getValue(), getValue() + getExtent());
         }
     }
 
