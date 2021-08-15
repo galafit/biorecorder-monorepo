@@ -142,8 +142,14 @@ public class NavigableChart {
         canvas.save();
         navigator.draw(canvas);
         for (XAxisPosition xPosition : axisToScrolls.keySet()) {
-            axisToScrolls.get(xPosition).draw(canvas, navigator.getBounds());
+            if(chart.getTraces(xPosition).size() > 0) {
+                axisToScrolls.get(xPosition).draw(canvas, navigator.getBounds());
+            }
         }
+    }
+
+    public Range getScrollRange(XAxisPosition xAxisPosition) {
+        return axisToScrolls.get(xAxisPosition).getRange();
     }
 
     public int getChartTraceMarkSize(int traceNumber) {
@@ -400,6 +406,12 @@ public class NavigableChart {
     public void setScrollRange(XAxisPosition xPosition, Range range) {
         axisToScrolls.get(xPosition).setRange(range);
 
+    }
+
+    public void setScrollValue(double value) {
+        for (XAxisPosition xPosition : axisToScrolls.keySet()) {
+            axisToScrolls.get(xPosition).setValue(value);
+        }
     }
 
     public void autoScaleNavigatorY(int stack, YAxisPosition yPosition) {
