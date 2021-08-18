@@ -7,8 +7,8 @@ import java.util.List;
  * At the moment not used. Just example of standard approach
  */
 public class ScrollModelDefault implements ScrollModel {
-    private double max = 1;
-    private double min = 0;
+    private double start = 1; // view start
+    private double end = 0; // view end (start-end are limits where move viewport)
     private double value = 0; // viewportPosition
     private double extent = 0.1; // viewportWidth
     private List<ScrollListener> eventListeners = new ArrayList<ScrollListener>();
@@ -24,12 +24,12 @@ public class ScrollModelDefault implements ScrollModel {
         }
     }
     @Override
-    public double getMax() {
-        return max;
+    public double getStart() {
+        return start;
     }
     @Override
-    public double getMin() {
-        return min;
+    public double getEnd() {
+        return end;
     }
     @Override
     public double getValue() {
@@ -41,32 +41,32 @@ public class ScrollModelDefault implements ScrollModel {
     }
     @Override
     public void setExtent(double newExtent){
-       setRangeProperties(value, newExtent, min, max);
+       setRangeProperties(value, newExtent, end, start);
     }
     @Override
-    public void setMinMax(double newMin, double newMax) {
-       setRangeProperties(value, extent, newMin, newMax);
+    public void setStartEnd(double newStart, double newEnd) {
+       setRangeProperties(value, extent, newStart, newEnd);
     }
     @Override
     public void setValue(double newValue) {
-        setRangeProperties(newValue, extent, min, max);
+        setRangeProperties(newValue, extent, end, start);
     }
 
     @Override
-    public void setRangeProperties(double newValue, double newExtent, double newMin, double newMax) {
-        double oldMin = min;
-        double oldMax = max;
+    public void setRangeProperties(double newValue, double newExtent, double newStart, double newEnd) {
+        double oldMin = end;
+        double oldMax = start;
         double oldExtent = extent;
         double oldValue = value;
-        min = newMin;
-        max = newMax;
-        if(min > max) {
-          min = max;
+        end = newStart;
+        start = newEnd;
+        if(end > start) {
+          end = start;
         }
         extent = normalizeExtent(newExtent);
         value = normalizeValue(newValue, extent);
         if(oldExtent != extent || oldValue != value ||
-        oldMin != min || oldMax != max) {
+        oldMin != end || oldMax != start) {
             fireListeners();
         }
     }
@@ -75,7 +75,7 @@ public class ScrollModelDefault implements ScrollModel {
         if(extent < 0) {
             return 0;
         }
-        double maxExtent = max - min;
+        double maxExtent = start - end;
         if(extent > maxExtent) {
             return maxExtent;
         }
@@ -83,11 +83,11 @@ public class ScrollModelDefault implements ScrollModel {
     }
 
     private double normalizeValue(double value, double extent) {
-        if (value < min) {
-            return min;
+        if (value < end) {
+            return end;
         }
-        if (value + extent > max) {
-            return max - extent;
+        if (value + extent > start) {
+            return start - extent;
         }
         return value;
     }

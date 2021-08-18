@@ -1,6 +1,8 @@
 package com.biorecorder.bichart.examples;
 
 import com.biorecorder.bichart.*;
+import com.biorecorder.bichart.axis.XAxisPosition;
+import com.biorecorder.bichart.axis.YAxisPosition;
 import com.biorecorder.bichart.scales.LinearScale;
 import com.biorecorder.bichart.themes.DarkTheme;
 import com.biorecorder.bichart.traces.LineTracePainter;
@@ -30,7 +32,7 @@ public class NavigableChartTest extends JFrame{
         yData = new IntArrayList();
         xData = new IntArrayList();
 
-       for (int i = 0; i <= 100; i++) {
+       for (int i = 0; i <= 1000; i++) {
             yData.add(i);
             xData.add(i);
             labels.add("l_"+i);
@@ -38,14 +40,16 @@ public class NavigableChartTest extends JFrame{
 
 
         XYData xyData = new XYData(xData.toArray(), yData.toArray());
-        XYData xyData1 = new XYData(0, 1, yData.toArray());
+        XYData xyData1 = new XYData(-20, 1, yData.toArray());
+        XYData xyData2 = new XYData(-20, 2, yData.toArray());
+
 
         chart = new NavigableChart(DarkTheme.getNavigableChartConfig(), new LinearScale());
 
-        chart.addChartTrace("trace1", xyData, new LineTracePainter());
+        chart.addChartTrace("trace1", xyData1, new LineTracePainter());
         chart.addChartStack();
-        chart.addChartTrace("trace2", xyData1, new LineTracePainter());
-        chart.addNavigatorTrace("trace3", xyData, new LineTracePainter());
+        chart.addChartTrace("trace2", xyData2, new LineTracePainter(), XAxisPosition.BOTTOM, YAxisPosition.RIGHT);
+        chart.addNavigatorTrace("trace3", xyData1, new LineTracePainter());
 
         chartPanel = new ChartPanelOld(chart);
 

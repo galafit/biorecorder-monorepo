@@ -4,12 +4,12 @@ import com.biorecorder.bichart.axis.XAxisPosition;
 import com.biorecorder.bichart.axis.YAxisPosition;
 import com.biorecorder.bichart.graphics.*;
 import com.biorecorder.bichart.scales.Scale;
-import com.biorecorder.bichart.scroll.Scroll;
+import com.biorecorder.bichart.scroll.Scroll2;
 import com.biorecorder.bichart.scroll.ScrollListener;
-import com.biorecorder.bichart.scroll.ScrollScale;
 import com.biorecorder.bichart.traces.TracePainter;
 import com.sun.istack.internal.Nullable;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,10 +24,14 @@ public class NavigableChart {
     private NavigableChartConfig config;
     private int width;
     private int height;
-    private Map<XAxisPosition, Scroll> axisToScrolls = new HashMap<>(2);
+    private List<ChartData> chartDataList = new ArrayList<>();
+    private List<ChartData> navigatorDataList = new ArrayList<>();
+    private Map<XAxisPosition, Scroll2> axisToScrolls = new HashMap<>(2);
+    private Map<XAxisPosition, List<ScrollListener>> axisToScrollListeners = new HashMap<>(2);
 
     private boolean isValid = false;
     private boolean isChanged = false;
+    private boolean isConfigured = false;
 
     public NavigableChart(NavigableChartConfig config, Scale xScale) {
         this.config = new NavigableChartConfig(config);
@@ -36,31 +40,7 @@ public class NavigableChart {
         chart.setSpacing(new Insets(0));
         navigator.setSpacing(new Insets(0));
         for (XAxisPosition xPosition : XAxisPosition.values()) {
-            ScrollScale scrollScale = new ScrollScale() {
-                @Override
-                public double positionToValue(double x) {
-                    return navigator.invert(navigatorXPosition, x);
-
-                }
-
-                @Override
-                public double valueToPosition(double value) {
-                    return navigator.scale(navigatorXPosition, value);
-                }
-            };
-
-            Scroll scroll = new Scroll(new ScrollModelActive(chart, navigator, xPosition), scrollScale, config.getScrollConfig());
-            Range navigatorRange = navigator.getXMinMax(navigatorXPosition);
-            double scrollExtent = navigatorRange.length()/10;
-            scroll.setValues(navigatorRange.getMin(),scrollExtent, navigatorRange.getMin(), navigatorRange.getMax());
-            scroll.addListener(new ScrollListener() {
-                @Override
-                public void onScrollChanged(double viewportMin, double viewportMax) {
-                    isChanged = true;
-                    chart.setXMinMax(xPosition, viewportMin, viewportMax);
-                }
-            });
-            axisToScrolls.put(xPosition, scroll);
+            axisToScrollListeners.put(xPosition, new ArrayList<>());
         }
     }
 
@@ -69,11 +49,7 @@ public class NavigableChart {
     }
 
     public void addScrollListener(XAxisPosition xAxisPosition, ScrollListener scrollListener) {
-        axisToScrolls.get(xAxisPosition).addListener(scrollListener);
-    }
-
-    public Insets getSpacing() {
-        return spacing;
+        axisToScrollListeners.get(xAxisPosition).add(scrollListener);
     }
 
     public int getWidth() {
@@ -106,7 +82,6 @@ public class NavigableChart {
         }
 
         int chartHeight = height1 - navigatorHeight;
-
         BRectangle chartArea = new BRectangle(left, top, width1, chartHeight);
         BRectangle navigatorArea = new BRectangle(left, height - navigatorHeight, width1, navigatorHeight);
         chart.setBounds(chartArea.x, chartArea.y, chartArea.width, chartArea.height);
@@ -124,6 +99,115 @@ public class NavigableChart {
             chart.setMargin(new Insets(chartMargin.top(), rightMargin, chartMargin.bottom(), leftMargin));
             navigator.setMargin(new Insets(navigatorMargin.top(), rightMargin, navigatorMargin.bottom(), leftMargin));
         }
+        if(!isConfigured) {
+            autoScaleNavigatorX();
+            autoScaleChartX();
+        }
+        for (XAxisPosition xPosition : XAxisPosition.values()) {
+            Scroll2 scroll = axisToScrolls.get(xPosition);
+            if(scroll == null) {
+                scroll = createScroll(xPosition);
+                axisToScrolls.put(xPosition, scroll);
+            }
+        }
+    }
+
+    private Range dataMinMax(ChartData data) {
+        if(data.rowCount() > 0) {
+            return new Range(data.value(0, 0), data.value(data.rowCount() - 1, 0));
+        }
+        return null;
+    }
+
+    private Range dataBestRange(ChartData data, int markSize, Scale xScale, int xLength, double min) {
+        int dataSize = data.rowCount();
+        Range dataRange = dataMinMax(data);
+        if (xLength > 0 && dataSize > 1 && dataRange != null && dataRange.length() > 0) {
+            xScale.setStartEnd(1, dataSize * markSize);
+            xScale.setMinMax(dataRange.getMin(), dataRange.getMax());
+            int positionOfMin = (int) xScale.scale(min);
+            int positionOfMax = positionOfMin + xLength;
+            double max = xScale.invert(positionOfMax);
+            return new Range(min, max);
+        }
+        return null;
+    }
+
+    public void autoScaleNavigatorX() {
+        Scale xScale = navigator.getXScale(navigatorXPosition);
+        int xLength = (int) xScale.getLength();
+        Range xMinMax = null;
+        for (int i = 0; i < navigatorDataList.size(); i++) {
+            ChartData data = navigatorDataList.get(i);
+            xMinMax = Range.join(xMinMax, dataMinMax(data));
+        }
+        for (int i = 0; i < chartDataList.size(); i++) {
+            ChartData data = chartDataList.get(i);
+            xMinMax = Range.join(xMinMax, dataMinMax(data));
+        }
+        if (xMinMax != null) {
+            for (int i = 0; i < navigatorDataList.size(); i++) {
+                Range dataBestRange = dataBestRange(navigatorDataList.get(i), navigator.getTraceMarkSize(i), xScale, xLength, xMinMax.getMin());
+                if (dataBestRange != null && dataBestRange.length() > 0) {
+                    if (dataBestRange.getMax() > xMinMax.getMax()) {
+                        xMinMax = new Range(xMinMax.getMin(), dataBestRange.getMax());
+                    }
+                }
+            }
+        }
+        if (xMinMax != null) {
+            setNavigatorXMinMax(xMinMax.getMin(), xMinMax.getMax());
+        }
+    }
+
+    public void autoScaleChartX(XAxisPosition xPosition) {
+        Scale xScale = chart.getXScale(xPosition);
+        double chartXMin = xScale.getMin();
+        int xLength = (int) xScale.getLength();
+        List<Integer> traceNumbers = chart.getTraces(xPosition);
+        Range xMinMax = null;
+        for (int i = 0; i < traceNumbers.size(); i++) {
+            int traceNumber = traceNumbers.get(i);
+            Range dataBestRange = dataBestRange(chartDataList.get(traceNumber), chart.getTraceMarkSize(traceNumber), xScale, xLength, chartXMin);
+            if (dataBestRange != null && dataBestRange.length() > 0) {
+                if (xMinMax == null || (dataBestRange != null && dataBestRange.getMax() < xMinMax.getMax())) {
+                    xMinMax = dataBestRange;
+                }
+            }
+        }
+        if (xMinMax == null) {
+            xMinMax = navigator.getXMinMax(navigatorXPosition);
+            xMinMax = new Range(xMinMax.getMin(), xMinMax.getMin() + xMinMax.length() / 10);
+        }
+        chart.setXMinMax(xPosition, xMinMax.getMin(), xMinMax.getMax());
+    }
+
+    public void autoScaleChartX() {
+        for (XAxisPosition xPosition : XAxisPosition.values()) {
+            autoScaleChartX(xPosition);
+        }
+    }
+
+    private Scroll2 createScroll(XAxisPosition xAxisPosition) {
+        Range navigatorRange = navigator.getXMinMax(navigatorXPosition);
+        Scale chartScale = chart.getXScale(xAxisPosition);
+        Scroll2 scroll = new Scroll2(config.getScrollConfig(), chartScale);
+        scroll.setMinMax(navigatorRange.getMin(), navigatorRange.getMax());
+        scroll.setViewportMinMax(chartScale.getMin(), chartScale.getMax());
+        List<ScrollListener> scrollListeners = axisToScrollListeners.get(xAxisPosition);
+        scroll.addListener(new ScrollListener() {
+            @Override
+            public void onScrollChanged(double viewportMin, double viewportMax) {
+                isChanged = true;
+                chart.setXMinMax(xAxisPosition, viewportMin, viewportMax);
+                for (ScrollListener listener : scrollListeners) {
+                    listener.onScrollChanged(viewportMin, viewportMax);
+                }
+            }
+        });
+        scroll.setViewportMin(navigator.getXMinMax(navigatorXPosition).getMin());
+        return scroll;
+
     }
 
     /**
@@ -141,15 +225,13 @@ public class NavigableChart {
         chart.draw(canvas);
         canvas.save();
         navigator.draw(canvas);
+        Scale xScale = navigator.getXScale(navigatorXPosition);
+        Range scrollTrack = new Range(xScale.getStart(), xScale.getEnd());
         for (XAxisPosition xPosition : axisToScrolls.keySet()) {
             if(chart.getTraces(xPosition).size() > 0) {
-                axisToScrolls.get(xPosition).draw(canvas, navigator.getBounds());
+                axisToScrolls.get(xPosition).draw(canvas, scrollTrack, navigator.getBounds());
             }
         }
-    }
-
-    public Range getScrollRange(XAxisPosition xAxisPosition) {
-        return axisToScrolls.get(xAxisPosition).getRange();
     }
 
     public int getChartTraceMarkSize(int traceNumber) {
@@ -171,16 +253,6 @@ public class NavigableChart {
     public void setSize(int width, int height) {
         this.width = width;
         this.height = height;
-        invalidate();
-    }
-
-    public void setConfig(NavigableChartConfig config) {
-        this.config = new NavigableChartConfig(config);
-        chart.setConfig(config.getChartConfig());
-        navigator.setConfig(config.getNavigatorConfig());
-        for (XAxisPosition xPosition : axisToScrolls.keySet()) {
-            axisToScrolls.get(xPosition).setConfig(config.getScrollConfig());
-        }
         invalidate();
     }
 
@@ -227,27 +299,32 @@ public class NavigableChart {
 
     public void addChartTrace(String name, ChartData data, TracePainter tracePainter) {
         chart.addTrace(name, data, tracePainter);
+        chartDataList.add(data);
         invalidate();
     }
 
 
     public void addChartTrace(String name, ChartData data, TracePainter tracePainter, XAxisPosition xPosition, YAxisPosition yPosition) {
         chart.addTrace(name, data, tracePainter, xPosition, yPosition);
+        chartDataList.add(data);
         invalidate();
     }
 
     public void addChartTrace(String name, ChartData data, TracePainter tracePainter, int stackNumber) {
         chart.addTrace(name, data, tracePainter, stackNumber);
+        chartDataList.add(data);
         invalidate();
     }
 
     public void addChartTrace(String name, ChartData data, TracePainter tracePainter, int stackNumber, XAxisPosition xPosition, YAxisPosition yPosition) {
         chart.addTrace(name, data, tracePainter, stackNumber, xPosition, yPosition);
+        chartDataList.add(data);
         invalidate();
     }
 
     public void removeChartTrace(int traceNumber) {
         chart.removeTrace(traceNumber);
+        chartDataList.remove(traceNumber);
         invalidate();
     }
 
@@ -298,6 +375,7 @@ public class NavigableChart {
 
     public void setChartTraceData(int traceNumber, ChartData data) {
         chart.setTraceData(traceNumber, data);
+        chartDataList.set(traceNumber, data);
     }
 
 
@@ -335,14 +413,17 @@ public class NavigableChart {
 
     public void addNavigatorTrace(String name, ChartData data, TracePainter tracePainter) {
         navigator.addTrace(name, data, tracePainter);
+        navigatorDataList.add(data);
     }
 
     public void addNavigatorTrace(String name,ChartData data, TracePainter tracePainter, int stack) {
         navigator.addTrace(name, data, tracePainter, stack);
+        navigatorDataList.add(data);
     }
 
     public void removeNavigatorTrace(int traceNumber) {
         navigator.removeTrace(traceNumber);
+        navigatorDataList.remove(traceNumber);
     }
 
     public int navigatorTraceCount() {
@@ -351,6 +432,7 @@ public class NavigableChart {
 
     public void setNavigatorTraceData(int traceNumber, ChartData data) {
         navigator.setTraceData(traceNumber, data);
+        navigatorDataList.set(traceNumber, data);
     }
 
     public Range getNavigatorXMinMax() {
@@ -396,22 +478,16 @@ public class NavigableChart {
     public void setNavigatorXMinMax(double min, double max) {
         for (XAxisPosition xPosition : XAxisPosition.values()) {
             navigator.setXMinMax(xPosition, min, max);
+            Scroll2 scroll = axisToScrolls.get(xPosition);
+            if(scroll != null) {
+                scroll.setMinMax(min, max);
+            }
         }
     }
 
-    /**
-     * Sets the visible amount of the scroll
-     * (scroll  or corresponding chart X extent)
-     */
-    public void setScrollRange(XAxisPosition xPosition, Range range) {
-        axisToScrolls.get(xPosition).setRange(range);
-
-    }
-
-    public void setScrollValue(double value) {
-        for (XAxisPosition xPosition : axisToScrolls.keySet()) {
-            axisToScrolls.get(xPosition).setValue(value);
-        }
+    public void setChartXMinMax(XAxisPosition xAxisPosition, double min, double max) {
+        axisToScrolls.put(xAxisPosition, null);
+        chart.setXMinMax(xAxisPosition, min, max);
     }
 
     public void autoScaleNavigatorY(int stack, YAxisPosition yPosition) {
@@ -420,6 +496,14 @@ public class NavigableChart {
 
     public void autoScaleNavigatorY() {
         navigator.autoScaleY();
+    }
+
+    public Range getChartXRange(XAxisPosition xAxisPosition) {
+        return chart.getXRange(xAxisPosition);
+    }
+
+    public Scale getNavigatorXScale() {
+        return navigator.getXScale(navigatorXPosition);
     }
 
     /**
@@ -462,7 +546,9 @@ public class NavigableChart {
             return false;
         }
         for (XAxisPosition xPosition : axisToScrolls.keySet()) {
-            if (axisToScrolls.get(xPosition).contain(x)) {
+            Scale xScale = navigator.getXScale(navigatorXPosition);
+            Range scrollTrack = new Range(xScale.getStart(), xScale.getEnd());
+            if (axisToScrolls.get(xPosition).scrollbarContain(x, scrollTrack)) {
                 return true;
             }
         }
@@ -487,8 +573,10 @@ public class NavigableChart {
 
     boolean setScrollsPosition(double x) {
         isChanged = false;
+        Scale xScale = navigator.getXScale(navigatorXPosition);
+        Range scrollTrack = new Range(xScale.getStart(), xScale.getEnd());
         for (XAxisPosition xPosition : axisToScrolls.keySet()) {
-            axisToScrolls.get(xPosition).setPosition(x);
+            axisToScrolls.get(xPosition).setScrollbarPosition(x, scrollTrack);
         }
         return isChanged;
     }
@@ -496,30 +584,35 @@ public class NavigableChart {
     boolean translateScrolls(double dx) {
         isChanged = false;
         for (XAxisPosition xPosition : axisToScrolls.keySet()) {
-            axisToScrolls.get(xPosition).translatePosition(dx);
+            Scale xScale = navigator.getXScale(navigatorXPosition);
+            Range scrollTrack = new Range(xScale.getStart(), xScale.getEnd());
+            axisToScrolls.get(xPosition).moveScrollbar(dx, scrollTrack);
         }
         return isChanged;
+
     }
 
     boolean translateScrollsViewport(double dx) {
         isChanged = false;
-        double viewport_dx = dx;
-        double scrolls_dx = dx;
+        double dx1 = dx;
+        Scale xScale = navigator.getXScale(navigatorXPosition);
+        Range scrollTrack = new Range(xScale.getStart(), xScale.getEnd());
         for (XAxisPosition xPosition : axisToScrolls.keySet()) {
-            scrolls_dx = Math.min(viewport_dx * axisToScrolls.get(xPosition).getWidth() / width, viewport_dx);
+            double d = dx * axisToScrolls.get(xPosition).scrollTrackToViewRatio(scrollTrack);
+            if(Math.abs(dx1) > Math.abs(d)) {
+                dx1 = d;
+            }
         }
-        for (XAxisPosition xPosition : axisToScrolls.keySet()) {
-            axisToScrolls.get(xPosition).translatePosition(scrolls_dx);
-        }
+        translateScrolls(dx1);
         return isChanged;
     }
 
 
     boolean zoomScrollExtent(XAxisPosition xAxisPosition, double zoomFactor) {
         isChanged = false;
-        Scroll scroll = axisToScrolls.get(xAxisPosition);
+        Scroll2 scroll = axisToScrolls.get(xAxisPosition);
         if (scroll != null) {
-            scroll.zoomExtent(zoomFactor);
+            scroll.zoomViewport(zoomFactor);
         }
         return isChanged;
     }
@@ -527,7 +620,7 @@ public class NavigableChart {
     boolean zoomScrollExtent(double zoomFactor) {
         isChanged = false;
         for (XAxisPosition xPosition : axisToScrolls.keySet()) {
-            axisToScrolls.get(xPosition).zoomExtent(zoomFactor);
+            axisToScrolls.get(xPosition).zoomViewport(zoomFactor);
         }
         return isChanged;
     }

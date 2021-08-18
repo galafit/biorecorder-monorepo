@@ -42,37 +42,37 @@ public class ScrollModelActive implements ScrollModel {
     }
 
     @Override
-    public double getMin() {
+    public double getEnd() {
         return navigator.getXMinMax(NAV_X_POSITION).getMin();
     }
 
     @Override
-    public double getMax() {
+    public double getStart() {
         return navigator.getXMinMax(NAV_X_POSITION).getMax();
     }
 
     @Override
     public void setExtent(double newExtent) {
-        setRangeProperties(getValue(), newExtent, getMin(), getMax());
+        setRangeProperties(getValue(), newExtent, getEnd(), getStart());
     }
 
     @Override
-    public void setMinMax(double min, double max) {
-        setRangeProperties(getValue(), getExtent(), min, max);
+    public void setStartEnd(double newStart, double newEnd) {
+        setRangeProperties(getValue(), getExtent(), newStart, newEnd);
     }
     @Override
     public void setValue(double newValue) {
-        setRangeProperties(newValue, getExtent(), getMin(), getMax());
+        setRangeProperties(newValue, getExtent(), getEnd(), getStart());
     }
 
     @Override
-    public void setRangeProperties(double newValue, double newExtent, double newMin, double newMax) {
-        double oldMin = getMin();
-        double oldMax = getMax();
+    public void setRangeProperties(double newValue, double newExtent, double newStart, double newEnd) {
+        double oldMin = getEnd();
+        double oldMax = getStart();
         double oldExtent = getExtent();
         double oldValue = getValue();
-        double min = newMin;
-        double max = newMax;
+        double min = newStart;
+        double max = newEnd;
         if(min > max) {
             min = max;
         }
@@ -92,7 +92,7 @@ public class ScrollModelActive implements ScrollModel {
         if(extent < 0) {
             return 0;
         }
-        double maxExtent = getMax() - getMin();
+        double maxExtent = getStart() - getEnd();
         if(extent > maxExtent) {
             return maxExtent;
         }
@@ -100,8 +100,8 @@ public class ScrollModelActive implements ScrollModel {
     }
 
     private double normalizeValue(double value, double extent) {
-        double max = getMax();
-        double min = getMin();
+        double max = getStart();
+        double min = getEnd();
         if (value < min) {
             return min;
         }

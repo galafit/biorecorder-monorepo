@@ -74,7 +74,7 @@ public class DataProcessor {
         Range dataXRange = GroupedData.dataRange(data);
         int pointsPerGroup = 1;
         if(config.isDataCropEnabled() && dataXRange != null &&
-              !xMinMax.contains(dataXRange) && data.rowCount() > minPointsForCrop) {
+              !xMinMax.contain(dataXRange) && data.rowCount() > minPointsForCrop) {
             int indexFrom = data.bisectLeft(xMinMax.getMin());
             int indexTill = data.bisectRight(xMinMax.getMax());
 

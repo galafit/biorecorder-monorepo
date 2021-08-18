@@ -13,7 +13,7 @@ public class SmartChartTest  extends JFrame{
         int height = 500;
 
 
-        int[] data = new int[1000];
+        int[] data = new int[200];
 
         for (int i = 0; i < data.length; i++) {
             data[i] = i - 100;

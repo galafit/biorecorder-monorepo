@@ -8,12 +8,10 @@ import com.biorecorder.bichart.graphics.Range;
 import com.biorecorder.bichart.graphics.RenderContext;
 import com.biorecorder.bichart.scales.LinearScale;
 import com.biorecorder.bichart.scales.Scale;
-import com.biorecorder.bichart.scales.TimeScale;
 import com.biorecorder.bichart.scroll.ScrollListener;
 import com.biorecorder.bichart.themes.DarkTheme;
 import com.biorecorder.bichart.traces.TracePainter;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class SmartChart implements InteractiveDrawable {
@@ -33,15 +31,6 @@ public class SmartChart implements InteractiveDrawable {
         this(new ProcessingConfig(), DarkTheme.getNavigableChartConfig(), new LinearScale(), isDateTime);
     }
 
-
-    private int getXLength() {
-        int xLength = navigableChart.getWidth() - navigableChart.getSpacing().left() - navigableChart.getSpacing().right();
-        if (xLength < 0) {
-            xLength = 0;
-        }
-        return xLength;
-    }
-
     private void setChartTraceData(int traceNumber) {
         Range minMax = navigableChart.getChartXMinMax(navigableChart.getChartTraceXAxisPosition(traceNumber));
         XYData data = dataProcessor.getProcessedChartData(traceNumber, minMax, getXLength(), navigableChart.getChartTraceMarkSize(traceNumber));
@@ -53,13 +42,6 @@ public class SmartChart implements InteractiveDrawable {
         navigableChart.setNavigatorTraceData(traceNumber, data);
     }
 
-    private Scale getXScale() {
-        if (dataProcessor.isDateTime()) {
-            return new TimeScale();
-        } else {
-            return new LinearScale();
-        }
-    }
 
     // suppose that data is ordered
     private Range dataMinMax(XYData data) {
@@ -69,18 +51,12 @@ public class SmartChart implements InteractiveDrawable {
         return null;
     }
 
-    private Range dataBestRange(XYData data, int markSize, Scale xScale, int xLength, double min) {
-        int dataSize = data.rowCount();
-        Range dataRange = dataMinMax(data);
-        if (xLength > 0 && dataSize > 1 && dataRange != null && dataRange.length() > 0) {
-            xScale.setStartEnd(1, dataSize * markSize);
-            xScale.setMinMax(dataRange.getMin(), dataRange.getMax());
-            int positionOfMin = (int) xScale.scale(min);
-            int positionOfMax = positionOfMin + xLength;
-            double max = xScale.invert(positionOfMax);
-            return new Range(min, max);
-        }
-        return null;
+    public void autoScaleNavigatorX() {
+        navigableChart.autoScaleNavigatorX();
+    }
+
+    public void autoScaleChartX() {
+        navigableChart.autoScaleChartX();
     }
 
     private void updateNavigatorRange(XYData data) {
@@ -106,62 +82,6 @@ public class SmartChart implements InteractiveDrawable {
         }
     }
 
-    public void autoScaleNavigatorX() {
-        int xLength = getXLength();
-        Scale xScale = getXScale();
-        Range xMinMax = null;
-        List<XYData> processedData = new ArrayList<>(navigableChart.navigatorTraceCount());
-        for (int i = 0; i < navigableChart.navigatorTraceCount(); i++) {
-            XYData data = dataProcessor.getProcessedNavigatorData(i, xLength, navigableChart.getNavigatorTraceMarkSize(i));
-            xMinMax = Range.join(xMinMax, dataMinMax(data));
-            processedData.add(data);
-        }
-        if (xMinMax != null) {
-            for (int i = 0; i < navigableChart.navigatorTraceCount(); i++) {
-                Range dataBestRange = dataBestRange(processedData.get(i), navigableChart.getNavigatorTraceMarkSize(i), xScale, xLength, xMinMax.getMin());
-                if (dataBestRange != null && dataBestRange.length() > 0) {
-                    if (dataBestRange.getMax() > xMinMax.getMax()) {
-                        xMinMax = new Range(xMinMax.getMin(), dataBestRange.getMax());
-                    }
-                }
-            }
-        } else {
-            for (int i = 0; i < navigableChart.chartTraceCount(); i++) {
-                XYData data = dataProcessor.getChartRowData(i);
-                xMinMax = Range.join(xMinMax, dataMinMax(data));
-            }
-        }
-        if (xMinMax != null) {
-            navigableChart.setNavigatorXMinMax(xMinMax.getMin(), xMinMax.getMax());
-        }
-    }
-
-    public void autoScaleChartX(XAxisPosition xPosition) {
-        Range scrollRange = navigableChart.getScrollRange(xPosition);
-        int xLength = getXLength();
-        Scale xScale = getXScale();
-        List<Integer> traceNumbers = navigableChart.getChartTraces(xPosition);
-        Range xMinMax = null;
-        for (int i = 0; i < traceNumbers.size(); i++) {
-            int traceNumber = traceNumbers.get(i);
-            Range dataBestRange = dataBestRange(dataProcessor.getChartRowData(traceNumber), navigableChart.getChartTraceMarkSize(traceNumber), xScale, xLength, scrollRange.getMin());
-            if (dataBestRange != null && dataBestRange.length() > 0) {
-                if (xMinMax == null || (dataBestRange != null && dataBestRange.getMax() < xMinMax.getMax())) {
-                    xMinMax = dataBestRange;
-                }
-            }
-        }
-        if (xMinMax != null) {
-            navigableChart.setScrollRange(xPosition, xMinMax);
-        }
-    }
-
-    public void autoScaleChartX() {
-        for (XAxisPosition xPosition : XAxisPosition.values()) {
-          autoScaleChartX(xPosition);
-        }
-    }
-
     public void setChartYMinMax(int stack, YAxisPosition yPosition, double min, double max) {
         navigableChart.setChartYMinMax(stack, yPosition, min, max);
     }
@@ -175,7 +95,7 @@ public class SmartChart implements InteractiveDrawable {
     }
 
     public void addChartTrace(String name, XYData data, TracePainter tracePainter) {
-        navigableChart.addChartTrace(name, data.getEmptyCopy(), tracePainter);
+        navigableChart.addChartTrace(name, data, tracePainter);
         dataProcessor.addChartTraceData(data);
     }
 
@@ -184,7 +104,7 @@ public class SmartChart implements InteractiveDrawable {
     }
 
     public void addNavigatorTrace(String name, XYData data, TracePainter tracePainter) {
-        navigableChart.addNavigatorTrace(name, data.getEmptyCopy(), tracePainter);
+        navigableChart.addNavigatorTrace(name, data, tracePainter);
         dataProcessor.addNavigatorTraceData(data);
     }
 
@@ -196,16 +116,18 @@ public class SmartChart implements InteractiveDrawable {
         navigableChart.autoScaleNavigatorY();
     }
 
+    private int getXLength() {
+        return (int) navigableChart.getNavigatorXScale().getLength();
+    }
+
     private void configure() {
-        autoScaleNavigatorX();
-        navigableChart.setScrollValue(navigableChart.getNavigatorXMinMax().getMin());
-        autoScaleChartX();
         for (int i = 0; i < navigableChart.chartTraceCount(); i++) {
             setChartTraceData(i);
         }
         for (int i = 0; i < navigableChart.navigatorTraceCount(); i++) {
             setNavigatorTraceData(i);
         }
+        int xLength = getXLength();
         for (XAxisPosition xPosition : XAxisPosition.values()) {
             ScrollListener l = new ScrollListener() {
                 @Override
@@ -213,7 +135,7 @@ public class SmartChart implements InteractiveDrawable {
                     List<Integer> traceNumbers = navigableChart.getChartTraces(xPosition);
                     for (int i = 0; i < traceNumbers.size(); i++) {
                         int traceNumber = traceNumbers.get(i);
-                        XYData traceData = dataProcessor.getProcessedChartData(traceNumber, new Range(viewportMin, viewportMax), getXLength(), navigableChart.getChartTraceMarkSize(traceNumber));
+                        XYData traceData = dataProcessor.getProcessedChartData(traceNumber, new Range(viewportMin, viewportMax), xLength, navigableChart.getChartTraceMarkSize(traceNumber));
                         navigableChart.setChartTraceData(traceNumber, traceData);
                     }
                 }
@@ -228,7 +150,8 @@ public class SmartChart implements InteractiveDrawable {
     @Override
     public void draw(BCanvas canvas) {
         if (!isConfigured) {
-          configure();
+            navigableChart.revalidate(canvas.getRenderContext());
+            configure();
         }
         navigableChart.draw(canvas);
     }
@@ -236,7 +159,7 @@ public class SmartChart implements InteractiveDrawable {
     @Override
     public void onResize(int width, int height) {
         navigableChart.setSize(width, height);
-        if(isConfigured) {
+        if (isConfigured) {
             for (int i = 0; i < navigableChart.navigatorTraceCount(); i++) {
                 setNavigatorTraceData(i);
             }
@@ -260,11 +183,11 @@ public class SmartChart implements InteractiveDrawable {
         // AUTO SCALE both chart and navigator
         if (navigableChart.isChartTraceSelected()) {
             // if some trace is selected we auto scale only axis belonging to that trace
-            autoScaleChartX(navigableChart.getChartSelectedTraceX());
+            navigableChart.autoScaleChartX(navigableChart.getChartSelectedTraceX());
             navigableChart.autoScaleChartY(navigableChart.getChartSelectedTraceStack(), navigableChart.getChartSelectedTraceY());
         } else {
             // if no selected trace in chart we scale all x and y axis
-            autoScaleChartX();
+            navigableChart.autoScaleChartX();
             navigableChart.autoScaleChartY();
         }
         // do the same with navigator...

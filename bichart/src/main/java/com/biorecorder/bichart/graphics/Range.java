@@ -29,14 +29,14 @@ public class Range {
         this.max = max;
     }
 
-    public boolean contains(double value) {
+    public boolean contain(double value) {
         if(value >= min && value <= max) {
             return true;
         }
         return false;
     }
 
-    public boolean contains(Range range) {
+    public boolean contain(Range range) {
         if(min <= range.getMin() && max >= range.getMax()) {
             return true;
         }

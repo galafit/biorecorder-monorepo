@@ -1,7 +1,6 @@
 package com.biorecorder.bichart.scroll;
 
 import com.biorecorder.bichart.ScrollConfig;
-import com.biorecorder.bichart.axis.XAxisPosition;
 import com.biorecorder.bichart.graphics.BCanvas;
 import com.biorecorder.bichart.graphics.BRectangle;
 import com.biorecorder.bichart.graphics.DashStyle;
@@ -27,11 +26,11 @@ public class Scroll {
     }
 
     public double getMax() {
-        return model.getMax();
+        return model.getStart();
     }
 
     public double getMin() {
-        return model.getMin();
+        return model.getEnd();
     }
 
     public double getValue() {
@@ -63,18 +62,18 @@ public class Scroll {
     }
 
     public void setMinMax(double min, double max) {
-        model.setMinMax(min, max);
+        model.setStartEnd(min, max);
     }
 
     public void setPosition(double x) {
-        double minPosition = scale.valueToPosition(model.getMin());
-        double maxPosition = scale.valueToPosition(model.getMax());
+        double minPosition = scale.valueToPosition(model.getEnd());
+        double maxPosition = scale.valueToPosition(model.getStart());
         double scrollWidth = scale.valueToPosition(model.getValue() + model.getExtent()) - scale.valueToPosition(model.getValue());
 
         double position = normalizeScrollPosition(x, scrollWidth, minPosition, maxPosition);
         double value = scale.positionToValue(position);
         double value1 = scale.positionToValue(position + scrollWidth);
-        model.setRangeProperties(value, value1 - value, model.getMin(), model.getMax());
+        model.setRangeProperties(value, value1 - value, model.getEnd(), model.getStart());
     }
 
     public void translatePosition(double dx) {
@@ -82,8 +81,8 @@ public class Scroll {
     }
 
     public void zoomExtent(double zoomFactor) {
-        double minPosition = scale.valueToPosition(model.getMin());
-        double maxPosition = scale.valueToPosition(model.getMax());
+        double minPosition = scale.valueToPosition(model.getEnd());
+        double maxPosition = scale.valueToPosition(model.getStart());
         double scrollStart = scale.valueToPosition(model.getValue());
         double scrollEnd = scale.valueToPosition(model.getValue() + model.getExtent());
         double scrollWidth = scrollEnd - scrollStart;
@@ -93,11 +92,11 @@ public class Scroll {
 
         double value = scale.positionToValue(scrollStart);
         double value1 = scale.positionToValue(scrollStart + scrollWidth);
-        model.setRangeProperties(value, value1 - value, model.getMin(), model.getMax());
+        model.setRangeProperties(value, value1 - value, model.getEnd(), model.getStart());
     }
 
     public boolean contain(int x) {
-            return getTouchRange().contains(x);
+            return getTouchRange().contain(x);
      }
 
     public double getWidth() {
@@ -107,8 +106,8 @@ public class Scroll {
 
     private Range getTouchRange() {
         int touchRadius = config.getTouchRadius();
-        double minPosition = scale.valueToPosition(model.getMin());
-        double maxPosition = scale.valueToPosition(model.getMax());
+        double minPosition = scale.valueToPosition(model.getEnd());
+        double maxPosition = scale.valueToPosition(model.getStart());
         double scrollStart =  scale.valueToPosition(model.getValue());
         double scrollEnd =  scale.valueToPosition(model.getValue() + model.getExtent());
         double scrollWidth = scrollEnd - scrollStart;

@@ -619,6 +619,15 @@ public class Chart {
         xAxisList.get(xPositionToIndex(xPosition)).setScale(scale);
     }
 
+    public Scale getXScale(XAxisPosition xPosition) {
+        return xAxisList.get(xPositionToIndex(xPosition)).getScale();
+    }
+
+    public Range getXRange(XAxisPosition xPosition) {
+        AxisWrapper xAxis = xAxisList.get(xPositionToIndex(xPosition));
+        return new Range(xAxis.getMin(), xAxis.getMax());
+    }
+
     public void setYScale(int stack, YAxisPosition yPosition, Scale scale) throws IllegalArgumentException {
         checkStackNumber(stack);
         yAxisList.get(yPositionToIndex(stack, yPosition)).setScale(scale);
@@ -652,14 +661,6 @@ public class Chart {
             weightSum += weight;
         }
         return weightSum;
-    }
-
-    double scale(XAxisPosition xAxisPosition, double value) {
-        return xAxisList.get(xPositionToIndex(xAxisPosition)).getScale().scale(value);
-    }
-
-    double invert(XAxisPosition xAxisPosition, double value) {
-        return xAxisList.get(xPositionToIndex(xAxisPosition)).getScale().invert(value);
     }
 
     int getStack(BPoint point) {

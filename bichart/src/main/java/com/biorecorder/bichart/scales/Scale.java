@@ -5,8 +5,8 @@ import com.sun.istack.internal.Nullable;
 import java.util.Arrays;
 
 public abstract class Scale {
-    protected double domain[] = {0, 1};
-    protected double range[] = {0, 1};
+    protected double domain[] = {0, 100};
+    protected double range[] = {0, 100};
 
     public boolean setMinMax(double min, double max) {
         if (Double.isNaN(min)) {
