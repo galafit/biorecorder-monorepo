@@ -142,6 +142,8 @@ public class SmartChart implements InteractiveDrawable {
             };
             navigableChart.addScrollListener(xPosition, l);
         }
+        navigableChart.autoScaleNavigatorX();
+        navigableChart.autoScaleChartX();
         navigableChart.autoScaleChartY();
         navigableChart.autoScaleNavigatorY();
         isConfigured = true;

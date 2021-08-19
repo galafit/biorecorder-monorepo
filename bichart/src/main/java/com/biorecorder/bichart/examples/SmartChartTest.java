@@ -16,7 +16,7 @@ public class SmartChartTest  extends JFrame{
         int[] data = new int[200];
 
         for (int i = 0; i < data.length; i++) {
-            data[i] = i - 100;
+            data[i] = i;
         }
 
         XYData xyData1 = new XYData(data, data);

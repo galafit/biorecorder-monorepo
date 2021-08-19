@@ -28,6 +28,7 @@ public class NavigableChartConfig {
 
         navigatorConfig.getYAxisConfig().setTickLabelOutside(false);
         navigatorConfig.setDefaultYPosition(YAxisPosition.RIGHT);
+        navigatorConfig.setDefaultXPosition(XAxisPosition.TOP);
         navigatorConfig.setBackgroundColor(navigatorBgColor);
         navigatorConfig.setMarginColor(navigatorMarginColor);
         navigatorConfig.setStackGap(0);

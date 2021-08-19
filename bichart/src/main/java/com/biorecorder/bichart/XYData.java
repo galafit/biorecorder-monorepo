@@ -95,7 +95,7 @@ public class XYData implements ChartData {
     public Range columnMinMax(int columnIndex) {
         double min = dataTable.min(columnIndex);
         double max = dataTable.max(columnIndex);
-        if(min != Double.NaN && max != Double.NaN) {
+        if(!Double.isNaN(min) && !Double.isNaN(max)) {
             return new Range(min, max);
         }
         return null;

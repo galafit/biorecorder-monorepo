@@ -32,7 +32,7 @@ public class NavigableChartTest extends JFrame{
         yData = new IntArrayList();
         xData = new IntArrayList();
 
-       for (int i = 0; i <= 1000; i++) {
+       for (int i = 0; i <= 10; i++) {
             yData.add(i);
             xData.add(i);
             labels.add("l_"+i);

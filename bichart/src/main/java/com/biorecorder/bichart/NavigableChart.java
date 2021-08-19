@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 public class NavigableChart {
+    private static double DEFAULT_CHART_VIEWPORT_EXTENT_RATIO = 1.0/10;
     private int gap = 0; // between Chart and Preview px
     private Insets spacing = new Insets(0);
     private int navigatorHeightMin = 16; // px
@@ -99,17 +100,20 @@ public class NavigableChart {
             chart.setMargin(new Insets(chartMargin.top(), rightMargin, chartMargin.bottom(), leftMargin));
             navigator.setMargin(new Insets(navigatorMargin.top(), rightMargin, navigatorMargin.bottom(), leftMargin));
         }
+        autoScaleNavigatorX();
         if(!isConfigured) {
-            autoScaleNavigatorX();
+            // set chart default viewport extent (1/10 of navigator range)
+            // we need it in the case if chart traces has no data
+            Range xMinMax = navigator.getXMinMax(navigatorXPosition);
+             xMinMax = new Range(xMinMax.getMin(), xMinMax.getMin() + xMinMax.length() * DEFAULT_CHART_VIEWPORT_EXTENT_RATIO);
+            for (XAxisPosition xAxisPosition : XAxisPosition.values()) {
+                chart.setXMinMax(xAxisPosition, xMinMax.getMin(), xMinMax.getMax());
+            }
+            // calculate and set best chart viewport extent on the base of chart trace data
+            isConfigured = true;
             autoScaleChartX();
         }
-        for (XAxisPosition xPosition : XAxisPosition.values()) {
-            Scroll2 scroll = axisToScrolls.get(xPosition);
-            if(scroll == null) {
-                scroll = createScroll(xPosition);
-                axisToScrolls.put(xPosition, scroll);
-            }
-        }
+
     }
 
     private Range dataMinMax(ChartData data) {
@@ -154,6 +158,16 @@ public class NavigableChart {
                     }
                 }
             }
+            for (XAxisPosition xPosition : XAxisPosition.values()) {
+                List<Integer> traceNumbers = chart.getTraces(xPosition);
+                for (int i = 0; i < traceNumbers.size(); i++) {
+                    int traceNumber = traceNumbers.get(i);
+                    Range dataBestRange = dataBestRange(chartDataList.get(traceNumber), chart.getTraceMarkSize(traceNumber), xScale, xLength, xMinMax.getMin());
+                    if (dataBestRange.getMax() > xMinMax.getMax()) {
+                        xMinMax = new Range(xMinMax.getMin(), dataBestRange.getMax());
+                    }
+                }
+            }
         }
         if (xMinMax != null) {
             setNavigatorXMinMax(xMinMax.getMin(), xMinMax.getMax());
@@ -175,11 +189,9 @@ public class NavigableChart {
                 }
             }
         }
-        if (xMinMax == null) {
-            xMinMax = navigator.getXMinMax(navigatorXPosition);
-            xMinMax = new Range(xMinMax.getMin(), xMinMax.getMin() + xMinMax.length() / 10);
+        if (xMinMax != null && xMinMax.length() > 0) {
+            chart.setXMinMax(xPosition, xMinMax.getMin(), xMinMax.getMax());
         }
-        chart.setXMinMax(xPosition, xMinMax.getMin(), xMinMax.getMax());
     }
 
     public void autoScaleChartX() {
@@ -219,6 +231,13 @@ public class NavigableChart {
     public void draw(BCanvas canvas) {
         if (!isValid) {
             revalidate(canvas.getRenderContext());
+        }
+        for (XAxisPosition xPosition : XAxisPosition.values()) {
+            Scroll2 scroll = axisToScrolls.get(xPosition);
+            if(scroll == null) {
+                scroll = createScroll(xPosition);
+                axisToScrolls.put(xPosition, scroll);
+            }
         }
         canvas.setColor(config.getBackgroundColor());
         canvas.fillRect(0, 0, width, height);
