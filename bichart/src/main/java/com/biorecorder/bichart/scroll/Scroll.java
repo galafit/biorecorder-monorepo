@@ -1,23 +1,19 @@
 package com.biorecorder.bichart.scroll;
 
+
 import com.biorecorder.bichart.ScrollConfig;
 import com.biorecorder.bichart.graphics.BCanvas;
 import com.biorecorder.bichart.graphics.BRectangle;
 import com.biorecorder.bichart.graphics.DashStyle;
 import com.biorecorder.bichart.graphics.Range;
+import com.biorecorder.bichart.scales.Scale;
 
 public class Scroll {
     private ScrollConfig config;
-    private ScrollModel model;
-    private ScrollScale scale;
+    private ScrollModel2 model;
 
-    public Scroll(ScrollModel model, ScrollScale scale, ScrollConfig config) {
-        this.config = config;
-        this.model = model;
-        this.scale = scale;
-    }
-
-    public void setConfig(ScrollConfig config) {
+    public Scroll(ScrollConfig config, Scale chartScale) {
+        this.model = new ScrollModel2(chartScale);
         this.config = config;
     }
 
@@ -25,163 +21,92 @@ public class Scroll {
         model.addListener(listener);
     }
 
-    public double getMax() {
-        return model.getStart();
-    }
-
-    public double getMin() {
-        return model.getEnd();
-    }
-
-    public double getValue() {
-        return model.getValue();
-    }
-
-    public double getExtent() {
-        return model.getExtent();
-    }
-
-    public void setValue(double value) {
-        model.setValue(value);
-    }
-
-    public void setValues(double value, double extent, double min, double max) {
-        model.setRangeProperties(value, extent, min, max);
-    }
-
-    public void setRange(Range range) {
-        setValues(range.getMin(), range.length(), getMin(), getMax());
-    }
-
-    public Range getRange() {
-        return new Range(model.getValue(), model.getValue() + model.getExtent());
-    }
-
-    public void setExtent(double extent) {
-        model.setExtent(extent);
-    }
-
     public void setMinMax(double min, double max) {
-        model.setStartEnd(min, max);
+        model.setMinMax(min, max);
     }
 
-    public void setPosition(double x) {
-        double minPosition = scale.valueToPosition(model.getEnd());
-        double maxPosition = scale.valueToPosition(model.getStart());
-        double scrollWidth = scale.valueToPosition(model.getValue() + model.getExtent()) - scale.valueToPosition(model.getValue());
-
-        double position = normalizeScrollPosition(x, scrollWidth, minPosition, maxPosition);
-        double value = scale.positionToValue(position);
-        double value1 = scale.positionToValue(position + scrollWidth);
-        model.setRangeProperties(value, value1 - value, model.getEnd(), model.getStart());
+    public Range getViewportMinMax() {
+        return model.getViewportMinMax();
     }
 
-    public void translatePosition(double dx) {
-        setPosition(scale.valueToPosition(model.getValue()) + dx);
+    public void setViewportMinMax(double min, double max) {
+        model.setViewportMinMax(min, max);
     }
 
-    public void zoomExtent(double zoomFactor) {
-        double minPosition = scale.valueToPosition(model.getEnd());
-        double maxPosition = scale.valueToPosition(model.getStart());
-        double scrollStart = scale.valueToPosition(model.getValue());
-        double scrollEnd = scale.valueToPosition(model.getValue() + model.getExtent());
-        double scrollWidth = scrollEnd - scrollStart;
-        scrollWidth *= zoomFactor;
-        scrollWidth = normalizeScrollWidth(scrollWidth, minPosition, maxPosition);
-        scrollStart = normalizeScrollPosition(scrollStart, scrollWidth, minPosition, maxPosition);
-
-        double value = scale.positionToValue(scrollStart);
-        double value1 = scale.positionToValue(scrollStart + scrollWidth);
-        model.setRangeProperties(value, value1 - value, model.getEnd(), model.getStart());
+    public void setViewportMin(double min) {
+        model.setViewportMin(min);
     }
 
-    public boolean contain(int x) {
-            return getTouchRange().contain(x);
-     }
-
-    public double getWidth() {
-        double scrollWidth = scale.valueToPosition(model.getValue() + model.getExtent()) - scale.valueToPosition(model.getValue());
-        return Math.abs(scrollWidth);
+    public double scrollTrackToViewRatio(Range scrollbarTrack) {
+        return scrollbarTrack.length() / (model.getEnd() - model.getStart());
     }
 
-    private Range getTouchRange() {
+    private double viewToScrollTrackPosition(double viewPosition, Range scrollTrack) {
+        double trackToViewRatio = scrollTrackToViewRatio(scrollTrack);
+        return  scrollTrack.getMin() + trackToViewRatio * (viewPosition - model.getStart());
+    }
+
+    private double scrollTrackToViewPosition(double scrollTrackPosition, Range scrollTrack) {
+        double trackToViewRatio = scrollTrackToViewRatio(scrollTrack);
+        return model.getStart() + (scrollTrackPosition - scrollTrack.getMin()) / trackToViewRatio;
+    }
+
+    public void setScrollbarPosition(double scrollBarPosition, Range scrollTrack) {
+        model.setViewportPosition(scrollTrackToViewPosition(scrollBarPosition, scrollTrack));
+    }
+
+    public void moveViewport(double dx) {
+        model.setViewportPosition(model.getViewportPosition() + dx);
+    }
+
+    public void moveScrollbar(double dx, Range scrollTrack) {
+        double viewportDx = dx / scrollTrackToViewRatio(scrollTrack);
+        moveViewport(viewportDx);
+    }
+
+    public void zoomViewport(double zoomFactor) {
+       model.setViewportExtent(zoomFactor * model.getViewportExtent());
+    }
+
+    public boolean scrollbarContain(int x, Range scrollTrack) {
+        return getTouchRange(scrollTrack).contain(x);
+    }
+
+    private Range getTouchRange(Range scrollTrack) {
         int touchRadius = config.getTouchRadius();
-        double minPosition = scale.valueToPosition(model.getEnd());
-        double maxPosition = scale.valueToPosition(model.getStart());
-        double scrollStart =  scale.valueToPosition(model.getValue());
-        double scrollEnd =  scale.valueToPosition(model.getValue() + model.getExtent());
+        double scrollStart = viewToScrollTrackPosition(model.getViewportPosition(), scrollTrack);
+        double scrollEnd = viewToScrollTrackPosition(model.getViewportPosition() + model.getViewportExtent(), scrollTrack);
         double scrollWidth = scrollEnd - scrollStart;
-        double delta = touchRadius - Math.abs(scrollWidth)/2;
-        if(scrollWidth > 0) {
-            if(delta > 0) {
-                scrollStart = scrollStart - delta;
-                scrollWidth = 2 * touchRadius;
-                scrollWidth = normalizeScrollWidth(scrollWidth, minPosition, maxPosition);
-                scrollStart = normalizeScrollPosition(scrollStart, scrollWidth, minPosition, maxPosition);
-            }
-            return new Range(scrollStart, scrollStart + scrollWidth);
-        } else {
-            if(delta > 0) {
-                scrollStart = scrollStart + delta;
-                scrollWidth = -2 * touchRadius;
-                scrollWidth = normalizeScrollWidth(scrollWidth, minPosition, maxPosition);
-                scrollStart = normalizeScrollPosition(scrollStart, scrollWidth, minPosition, maxPosition);
-            }
-            return new Range(scrollStart + scrollWidth, scrollStart);
+        double delta = touchRadius - scrollWidth/2;
+        if(delta > 0) {
+            scrollStart = scrollStart - delta;
+            scrollWidth = 2 * touchRadius;
         }
+        return new Range(scrollStart, scrollStart + scrollWidth);
     }
 
-    public void draw(BCanvas canvas, BRectangle area) {
-        int borderWidth = config.getBorderWidth();
-        int scrollY = area.y + borderWidth / 2;
-        int scrollHeight = area.height - (borderWidth / 2) * 2;
-        int scrollStart = (int) scale.valueToPosition(model.getValue());
-        int scrollEnd = (int) scale.valueToPosition(model.getValue() + model.getExtent());
-        if(scrollEnd < scrollStart) {
-            int tmp = scrollEnd;
-            scrollStart = scrollEnd;
-            scrollEnd = tmp;
+    public void draw(BCanvas canvas, Range scrollTrack, BRectangle area) {
+        int scrollY = area.y;
+        int height = area.height;
+        double scrollStart = viewToScrollTrackPosition(model.getViewportPosition(), scrollTrack);
+        double scrollEnd = viewToScrollTrackPosition(model.getViewportPosition() + model.getViewportExtent(), scrollTrack);
+        int scrollWidth = (int)(scrollEnd - scrollStart);
+        if(scrollWidth < 1) {
+            scrollWidth = 1;
         }
-        int scrollWidth = Math.max(1, scrollEnd - scrollStart);
-        Range touchRange = getTouchRange();
-        int touchStart = (int) touchRange.getMin();
+        Range touchRange = getTouchRange(scrollTrack);
         int touchWidth = (int) touchRange.length();
+
         canvas.setColor(config.getFillColor());
-        if (touchWidth != scrollWidth) {
-            canvas.fillRect(touchStart, scrollY, touchWidth, scrollHeight);
+        if (touchRange.length() != scrollWidth) {
+            canvas.fillRect((int)touchRange.getMin(), scrollY, touchWidth, height);
         } else {
-            canvas.fillRect(scrollStart, scrollY, scrollWidth, scrollHeight);
+            canvas.fillRect((int)scrollStart, scrollY, scrollWidth, height);
         }
         canvas.setColor(config.getColor());
-        canvas.setStroke(borderWidth, DashStyle.SOLID);
-        canvas.drawRect(scrollStart, scrollY, scrollWidth, scrollHeight);
+        canvas.setStroke(config.getBorderWidth(), DashStyle.SOLID);
+        canvas.drawRect((int)scrollStart, scrollY, scrollWidth, height);
     }
 
-    private double normalizeScrollWidth(double width, double start, double end) {
-        double maxWidth = end - start;
-        if(Math.abs(width) > Math.abs(maxWidth)) {
-            return maxWidth;
-        }
-        return width;
-    }
-
-    private double normalizeScrollPosition(double x, double width, double start, double end) {
-        if(start < end) {
-            if(x  < start) {
-                return start;
-            }
-            if(x + width > end) {
-                return end - width;
-            }
-        } else { // in this case with < 0
-            if(x > start) {
-                return start;
-            }
-            if(x + width < end) {
-                return end - width;
-            }
-        }
-        return x;
-    }
 
 }

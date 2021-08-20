@@ -4,7 +4,7 @@ import com.biorecorder.bichart.axis.XAxisPosition;
 import com.biorecorder.bichart.axis.YAxisPosition;
 import com.biorecorder.bichart.graphics.*;
 import com.biorecorder.bichart.scales.Scale;
-import com.biorecorder.bichart.scroll.Scroll2;
+import com.biorecorder.bichart.scroll.Scroll;
 import com.biorecorder.bichart.scroll.ScrollListener;
 import com.biorecorder.bichart.traces.TracePainter;
 import com.sun.istack.internal.Nullable;
@@ -27,7 +27,7 @@ public class NavigableChart {
     private int height;
     private List<ChartData> chartDataList = new ArrayList<>();
     private List<ChartData> navigatorDataList = new ArrayList<>();
-    private Map<XAxisPosition, Scroll2> axisToScrolls = new HashMap<>(2);
+    private Map<XAxisPosition, Scroll> axisToScrolls = new HashMap<>(2);
     private Map<XAxisPosition, List<ScrollListener>> axisToScrollListeners = new HashMap<>(2);
 
     private boolean isValid = false;
@@ -100,20 +100,6 @@ public class NavigableChart {
             chart.setMargin(new Insets(chartMargin.top(), rightMargin, chartMargin.bottom(), leftMargin));
             navigator.setMargin(new Insets(navigatorMargin.top(), rightMargin, navigatorMargin.bottom(), leftMargin));
         }
-        autoScaleNavigatorX();
-        if(!isConfigured) {
-            // set chart default viewport extent (1/10 of navigator range)
-            // we need it in the case if chart traces has no data
-            Range xMinMax = navigator.getXMinMax(navigatorXPosition);
-             xMinMax = new Range(xMinMax.getMin(), xMinMax.getMin() + xMinMax.length() * DEFAULT_CHART_VIEWPORT_EXTENT_RATIO);
-            for (XAxisPosition xAxisPosition : XAxisPosition.values()) {
-                chart.setXMinMax(xAxisPosition, xMinMax.getMin(), xMinMax.getMax());
-            }
-            // calculate and set best chart viewport extent on the base of chart trace data
-            isConfigured = true;
-            autoScaleChartX();
-        }
-
     }
 
     private Range dataMinMax(ChartData data) {
@@ -163,7 +149,7 @@ public class NavigableChart {
                 for (int i = 0; i < traceNumbers.size(); i++) {
                     int traceNumber = traceNumbers.get(i);
                     Range dataBestRange = dataBestRange(chartDataList.get(traceNumber), chart.getTraceMarkSize(traceNumber), xScale, xLength, xMinMax.getMin());
-                    if (dataBestRange.getMax() > xMinMax.getMax()) {
+                    if (dataBestRange != null && dataBestRange.getMax() > xMinMax.getMax()) {
                         xMinMax = new Range(xMinMax.getMin(), dataBestRange.getMax());
                     }
                 }
@@ -191,7 +177,16 @@ public class NavigableChart {
         }
         if (xMinMax != null && xMinMax.length() > 0) {
             chart.setXMinMax(xPosition, xMinMax.getMin(), xMinMax.getMax());
+        } else{
+            if(!isConfigured) {
+                // set chart default viewport extent (1/10 of navigator range)
+                // we need it in the case if chart has no traces or traces have no data
+                xMinMax = navigator.getXMinMax(navigatorXPosition);
+                xMinMax = new Range(xMinMax.getMin(), xMinMax.getMin() + xMinMax.length() * DEFAULT_CHART_VIEWPORT_EXTENT_RATIO);
+                chart.setXMinMax(xPosition, xMinMax.getMin(), xMinMax.getMax());
+            }
         }
+        axisToScrolls.remove(xPosition);
     }
 
     public void autoScaleChartX() {
@@ -200,26 +195,40 @@ public class NavigableChart {
         }
     }
 
-    private Scroll2 createScroll(XAxisPosition xAxisPosition) {
+    private Scroll createScroll(XAxisPosition xAxisPosition) {
         Range navigatorRange = navigator.getXMinMax(navigatorXPosition);
+        Range chartRange = chart.getXRange(xAxisPosition);
         Scale chartScale = chart.getXScale(xAxisPosition);
-        Scroll2 scroll = new Scroll2(config.getScrollConfig(), chartScale);
+        Scroll scroll = new Scroll(config.getScrollConfig(), chartScale);
         scroll.setMinMax(navigatorRange.getMin(), navigatorRange.getMax());
-        scroll.setViewportMinMax(chartScale.getMin(), chartScale.getMax());
+        scroll.setViewportMinMax(chartRange.getMin(), chartRange.getMax());
+        Range scrollRange = scroll.getViewportMinMax();
+        chart.setXMinMax(xAxisPosition, scrollRange.getMin(), scrollRange.getMax());
         List<ScrollListener> scrollListeners = axisToScrollListeners.get(xAxisPosition);
         scroll.addListener(new ScrollListener() {
             @Override
             public void onScrollChanged(double viewportMin, double viewportMax) {
                 isChanged = true;
                 chart.setXMinMax(xAxisPosition, viewportMin, viewportMax);
-                for (ScrollListener listener : scrollListeners) {
+                 for (ScrollListener listener : scrollListeners) {
                     listener.onScrollChanged(viewportMin, viewportMax);
                 }
             }
         });
-        scroll.setViewportMin(navigator.getXMinMax(navigatorXPosition).getMin());
         return scroll;
+    }
 
+    private void createAndConfigureScrolls() {
+        autoScaleNavigatorX();
+        autoScaleChartX();
+        for (XAxisPosition xPosition : XAxisPosition.values()) {
+            Scroll scroll = createScroll(xPosition);
+            axisToScrolls.put(xPosition, scroll);
+            scroll.setViewportMin(navigator.getXMinMax(navigatorXPosition).getMin());
+        }
+        autoScaleChartY();
+        autoScaleNavigatorY();
+        isConfigured = true;
     }
 
     /**
@@ -232,12 +241,8 @@ public class NavigableChart {
         if (!isValid) {
             revalidate(canvas.getRenderContext());
         }
-        for (XAxisPosition xPosition : XAxisPosition.values()) {
-            Scroll2 scroll = axisToScrolls.get(xPosition);
-            if(scroll == null) {
-                scroll = createScroll(xPosition);
-                axisToScrolls.put(xPosition, scroll);
-            }
+        if(!isConfigured) {
+           createAndConfigureScrolls();
         }
         canvas.setColor(config.getBackgroundColor());
         canvas.fillRect(0, 0, width, height);
@@ -246,12 +251,18 @@ public class NavigableChart {
         navigator.draw(canvas);
         Scale xScale = navigator.getXScale(navigatorXPosition);
         Range scrollTrack = new Range(xScale.getStart(), xScale.getEnd());
-        for (XAxisPosition xPosition : axisToScrolls.keySet()) {
+        for (XAxisPosition xPosition : XAxisPosition.values()) {
             if(chart.getTraces(xPosition).size() > 0) {
-                axisToScrolls.get(xPosition).draw(canvas, scrollTrack, navigator.getBounds());
+                Scroll scroll = axisToScrolls.get(xPosition);
+                if(scroll == null) {
+                    scroll = createScroll(xPosition);
+                    axisToScrolls.put(xPosition, scroll);
+                }
+                scroll.draw(canvas, scrollTrack, navigator.getBounds());
             }
         }
     }
+
 
     public int getChartTraceMarkSize(int traceNumber) {
         return  chart.getTraceMarkSize(traceNumber);
@@ -497,7 +508,7 @@ public class NavigableChart {
     public void setNavigatorXMinMax(double min, double max) {
         for (XAxisPosition xPosition : XAxisPosition.values()) {
             navigator.setXMinMax(xPosition, min, max);
-            Scroll2 scroll = axisToScrolls.get(xPosition);
+            Scroll scroll = axisToScrolls.get(xPosition);
             if(scroll != null) {
                 scroll.setMinMax(min, max);
             }
@@ -629,7 +640,7 @@ public class NavigableChart {
 
     boolean zoomScrollExtent(XAxisPosition xAxisPosition, double zoomFactor) {
         isChanged = false;
-        Scroll2 scroll = axisToScrolls.get(xAxisPosition);
+        Scroll scroll = axisToScrolls.get(xAxisPosition);
         if (scroll != null) {
             scroll.zoomViewport(zoomFactor);
         }

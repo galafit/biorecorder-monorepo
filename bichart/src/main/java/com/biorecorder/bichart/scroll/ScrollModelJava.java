@@ -1,6 +1,6 @@
 package com.biorecorder.bichart.scroll;
 
-public interface ScrollModel {
+public interface ScrollModelJava {
     public void addListener(ScrollListener listener);
 
     public double getStart();

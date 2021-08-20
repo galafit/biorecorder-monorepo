@@ -29,6 +29,10 @@ public class ScrollModel2 {
         }
     }
 
+    public Range getViewportMinMax() {
+        return new Range(scale.invert(viewportPosition), scale.invert(viewportPosition + viewportExtent));
+    }
+
     public void setMinMax(double min, double max) {
         setStartEnd(scale.scale(min), scale.scale(max));
     }

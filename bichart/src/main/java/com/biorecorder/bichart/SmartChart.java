@@ -121,6 +121,8 @@ public class SmartChart implements InteractiveDrawable {
     }
 
     private void configure() {
+        navigableChart.autoScaleNavigatorX();
+        navigableChart.autoScaleChartX();
         for (int i = 0; i < navigableChart.chartTraceCount(); i++) {
             setChartTraceData(i);
         }
@@ -144,8 +146,6 @@ public class SmartChart implements InteractiveDrawable {
         }
         navigableChart.autoScaleNavigatorX();
         navigableChart.autoScaleChartX();
-        navigableChart.autoScaleChartY();
-        navigableChart.autoScaleNavigatorY();
         isConfigured = true;
     }
 

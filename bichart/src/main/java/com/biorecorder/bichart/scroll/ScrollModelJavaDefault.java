@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * At the moment not used. Just example of standard approach
  */
-public class ScrollModelDefault implements ScrollModel {
+public class ScrollModelJavaDefault implements ScrollModelJava {
     private double start = 1; // view start
     private double end = 0; // view end (start-end are limits where move viewport)
     private double value = 0; // viewportPosition

@@ -77,7 +77,7 @@ public class IntColumn implements Column {
 
     @Override
     public Column append(Column col) throws UnsupportedOperationException, IllegalArgumentException {
-        if(col.type() != type) {
+        if(col.type() == type) {
             IntColumn ic = (IntColumn) col;
             for (int i = 0; i < col.size(); i++) {
                 data.add(ic.intValue(i));

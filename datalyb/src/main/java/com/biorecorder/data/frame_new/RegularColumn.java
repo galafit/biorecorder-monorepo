@@ -109,7 +109,14 @@ public class RegularColumn extends DoubleColumn {
     }
 
     public Column resample(int pointsInGroup) {
-        return new RegularColumn(startValue, step * pointsInGroup, size() / pointsInGroup);
+        int resampledSize = size() / pointsInGroup;
+        if(size() % pointsInGroup == 0) {
+            resampledSize--;
+        }
+        if(resampledSize < 0) {
+            resampledSize = 0;
+        }
+        return new RegularColumn(startValue, step * pointsInGroup, resampledSize);
     }
 
 }

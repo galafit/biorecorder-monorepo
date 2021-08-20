@@ -382,7 +382,7 @@ public class Resampler {
         }
 
         System.out.println("\nresultant table sizes "+ resTab1.rowCount() + " "+ resTab2.rowCount());
-        for (int i = 0; i < resTab2.rowCount(); i++) {
+        for (int i = 0; i < resTab1.rowCount(); i++) {
             if (resTab1.value(i, 0) != resTab2.value(i, 0)) {
                 String errMsg = "column 0:  multiple resampling by interval and points are not equal: " + i;
                 throw new RuntimeException(errMsg);
