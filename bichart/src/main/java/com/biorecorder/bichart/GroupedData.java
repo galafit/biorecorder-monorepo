@@ -1,7 +1,7 @@
 package com.biorecorder.bichart;
 
 import com.biorecorder.bichart.graphics.Range;
-import com.biorecorder.data.frame_new.aggregation.Resampler;
+import com.biorecorder.data.frame_new.Resampler;
 import com.biorecorder.data.frame_new.aggregation.TimeInterval;
 
 import java.util.ArrayList;
@@ -26,8 +26,8 @@ class GroupedData {
                 } else {
                     resampler = Resampler.createEqualIntervalResampler(interval);
                 }
-                resampler.addColumnAggregations(0, xyData.getGroupingApproximationX().getAggregation());
-                resampler.addColumnAggregations(1, xyData.getGroupingApproximationY().getAggregation());
+                resampler.setColumnAggregations(0, xyData.getGroupingApproximationX().getAggregation());
+                resampler.setColumnAggregations(1, xyData.getGroupingApproximationY().getAggregation());
                 resampler.resampleAndAppend(xyData.getDataTable());
                 dataList.add(new ResampledData(resampler));
             } else {
@@ -53,8 +53,8 @@ class GroupedData {
                     resampler = Resampler.createEqualTimeIntervalResampler(timeInterval);
                 }
 
-                resampler.addColumnAggregations(0, xyData.getGroupingApproximationX().getAggregation());
-                resampler.addColumnAggregations(1, xyData.getGroupingApproximationY().getAggregation());
+                resampler.setColumnAggregations(0, xyData.getGroupingApproximationX().getAggregation());
+                resampler.setColumnAggregations(1, xyData.getGroupingApproximationY().getAggregation());
 
                 resampler.resampleAndAppend(xyData.getDataTable());
                 dataList.add(new ResampledData(resampler));

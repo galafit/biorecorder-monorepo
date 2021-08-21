@@ -1,6 +1,6 @@
 package com.biorecorder.bichart;
 
-import com.biorecorder.data.frame_new.aggregation.Aggregation;
+import com.biorecorder.data.frame_new.aggregation.AggFunction;
 import com.biorecorder.data.frame_new.aggregation.Average;
 import com.biorecorder.data.frame_new.aggregation.First;
 
@@ -30,7 +30,7 @@ public enum GroupingApproximation {
        }
     }
 
-    public Aggregation getAggregation() {
+    public AggFunction getAggregation() {
         if(this == OPEN) {
             return new First();
         } else if (this == AVERAGE) {

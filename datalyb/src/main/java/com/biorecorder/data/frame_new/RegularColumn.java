@@ -10,27 +10,17 @@ public class RegularColumn extends DoubleColumn {
         this.step = step;
     }
 
-    public RegularColumn(double startValue, double step, int size) {
-        this("", startValue, step, size);
+    public double getStartValue() {
+        return startValue;
     }
 
-    private static BaseDoubleSequence regularSequence(double startValue, double step, int size) {
-        return new BaseDoubleSequence() {
-            @Override
-            public int size() {
-                return size;
-            }
-
-            @Override
-            public double get(int index) {
-                return startValue + step * index;
-            }
-        };
+    public double getStep() {
+        return step;
     }
 
     @Override
     public Column emptyCopy() {
-        return new RegularColumn(startValue, step, 0);
+        return new RegularColumn(name(), startValue, step, 0);
     }
 
     @Override
@@ -83,12 +73,12 @@ public class RegularColumn extends DoubleColumn {
     public Column append(Column col) throws IllegalArgumentException {
         if(col instanceof RegularColumn) {
             RegularColumn rc = (RegularColumn) col;
-            if(rc.step == step && rc.startValue == startValue + step * size()) {
+            if(rc.step == step) {
                 data = regularSequence(startValue, step, size() + col.size());
                 return this;
             } else {
-                String errMsg = "RegularColumn step:" + step + ", expected start value: " + (startValue + step * size()) +
-                        ". Appended column step: " + rc.step + ", start value: " + rc.startValue;
+                String errMsg = "Steps must be equal! Step: " + step +
+                        ". Column to append step: " + rc.step;
                 throw new IllegalArgumentException(errMsg);
             }
         }
@@ -99,7 +89,7 @@ public class RegularColumn extends DoubleColumn {
 
     @Override
     public Column view(int from, int length) {
-        return new RegularColumn(value(from), step, length);
+        return new RegularColumn(name(), value(from), step, length);
     }
 
 
@@ -108,15 +98,18 @@ public class RegularColumn extends DoubleColumn {
         return null;
     }
 
-    public Column resample(int pointsInGroup) {
-        int resampledSize = size() / pointsInGroup;
-        if(size() % pointsInGroup == 0) {
-            resampledSize--;
-        }
-        if(resampledSize < 0) {
-            resampledSize = 0;
-        }
-        return new RegularColumn(startValue, step * pointsInGroup, resampledSize);
+    private static BaseDoubleSequence regularSequence(double startValue, double step, int size) {
+        return new BaseDoubleSequence() {
+            @Override
+            public int size() {
+                return size;
+            }
+
+            @Override
+            public double get(int index) {
+                return startValue + step * index;
+            }
+        };
     }
 
 }

@@ -1,34 +1,31 @@
 package com.biorecorder.data.frame_new.aggregation;
 
-public class Average implements Aggregation {
-    long sumInt;
-    double sumDouble;
-    int count = 0;
+import com.biorecorder.data.frame_new.BaseType;
+import com.biorecorder.data.frame_new.RegularColumn;
+
+public class Average implements AggFunction {
+    private String name = "AVG";
+    private long sumInt = 0;
+    private double sumDouble = 0;
+    private int count = 0;
 
     @Override
     public void addInt(int value) {
-        if(count == 0) {
-            sumInt = value;
-        } else {
-            sumInt = sumInt + value;
-        }
+        sumInt = sumInt + value;
         count++;
 
     }
 
     @Override
     public void addDouble(double value) {
-        if(count == 0) {
-            sumDouble = value;
-        } else {
-            sumDouble = sumDouble + value;
-        }
+        sumDouble = sumDouble + value;
         count++;
     }
     @Override
     public String name() {
-        return "AVG";
+        return name;
     }
+
     @Override
     public int getInt() {
         return (int) sumInt/count;
@@ -40,13 +37,19 @@ public class Average implements Aggregation {
     }
 
     @Override
-    public int count() {
-        return count;
+    public void reset() {
+        count = 0;
+        sumInt = 0;
+        sumDouble = 0;
     }
 
     @Override
-    public void reset() {
-        count = 0;
+    public BaseType outType(BaseType inType) {
+        return inType;
     }
 
+    @Override
+    public double getAggregatedRegularColumnStart(RegularColumn columnToAgg, int pointsInGroup) {
+        return columnToAgg.getStartValue() + pointsInGroup * columnToAgg.getStep() / 2;
+    }
 }

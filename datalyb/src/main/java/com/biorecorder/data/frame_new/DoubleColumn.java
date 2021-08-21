@@ -1,6 +1,6 @@
 package com.biorecorder.data.frame_new;
 
-import com.biorecorder.data.frame_new.aggregation.Aggregation;
+import com.biorecorder.data.frame_new.aggregation.AggFunction;
 import com.biorecorder.data.frame_new.aggregation.Max;
 import com.biorecorder.data.frame_new.aggregation.Min;
 import com.biorecorder.data.list.DoubleArrayList;
@@ -113,7 +113,7 @@ public class DoubleColumn implements Column {
 
     @Override
     public double min() {
-        Aggregation agg = new Min();
+        AggFunction agg = new Min();
         if(size() > 0) {
             for (int i = 0; i < size(); i++) {
                 agg.addDouble(data.get(i));
@@ -125,7 +125,7 @@ public class DoubleColumn implements Column {
 
     @Override
     public double max() {
-        Aggregation agg = new Max();
+        AggFunction agg = new Max();
         if(size() > 0) {
             for (int i = 0; i < size(); i++) {
                 agg.addDouble(data.get(i));

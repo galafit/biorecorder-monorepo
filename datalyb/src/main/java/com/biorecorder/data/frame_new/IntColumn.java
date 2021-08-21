@@ -1,6 +1,6 @@
 package com.biorecorder.data.frame_new;
 
-import com.biorecorder.data.frame_new.aggregation.Aggregation;
+import com.biorecorder.data.frame_new.aggregation.AggFunction;
 import com.biorecorder.data.frame_new.aggregation.Max;
 import com.biorecorder.data.frame_new.aggregation.Min;
 import com.biorecorder.data.list.IntArrayList;
@@ -12,6 +12,7 @@ public class IntColumn implements Column {
     String name;
     EditableIntSequence data;
 
+
     public IntColumn(String name, int[] arrData) {
         this.name = name;
         this.data = new IntArrayList(arrData);
@@ -22,16 +23,15 @@ public class IntColumn implements Column {
         this.data = data;
     }
 
-    @Override
-    public boolean isNumberColumn() {
-        return type.isNumberType();
-    }
-
     public IntColumn(String name) {
         this.name = name;
         data = new IntArrayList();
     }
 
+    @Override
+    public boolean isNumberColumn() {
+        return type.isNumberType();
+    }
 
 
     @Override
@@ -118,7 +118,7 @@ public class IntColumn implements Column {
 
     @Override
     public double min() {
-        Aggregation agg = new Min();
+        AggFunction agg = new Min();
         if(size() > 0) {
             for (int i = 0; i < size(); i++) {
                agg.addInt(data.get(i));
@@ -130,7 +130,7 @@ public class IntColumn implements Column {
 
     @Override
     public double max() {
-        Aggregation agg = new Max();
+        AggFunction agg = new Max();
         if(size() > 0) {
             for (int i = 0; i < size(); i++) {
                 agg.addInt(data.get(i));

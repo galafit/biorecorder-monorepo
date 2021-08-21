@@ -1,7 +1,5 @@
 package com.biorecorder.data.frame_new;
 
-import com.biorecorder.data.sequence.DoubleSequence;
-
 public abstract class BaseDoubleSequence implements EditableDoubleSequence {
     @Override
     public void add(double value) throws UnsupportedOperationException {

@@ -53,13 +53,12 @@ public class SmartChartTest  extends JFrame{
             }
 
             XYData dataToAppend = new XYData(data1, data1);
-            XYData regularDataToAppend = new XYData(200 + i*50,1,data1);
+            XYData regularDataToAppend = new XYData(0,1,data1);
             chartPanel.appendNavigatorTraceData(0, dataToAppend);
             chartPanel.appendNavigatorTraceData(1, regularDataToAppend);
             chartPanel.repaint();
         }
     }
-
 
     public static void main(String[] args) {
         new SmartChartTest();

@@ -1,33 +1,30 @@
 package com.biorecorder.data.frame_new.aggregation;
 
-public class Min implements Aggregation {
-    int minInt;
-    double minDouble;
-    int count = 0;
+import com.biorecorder.data.frame_new.BaseType;
+import com.biorecorder.data.frame_new.RegularColumn;
+
+public class Min implements AggFunction {
+    private String name = "MIN";
+    private int minInt;
+    private double minDouble;
+
+    public Min() {
+        reset();
+    }
 
     @Override
     public void addInt(int value) {
-        if(count == 0) {
-            minInt = value;
-        } else {
-            minInt = Math.min(minInt, value);
-        }
-        count++;
-
+        minInt = Math.min(minInt, value);
     }
 
     @Override
     public void addDouble(double value) {
-        if(count == 0) {
-            minDouble = value;
-        } else {
-            minDouble = Math.min(minDouble, value);
-        }
-        count++;
+        minDouble = Math.min(minDouble, value);;
     }
+
     @Override
     public String name() {
-        return "MIN";
+        return name;
     }
     @Override
     public int getInt() {
@@ -40,12 +37,18 @@ public class Min implements Aggregation {
     }
 
     @Override
-    public int count() {
-        return count;
+    public void reset() {
+        minInt = Integer.MAX_VALUE;
+        minDouble = Double.MAX_VALUE;
     }
 
     @Override
-    public void reset() {
-        count = 0;
+    public BaseType outType(BaseType inType) {
+       return inType;
+    }
+
+    @Override
+    public double getAggregatedRegularColumnStart(RegularColumn columnToAgg, int pointsInGroup) {
+        return columnToAgg.getStartValue();
     }
 }

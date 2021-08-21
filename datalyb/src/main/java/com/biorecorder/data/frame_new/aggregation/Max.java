@@ -1,37 +1,31 @@
 package com.biorecorder.data.frame_new.aggregation;
 
-public class Max implements Aggregation {
-    int maxInt;
-    double maxDouble;
-    int count = 0;
+import com.biorecorder.data.frame_new.BaseType;
+import com.biorecorder.data.frame_new.RegularColumn;
 
-    @Override
-    public String name() {
-        return "MAX";
+public class Max implements AggFunction {
+    private String name = "MAX";
+    private int maxInt;
+    private double maxDouble;
+
+    public Max() {
+        reset();
     }
 
     @Override
     public void addInt(int value) {
-        if(count == 0) {
-            maxInt = value;
-        } else {
-            maxInt = Math.max(maxInt, value);
-        }
-        count++;
-
+        maxInt = Math.max(maxInt, value);
     }
 
     @Override
     public void addDouble(double value) {
-        if(count == 0) {
-            maxDouble = value;
-        } else {
-            maxDouble = Math.max(maxDouble, value);
-        }
-        count++;
+        maxDouble = Math.max(maxDouble, value);;
     }
 
-
+    @Override
+    public String name() {
+        return name;
+    }
     @Override
     public int getInt() {
         return maxInt;
@@ -43,12 +37,18 @@ public class Max implements Aggregation {
     }
 
     @Override
-    public int count() {
-        return count;
+    public void reset() {
+        maxInt = Integer.MIN_VALUE;
+        maxDouble = Double.MIN_VALUE;
     }
 
     @Override
-    public void reset() {
-        count = 0;
+    public BaseType outType(BaseType inType) {
+        return inType;
+    }
+
+    @Override
+    public double getAggregatedRegularColumnStart(RegularColumn columnToAgg, int pointsInGroup) {
+        return columnToAgg.getStartValue() + (pointsInGroup - 1) * columnToAgg.getStep();
     }
 }

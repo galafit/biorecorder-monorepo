@@ -1,29 +1,32 @@
 package com.biorecorder.data.frame_new.aggregation;
 
-public class First implements Aggregation {
-    int firstInt;
-    double firstDouble;
-    int count = 0;
+import com.biorecorder.data.frame_new.BaseType;
+import com.biorecorder.data.frame_new.RegularColumn;
+
+public class First implements AggFunction {
+    private String name = "FIRST";
+    private int firstInt;
+    private double firstDouble;
+    private boolean isReset = true;
 
     @Override
     public void addInt(int value) {
-        if(count == 0) {
+        if(isReset) {
             firstInt = value;
+            isReset = false;
         }
-        count++;
-
     }
 
     @Override
     public void addDouble(double value) {
-        if(count == 0) {
+        if(isReset) {
             firstDouble = value;
+            isReset = false;
         }
-        count++;
     }
     @Override
     public String name() {
-        return "FIRST";
+        return name;
     }
     @Override
     public int getInt() {
@@ -36,13 +39,17 @@ public class First implements Aggregation {
     }
 
     @Override
-    public int count() {
-        return count;
+    public void reset() {
+        isReset = true;
     }
 
     @Override
-    public void reset() {
-        count = 0;
+    public BaseType outType(BaseType inType) {
+        return inType;
     }
 
+    @Override
+    public double getAggregatedRegularColumnStart(RegularColumn columnToAgg, int pointsInGroup) {
+        return columnToAgg.getStartValue();
+    }
 }

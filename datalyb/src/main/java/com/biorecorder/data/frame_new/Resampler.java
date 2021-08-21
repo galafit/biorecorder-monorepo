@@ -1,5 +1,5 @@
-package com.biorecorder.data.frame_new.aggregation;
-import com.biorecorder.data.frame_new.*;
+package com.biorecorder.data.frame_new;
+import com.biorecorder.data.frame_new.aggregation.*;
 import com.biorecorder.data.list.IntArrayList;
 import com.biorecorder.data.sequence.IntSequence;
 
@@ -42,10 +42,9 @@ import java.util.Map;
  * Implementation implies that the data is sorted!!!
  */
 public class Resampler {
-    private  Map<Integer, Aggregation[]> columnsToAgg = new HashMap();
-    private Map<Integer, RegularColumn> regularColumns = new HashMap<>();
+    private  Map<Integer, Aggregation[]> columnsToAgg = new HashMap<>();
     private  DataTable resultantTable;
-    private  Aggregation defaultAggregation;
+    private AggFunction defaultAggFunction;
     private Binning binning;
 
 
@@ -72,105 +71,31 @@ public class Resampler {
         return new Resampler(binning);
     }
 
-    public void addColumnAggregations(int column, Aggregation... aggregations) {
+    public void setColumnAggregations(int column, AggFunction... aggFunctions) {
+        Aggregation[] aggregations = new Aggregation[aggFunctions.length];
+        for (int i = 0; i < aggregations.length; i++) {
+            aggregations[i] = new Aggregation(aggFunctions[i]);
+        }
+
         columnsToAgg.put(column, aggregations);
     }
 
-    /* public DataTable resample1(DataTable tableToAggregate) {
-        if(resultantTable == null) {
-            resultantTable = new DataTable(tableToAggregate.name());
-            for (int i = 0; i < tableToAggregate.columnCount(); i++) {
-                Column col = tableToAggregate.getColumn(i);
-                Aggregation[] aggregations = columnsToAgg.get(i);
-                for (int j = 0; j < aggregations.length; j++) {
-                    resultantTable.addColumn(col.type().create(col.name()+":" + aggregations[j].name()));
-                }
-            }
-        }
-        IntSequence groups = binning.group(tableToAggregate.getColumn(0));
-        for (int i = 0; i < tableToAggregate.columnCount(); i++) {
-            Aggregation[] aggregations = columnsToAgg.get(i);
-            for (int j = 0; j < aggregations.length; j++) {
-                resampleAndAppend(aggregations[j], groups, resultantTable.getColumn(i + j), tableToAggregate.getColumn(i));
-            }
-        }
-        return resultantTable;
-    }*/
-
     public DataTable resampleAndAppend(DataTable tableToResample) {
-        if(resultantTable == null) {
-            resultantTable = new DataTable(tableToResample.name());
-            for (int i = 0; i < tableToResample.columnCount(); i++) {
-                Aggregation[] aggregations = columnsToAgg.get(i);
-                Column col = tableToResample.getColumn(i);
-                if(binning.isEqualPoints() && col instanceof RegularColumn) {
-                    for (int j = 0; j < aggregations.length; j++) {
-                        resultantTable.addColumn(col.emptyCopy());
-                        regularColumns.put(i + j, (RegularColumn) col.emptyCopy());
-                    }
-                } else {
-                    for (int j = 0; j < aggregations.length; j++) {
-                        resultantTable.addColumn(col.type().create(""));
-                    }
-                }
-            }
-        }
+        resultantTable = new DataTable(tableToResample.name());
         IntSequence groups = binning.group(tableToResample.getColumn(0));
         for (int i = 0; i < tableToResample.columnCount(); i++) {
            Aggregation[] aggregations = columnsToAgg.get(i);
             for (int j = 0; j < aggregations.length; j++) {
-                int resultantColNumber = i + j;
-                RegularColumn rc = regularColumns.get(resultantColNumber);
-                if(binning.isEqualPoints() && rc != null) {
-                    rc.append(tableToResample.getColumn(i));
-                    resultantTable.removeColumn(resultantColNumber);
-                    resultantTable.addColumn(resultantColNumber, rc.resample(binning.pointsInGroup()));
+                Column col = tableToResample.getColumn(i);
+                if(binning.isEqualPoints() && col instanceof RegularColumn) {
+                    RegularColumn rc = (RegularColumn) col;
+                    resultantTable.addColumn(aggregations[j].aggregate(rc, binning.pointsInGroup()));
                 } else {
-                    resampleAndAppend(aggregations[j], groups, resultantTable.getColumn(resultantColNumber), tableToResample.getColumn(i));
+                    resultantTable.addColumn(aggregations[j].aggregate(col, groups));
                 }
             }
         }
         return resultantTable;
-    }
-
-
-    private Column resampleAndAppend(Aggregation agg, IntSequence groups, Column resultantCol, Column colToAgg) throws IllegalArgumentException {
-        int groupCounter = 0;
-        int groupStart = colToAgg.size() + 1;
-        if(groups.size() > 0) {
-            groupStart = groups.get(groupCounter);
-        }
-        if(colToAgg.type().getBaseType() == BaseType.INT) {
-            IntColumn intColToAgg = (IntColumn) colToAgg;
-            IntColumn intResultantCol = (IntColumn) resultantCol;
-            for (int i = 0; i < colToAgg.size(); i++) {
-                if(i == groupStart) {
-                    intResultantCol.append(agg.getInt());
-                    agg.reset();
-                    groupCounter++;
-                    if(groupCounter < groups.size()) {
-                        groupStart = groups.get(groupCounter);
-                    }
-                }
-                agg.addInt(intColToAgg.intValue(i));
-            }
-        }
-        if(colToAgg.type().getBaseType() == BaseType.DOUBLE) {
-            DoubleColumn doubleColToAgg = (DoubleColumn) colToAgg;
-            DoubleColumn doubleResultantCol = (DoubleColumn) resultantCol;
-            for (int i = 0; i < colToAgg.size(); i++) {
-                if(i == groupStart) {
-                    doubleResultantCol.append(agg.getDouble());
-                    agg.reset();
-                    groupCounter++;
-                    if(groupCounter < groups.size()) {
-                        groupStart = groups.get(groupCounter);
-                    }
-                }
-                agg.addDouble(doubleColToAgg.value(i));
-            }
-        }
-        return resultantCol;
     }
 
     static class EqualIntervalBinning implements Binning {
@@ -279,12 +204,12 @@ public class Resampler {
 
 
         Resampler aggPoints = Resampler.createEqualPointsResampler(4);
-        aggPoints.addColumnAggregations(0, new First());
-        aggPoints.addColumnAggregations(1, new Average());
+        aggPoints.setColumnAggregations(0, new First());
+        aggPoints.setColumnAggregations(1, new Average());
 
         Resampler aggInterval = Resampler.createEqualIntervalResampler(4);
-        aggInterval.addColumnAggregations(0, new First());
-        aggInterval.addColumnAggregations(1, new Average());
+        aggInterval.setColumnAggregations(0, new First());
+        aggInterval.setColumnAggregations(1, new Average());
 
         DataTable rt1 = aggPoints.resampleAndAppend(dt);
 
@@ -331,12 +256,12 @@ public class Resampler {
         dataTable.addColumn(new IntColumn("x", data));
         dataTable.addColumn(new IntColumn("y", data));
         Resampler aggPoints1 = Resampler.createEqualPointsResampler(5);
-        aggPoints1.addColumnAggregations(0, new Min());
-        aggPoints1.addColumnAggregations(1, new Max());
+        aggPoints1.setColumnAggregations(0, new Min());
+        aggPoints1.setColumnAggregations(1, new Max());
 
         Resampler aggInterval1 = Resampler.createEqualIntervalResampler(5);
-        aggInterval1.addColumnAggregations(0, new Min());
-        aggInterval1.addColumnAggregations(1, new Max());
+        aggInterval1.setColumnAggregations(0, new Min());
+        aggInterval1.setColumnAggregations(1, new Max());
 
         DataTable resTable1 = aggPoints1.resampleAndAppend(dataTable);
         DataTable resTable2 = aggInterval1.resampleAndAppend(dataTable);
@@ -356,12 +281,12 @@ public class Resampler {
 
 
         Resampler aggPoints2 = Resampler.createEqualPointsResampler(5);
-        aggPoints2.addColumnAggregations(0, new Min());
-        aggPoints2.addColumnAggregations(1, new Max());
+        aggPoints2.setColumnAggregations(0, new Min());
+        aggPoints2.setColumnAggregations(1, new Max());
 
         Resampler aggInterval2 = Resampler.createEqualIntervalResampler(5);
-        aggInterval2.addColumnAggregations(0, new Min());
-        aggInterval2.addColumnAggregations(1, new Max());
+        aggInterval2.setColumnAggregations(0, new Min());
+        aggInterval2.setColumnAggregations(1, new Max());
 
         DataTable resTab1 = new DataTable();
         DataTable resTab2 = new DataTable();
@@ -374,7 +299,7 @@ public class Resampler {
                 data1[j] = i * size + j;
             }
             DataTable dataTable1 = new DataTable();
-            dataTable1.addColumn(new RegularColumn(size * i, 1, size));
+            dataTable1.addColumn(new RegularColumn("",size * i, 1, size));
             //dataTable1.addColumn(new DoubleColumn("x", data1));
             dataTable1.addColumn(new DoubleColumn("y", data1));
             resTab1 = aggPoints2.resampleAndAppend(dataTable1);
