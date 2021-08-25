@@ -1,6 +1,6 @@
 package com.biorecorder.bichart;
 
-import com.biorecorder.data.frame_new.aggregation.TimeInterval;
+import com.biorecorder.data.datatable.aggregation.TimeInterval;
 
 import java.util.Arrays;
 import java.util.Comparator;

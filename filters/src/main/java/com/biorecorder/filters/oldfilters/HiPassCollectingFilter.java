@@ -1,18 +1,18 @@
 package com.biorecorder.filters.oldfilters;
 
-import com.biorecorder.data.list.IntArrayList;
+import com.biorecorder.data.list.IntEditableArrayList;
 import com.biorecorder.data.sequence.IntSequence;
 
 public class HiPassCollectingFilter implements IntSequence {
     private IntSequence inputData;
-    private IntArrayList outputData;
+    private IntEditableArrayList outputData;
     int bufferSize;
     private int counter;
     private long sum;
 
     public HiPassCollectingFilter(IntSequence inputData, double cutOffInterval ) {
         this.inputData = inputData;
-        outputData = new IntArrayList();
+        outputData = new IntEditableArrayList();
 
         double samplingInterval = 1;
        bufferSize = (int)(cutOffInterval / samplingInterval);

@@ -40,14 +40,13 @@ public class SmartChartTest  extends JFrame{
         setLocationRelativeTo(null);
         setVisible(true);
 
-        for (int i = 0; i < 10 ; i++) {
+        for (int i = 0; i < 5 ; i++) {
             try{
                 Thread.sleep(1000);
             } catch(InterruptedException e){
                 System.out.println(e);
             }
             int[] data1 = new int[50];
-            System.out.println("data to append");
             for (int j = 0; j < data1.length; j++) {
                 data1[j] = 200 + i*50 + j;
             }

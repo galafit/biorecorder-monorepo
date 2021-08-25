@@ -6,7 +6,7 @@ import com.biorecorder.bichart.axis.YAxisPosition;
 import com.biorecorder.bichart.scales.LinearScale;
 import com.biorecorder.bichart.themes.DarkTheme;
 import com.biorecorder.bichart.traces.LineTracePainter;
-import com.biorecorder.data.list.IntArrayList;
+import com.biorecorder.data.list.IntEditableArrayList;
 import com.biorecorder.bichart.swing.ChartPanelOld;
 
 import javax.swing.*;
@@ -17,8 +17,8 @@ import java.util.*;
  * Created by galafit on 27/9/18.
  */
 public class NavigableChartTest extends JFrame{
-    IntArrayList yData;
-    IntArrayList xData;
+    IntEditableArrayList yData;
+    IntEditableArrayList xData;
     java.util.List<String> labels = new ArrayList();
     ChartPanelOld chartPanel;
     NavigableChart chart;
@@ -29,8 +29,8 @@ public class NavigableChartTest extends JFrame{
 
         setTitle("Test chart");
 
-        yData = new IntArrayList();
-        xData = new IntArrayList();
+        yData = new IntEditableArrayList();
+        xData = new IntEditableArrayList();
 
        for (int i = 0; i <= 10; i++) {
             yData.add(i);

@@ -1,17 +1,17 @@
 package com.biorecorder.data.list;
 
-import com.biorecorder.data.sequence.LongSequence;
+import com.biorecorder.data.sequence.IntEditableSequence;
 
 /**
- * A resizable, array-backed list of long primitives.
+ * A resizable, array-backed list of int primitives.
  *<p>
  * Based on openjdk ArrayList.java -
  * http://hg.openjdk.java.net/jdk7/jdk7/jdk/file/00cd9dc3c2b5/src/share/classes/java/util/ArrayList.java
  * <br> and trove ArrayListTemplate -
  * https://bitbucket.org/trove4j/trove/src/24dd57f48bf385fa41a878f8fad7ac44d8b1d53a/core/src/main/templates/gnu/trove/list/array/_E_ArrayList.template?at=master&fileviewer=file-view-default
  */
-public class LongArrayList implements LongSequence {
-    private long[] data;
+public class IntEditableArrayList implements IntEditableSequence {
+    private int[] data;
     private int size;
     /**
      * The maximum size of array to allocate.
@@ -21,20 +21,20 @@ public class LongArrayList implements LongSequence {
      */
     private static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
 
-    public LongArrayList(int initialCapacity) {
+    public IntEditableArrayList(int initialCapacity) {
         if (initialCapacity < 0) {
             throw new IllegalArgumentException("Illegal Capacity: "+ initialCapacity);
         }
-        data = new long[initialCapacity];
+        data = new int[initialCapacity];
     }
 
-    public LongArrayList() {
+    public IntEditableArrayList() {
         this(10);
     }
 
-    public LongArrayList(long[] source) {
+    public IntEditableArrayList(int[] source) {
         size = source.length;
-        data = new long[size];
+        data = new int[size];
         System.arraycopy(source, 0, data, 0, size);
     }
 
@@ -44,7 +44,7 @@ public class LongArrayList implements LongSequence {
     }
 
     @Override
-    public long get(int index) {
+    public int get(int index) {
         rangeCheck(index);
         return data[index];
     }
@@ -52,8 +52,8 @@ public class LongArrayList implements LongSequence {
     /**
      * Remove an element from the specified index
      */
-    public long remove(int index) {
-        long old = data[index];
+    public int remove(int index) {
+        int old = data[index];
         remove(index, 1);
         return old;
     }
@@ -81,7 +81,7 @@ public class LongArrayList implements LongSequence {
         size = 0;
     }
 
-    public void set( int index, long value) {
+    public void set( int index, int value) {
         rangeCheck(index);
         data[index] = value;
     }
@@ -89,7 +89,7 @@ public class LongArrayList implements LongSequence {
     /**
      * Adds a new element to the to the end of the list
      */
-    public void add(long value) {
+    public void add(int value) {
         ensureCapacity(size + 1);  // Increments modCount!!
         data[size] = value;
         size++;
@@ -99,7 +99,7 @@ public class LongArrayList implements LongSequence {
      * Adds the values from the array <tt>values</tt> to the end of the
      * list, in order.
      */
-    public void add(long[] values) {
+    public void add(int[] values) {
         int numNew = values.length;
         ensureCapacity(size + numNew);  // Increments modCount
         System.arraycopy(values, 0, data, size, numNew);
@@ -119,7 +119,7 @@ public class LongArrayList implements LongSequence {
      * @throws NullPointerException if the given array is null
      */
 
-    public void add(int index, long[] values) {
+    public void add(int index, int[] values) {
         rangeCheckForAdd(index);
 
         int numNew = values.length;
@@ -138,7 +138,7 @@ public class LongArrayList implements LongSequence {
      */
     public void trimToSize() {
         if ( data.length > size ) {
-            long[] tmp = new long[size];
+            int[] tmp = new int[size];
             System.arraycopy( data, 0, tmp, 0, size );
             data = tmp;
         }
@@ -157,10 +157,17 @@ public class LongArrayList implements LongSequence {
                 newCapacity = hugeCapacity(minCapacity);
 
             // minCapacity is usually close to size, so this is a win:
-            long[] tmp = new long[newCapacity];
+            int[] tmp = new int[newCapacity];
             System.arraycopy( data, 0, tmp, 0, data.length );
             data = tmp;
         }
+    }
+
+    @Override
+    public int[] toArray() {
+        int[] dest = new int[size];
+        System.arraycopy( data, 0, dest, 0, size );
+        return dest;
     }
 
     private static int hugeCapacity(int minCapacity) {

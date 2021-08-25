@@ -7,7 +7,7 @@ import com.biorecorder.bichart.scales.LinearScale;
 import com.biorecorder.bichart.themes.DarkTheme;
 import com.biorecorder.bichart.themes.WhiteTheme;
 import com.biorecorder.bichart.traces.LineTracePainter;
-import com.biorecorder.data.list.IntArrayList;
+import com.biorecorder.data.list.IntEditableArrayList;
 import com.biorecorder.bichart.swing.ChartPanelOld;
 import com.biorecorder.data.list.LongArrayList;
 
@@ -21,11 +21,11 @@ import java.util.List;
  * Created by galafit on 21/9/18.
  */
 public class ChartTest extends JFrame {
-    IntArrayList yUnsort = new IntArrayList();
-    IntArrayList xUnsort = new IntArrayList();
+    IntEditableArrayList yUnsort = new IntEditableArrayList();
+    IntEditableArrayList xUnsort = new IntEditableArrayList();
 
-    IntArrayList list1 = new IntArrayList();
-    IntArrayList list2 = new IntArrayList();
+    IntEditableArrayList list1 = new IntEditableArrayList();
+    IntEditableArrayList list2 = new IntEditableArrayList();
 
     List<String> labels = new ArrayList();
 

@@ -5,8 +5,7 @@ package com.biorecorder.bichart.axis;
         import com.biorecorder.bichart.graphics.*;
         import com.biorecorder.bichart.scales.*;
         import com.biorecorder.bichart.utils.StringUtils;
-        import com.biorecorder.data.list.IntArrayList;
-        import com.biorecorder.data.sequence.StringSequence;
+        import com.biorecorder.data.list.IntEditableArrayList;
 
         import java.util.ArrayList;
         import java.util.List;
@@ -20,8 +19,8 @@ class AxisPainter {
     private TickLabelFormat tickLabelPrefixAndSuffix;
 
     private List<BText> tickLabels = new ArrayList<>();
-    private IntArrayList tickPositions = new IntArrayList();
-    private IntArrayList minorTickPositions = new IntArrayList();
+    private IntEditableArrayList tickPositions = new IntEditableArrayList();
+    private IntEditableArrayList minorTickPositions = new IntEditableArrayList();
     private BText titleText;
     private BLine axisLine;
     private int axisLength;
@@ -321,8 +320,8 @@ class AxisPainter {
 
 
     public void createAxisElements(RenderContext renderContext, Scale scale, double tickInterval, boolean isRoundingEnabled, String title) {
-        tickPositions = new IntArrayList();
-        minorTickPositions = new IntArrayList();
+        tickPositions = new IntEditableArrayList();
+        minorTickPositions = new IntEditableArrayList();
         tickLabels = new ArrayList<>();
         String longestLabel = "";
         TextMetric labelTM = renderContext.getTextMetric(config.getTickLabelTextStyle());

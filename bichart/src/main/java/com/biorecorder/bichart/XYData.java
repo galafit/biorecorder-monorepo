@@ -1,9 +1,10 @@
 package com.biorecorder.bichart;
 
 import com.biorecorder.bichart.graphics.Range;
-import com.biorecorder.data.frame_new.DataTable;
-import com.biorecorder.data.frame_new.IntColumn;
-import com.biorecorder.data.frame_new.RegularColumn;
+import com.biorecorder.data.datatable.BaseType;
+import com.biorecorder.data.datatable.DataTable;
+import com.biorecorder.data.datatable.IntColumn;
+import com.biorecorder.data.datatable.RegularColumn;
 
 public class XYData implements ChartData {
     DataTable dataTable = new DataTable();
@@ -78,7 +79,10 @@ public class XYData implements ChartData {
 
     @Override
     public boolean isNumberColumn(int columnIndex) {
-        return dataTable.isNumberColumn(columnIndex);
+        if(dataTable.getColumn(columnIndex).type() == BaseType.OBJECT) {
+            return  false;
+        }
+        return true;
     }
 
     @Override

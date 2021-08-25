@@ -127,7 +127,8 @@ public class Axis {
 
     public boolean setMinMax(double min, double max) {
         if(min == max) {
-            max = min + 100;
+            max++;
+            min--;
         }
         if(min != scale.getMin() || max != scale.getMax()) {
             scale.setMinMax(min, max);
