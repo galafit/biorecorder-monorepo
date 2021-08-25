@@ -1,5 +1,8 @@
 package com.biorecorder.data.datatable.aggregation;
 
+import com.biorecorder.data.time.TimeInterval;
+import com.biorecorder.data.time.TimeUnit;
+
 import java.util.Calendar;
 
 public class TimeIntervalProvider implements IntervalProvider {

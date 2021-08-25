@@ -1,6 +1,6 @@
 package com.biorecorder.bichart.swing;
 
-import com.biorecorder.bichart.*;
+import com.biorecorder.bichart.chart.*;
 import com.biorecorder.bichart.graphics.BPoint;
 
 import javax.swing.*;

@@ -1,12 +1,12 @@
 package com.biorecorder.bichart.themes;
 
-import com.biorecorder.bichart.ChartConfig;
-import com.biorecorder.bichart.NavigableChartConfig;
+import com.biorecorder.bichart.configs.ChartConfig;
+import com.biorecorder.bichart.configs.NavigableChartConfig;
 import com.biorecorder.bichart.axis.XAxisPosition;
 import com.biorecorder.bichart.axis.YAxisPosition;
 import com.biorecorder.bichart.axis.AxisConfig;
 import com.biorecorder.bichart.graphics.BColor;
-import com.biorecorder.bichart.ScrollConfig;
+import com.biorecorder.bichart.configs.ScrollConfig;
 
 /**
  * Created by galafit on 24/2/19.

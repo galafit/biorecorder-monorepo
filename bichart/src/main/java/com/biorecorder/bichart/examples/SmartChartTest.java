@@ -1,6 +1,6 @@
 package com.biorecorder.bichart.examples;
 
-import com.biorecorder.bichart.XYData;
+import com.biorecorder.bichart.chart.XYData;
 import com.biorecorder.bichart.swing.ChartPanel;
 import com.biorecorder.bichart.traces.LineTracePainter;
 import javax.swing.*;

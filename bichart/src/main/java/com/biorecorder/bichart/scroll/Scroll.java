@@ -1,7 +1,7 @@
 package com.biorecorder.bichart.scroll;
 
 
-import com.biorecorder.bichart.ScrollConfig;
+import com.biorecorder.bichart.configs.ScrollConfig;
 import com.biorecorder.bichart.graphics.BCanvas;
 import com.biorecorder.bichart.graphics.BRectangle;
 import com.biorecorder.bichart.graphics.DashStyle;

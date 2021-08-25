@@ -1,7 +1,7 @@
 package com.biorecorder.bichart.swing;
 
-import com.biorecorder.bichart.SmartChart;
-import com.biorecorder.bichart.XYData;
+import com.biorecorder.bichart.chart.SmartChart;
+import com.biorecorder.bichart.chart.XYData;
 import com.biorecorder.bichart.axis.YAxisPosition;
 import com.biorecorder.bichart.graphics.BPoint;
 import com.biorecorder.bichart.traces.TracePainter;
