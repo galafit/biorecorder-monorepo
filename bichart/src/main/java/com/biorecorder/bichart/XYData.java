@@ -1,5 +1,6 @@
-package com.biorecorder.bichart.chart;
+package com.biorecorder.bichart;
 
+import com.biorecorder.bichart.chart.ChartData;
 import com.biorecorder.bichart.configs.GroupingApproximation;
 import com.biorecorder.bichart.graphics.Range;
 import com.biorecorder.data.datatable.BaseType;
@@ -135,5 +136,4 @@ public class XYData implements ChartData {
     public XYData view(int from, int length) {
         return new XYData(dataTable.view(from, length));
     }
-
 }

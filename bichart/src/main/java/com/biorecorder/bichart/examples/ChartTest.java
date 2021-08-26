@@ -3,7 +3,7 @@ package com.biorecorder.bichart.examples;
 import com.biorecorder.bichart.axis.XAxisPosition;
 import com.biorecorder.bichart.axis.YAxisPosition;
 import com.biorecorder.bichart.chart.Chart;
-import com.biorecorder.bichart.chart.XYData;
+import com.biorecorder.bichart.XYData;
 import com.biorecorder.bichart.scales.LinearScale;
 import com.biorecorder.bichart.themes.DarkTheme;
 import com.biorecorder.bichart.themes.WhiteTheme;

@@ -76,7 +76,6 @@ public class TimeScale extends LinearScale {
                 multiplier = Math.max(1, multiplier);
             }
             timeIntervalProvider = new TimeIntervalProvider(timeUnit, multiplier);
-            System.out.println("time tick provider "+ timeUnit + " "+multiplier);
             labelFormat = new DateFormatter(timeUnit);
         }
 

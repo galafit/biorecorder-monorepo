@@ -1,5 +1,6 @@
 package com.biorecorder.bichart.chart;
 
+import com.biorecorder.bichart.XYData;
 import com.biorecorder.bichart.configs.NavigableChartConfig;
 import com.biorecorder.bichart.configs.ProcessingConfig;
 import com.biorecorder.bichart.axis.XAxisPosition;
@@ -10,6 +11,7 @@ import com.biorecorder.bichart.graphics.Range;
 import com.biorecorder.bichart.graphics.RenderContext;
 import com.biorecorder.bichart.scales.LinearScale;
 import com.biorecorder.bichart.scales.Scale;
+import com.biorecorder.bichart.scales.TimeScale;
 import com.biorecorder.bichart.scroll.ScrollListener;
 import com.biorecorder.bichart.themes.DarkTheme;
 import com.biorecorder.bichart.traces.TracePainter;
@@ -24,13 +26,15 @@ public class SmartChart implements InteractiveDrawable {
     private BPoint lastStartPoint;
     private boolean isScrollMoving;
 
-    public SmartChart(ProcessingConfig processingConfig, NavigableChartConfig chartConfig, Scale xScale, boolean isDateTime) {
+    public SmartChart(ProcessingConfig processingConfig, NavigableChartConfig chartConfig, boolean isDateTime) {
         dataProcessor = new DataProcessor(processingConfig, isDateTime);
+        Scale xScale;
+        xScale = isDateTime ? new TimeScale() :  new LinearScale();
         navigableChart = new NavigableChart(chartConfig, xScale);
     }
 
     public SmartChart(boolean isDateTime) {
-        this(new ProcessingConfig(), DarkTheme.getNavigableChartConfig(), new LinearScale(), isDateTime);
+        this(new ProcessingConfig(), DarkTheme.getNavigableChartConfig(), isDateTime);
     }
 
     private void setChartTraceData(int traceNumber) {

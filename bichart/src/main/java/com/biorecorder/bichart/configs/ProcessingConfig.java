@@ -10,7 +10,7 @@ public class ProcessingConfig {
     private boolean isDataCropEnabled = true;
     private boolean isDataGroupingEnabled = true;
     private int cropShoulder = 1; // number of additional points that we leave on every side during crop
-    private double[] groupingIntervals = {50, 100};
+    private double[] groupingIntervals = null; //{50, 100};
     private TimeInterval[] groupingTimeIntervals = null;
     private GroupingType groupingType = GroupingType.EQUAL_POINTS;
 

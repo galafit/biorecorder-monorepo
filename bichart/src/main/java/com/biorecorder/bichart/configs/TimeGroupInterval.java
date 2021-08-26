@@ -49,8 +49,4 @@ public enum TimeGroupInterval {
     public TimeInterval getTimeInterval() {
         return timeInterval;
     }
-
-    public long toMilliseconds() {
-        return timeInterval.toMilliseconds();
-    }
 }

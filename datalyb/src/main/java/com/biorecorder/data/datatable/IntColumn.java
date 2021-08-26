@@ -105,9 +105,10 @@ public class IntColumn implements Column {
                    data = new BaseIntEditableSequence(dataJoined);
                }
             }
+        } else {
+            String errMsg = "Column of different type can not be append: "+ type + " and " + col.type();
+            throw new IllegalArgumentException(errMsg);
         }
-        String errMsg = "Column of different type can not be append: "+ type + " and " + col.type();
-        throw new IllegalArgumentException(errMsg);
     }
 
     @Override

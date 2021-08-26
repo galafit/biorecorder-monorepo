@@ -15,7 +15,7 @@ public class LineTraceConfig {
     private DashStyle lineDashStyle = DashStyle.SOLID;
     private int mode;
     private boolean isFilled = false;
-    private int markSize = 20; // point size
+    private int markSize = 1; // point size
     private BColor color;
 
     public LineTraceConfig() {

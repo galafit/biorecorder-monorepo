@@ -1,5 +1,6 @@
 package com.biorecorder.bichart.chart;
 
+import com.biorecorder.bichart.XYData;
 import com.biorecorder.bichart.configs.GroupingType;
 import com.biorecorder.bichart.graphics.Range;
 import com.biorecorder.data.datatable.aggregation.Resampler;

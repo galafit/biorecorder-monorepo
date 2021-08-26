@@ -1,7 +1,7 @@
 package com.biorecorder.bichart.examples;
 
-import com.biorecorder.bichart.chart.XYData;
-import com.biorecorder.bichart.swing.ChartPanel;
+import com.biorecorder.bichart.XYData;
+import com.biorecorder.bichart.ChartPanel;
 import com.biorecorder.bichart.traces.LineTracePainter;
 import javax.swing.*;
 import java.awt.*;
@@ -12,8 +12,9 @@ public class SmartChartTest  extends JFrame{
         int width = 400;
         int height = 500;
 
+        int n = 1000;
 
-        int[] data = new int[200];
+        int[] data = new int[n];
 
         for (int i = 0; i < data.length; i++) {
             data[i] = i - 100;
@@ -23,7 +24,7 @@ public class SmartChartTest  extends JFrame{
         XYData xyData2 = new XYData(data);
         System.out.println("data Size " + xyData2.rowCount() + " "+ xyData2.columnMinMax(1));
 
-        ChartPanel chartPanel = new ChartPanel(false);
+        ChartPanel chartPanel = new ChartPanel(true);
         chartPanel.addChartTrace("No Regular", xyData1, new LineTracePainter());
         chartPanel.addChartStack();
         chartPanel.addChartTrace("Regular", xyData2, new LineTracePainter());
@@ -40,7 +41,7 @@ public class SmartChartTest  extends JFrame{
         setLocationRelativeTo(null);
         setVisible(true);
 
-        for (int i = 0; i < 5 ; i++) {
+       /* for (int i = 0; i < 5 ; i++) {
             try{
                 Thread.sleep(1000);
             } catch(InterruptedException e){
@@ -48,7 +49,7 @@ public class SmartChartTest  extends JFrame{
             }
             int[] data1 = new int[50];
             for (int j = 0; j < data1.length; j++) {
-                data1[j] = 200 + i*50 + j;
+                data1[j] = n + i*50 + j;
             }
 
             XYData dataToAppend = new XYData(data1, data1);
@@ -56,7 +57,7 @@ public class SmartChartTest  extends JFrame{
             chartPanel.appendNavigatorTraceData(0, dataToAppend);
             chartPanel.appendNavigatorTraceData(1, regularDataToAppend);
             chartPanel.repaint();
-        }
+        } */
     }
 
     public static void main(String[] args) {

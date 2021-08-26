@@ -1,7 +1,9 @@
-package com.biorecorder.bichart.swing;
+package com.biorecorder.bichart;
 
 import com.biorecorder.bichart.chart.InteractiveDrawable;
 import com.biorecorder.bichart.graphics.BPoint;
+import com.biorecorder.bichart.swing.SwingCanvas;
+import com.biorecorder.bichart.swing.SwingRenderContext;
 
 import javax.swing.*;
 import java.awt.*;

@@ -3,8 +3,8 @@ package com.biorecorder.bichart.examples;
 import com.biorecorder.bichart.axis.XAxisPosition;
 import com.biorecorder.bichart.axis.YAxisPosition;
 import com.biorecorder.bichart.chart.NavigableChart;
-import com.biorecorder.bichart.chart.XYData;
-import com.biorecorder.bichart.scales.LinearScale;
+import com.biorecorder.bichart.XYData;
+import com.biorecorder.bichart.scales.TimeScale;
 import com.biorecorder.bichart.themes.DarkTheme;
 import com.biorecorder.bichart.traces.LineTracePainter;
 import com.biorecorder.data.list.IntEditableArrayList;
@@ -45,7 +45,7 @@ public class NavigableChartTest extends JFrame{
         XYData xyData2 = new XYData(-20, 2, yData.toArray());
 
 
-        chart = new NavigableChart(DarkTheme.getNavigableChartConfig(), new LinearScale());
+        chart = new NavigableChart(DarkTheme.getNavigableChartConfig(), new TimeScale());
 
         chart.addChartTrace("trace1", xyData1, new LineTracePainter());
         chart.addChartStack();

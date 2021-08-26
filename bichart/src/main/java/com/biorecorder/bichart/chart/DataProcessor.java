@@ -1,5 +1,6 @@
 package com.biorecorder.bichart.chart;
 
+import com.biorecorder.bichart.XYData;
 import com.biorecorder.bichart.configs.ProcessingConfig;
 import com.biorecorder.bichart.graphics.Range;
 import com.biorecorder.data.time.TimeInterval;
