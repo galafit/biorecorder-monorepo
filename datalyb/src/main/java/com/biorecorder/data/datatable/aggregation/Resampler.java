@@ -1,7 +1,7 @@
 package com.biorecorder.data.datatable.aggregation;
 import com.biorecorder.data.datatable.*;
 import com.biorecorder.data.time.TimeInterval;
-import com.biorecorder.data.list.IntEditableArrayList;
+import com.biorecorder.data.list.IntArrayList;
 import com.biorecorder.data.sequence.IntSequence;
 
 import java.util.HashMap;
@@ -123,7 +123,7 @@ public class Resampler {
 
         @Override
         public IntSequence group(Column column) {
-            IntEditableArrayList groupStarts = new IntEditableArrayList();
+            IntArrayList groupStarts = new IntArrayList();
             if (column.size() > 0) {
                 if (currentGroupInterval == null) {
                     currentGroupInterval = intervalProvider.getContaining(column.value(0));
@@ -206,7 +206,7 @@ public class Resampler {
         dt.addColumn(new IntColumn("y", yData));
 
         System.out.println("DataTable size + " + dt.rowCount() + " expected: " + xData.length);
-        System.out.println("DataTable max + " + dt.max(0) + " expected: " + xData[xData.length - 1]);
+        System.out.println("DataTable max + " + dt.minMax(0)[1] + " expected: " + xData[xData.length - 1]);
 
 
         Resampler aggPoints = Resampler.createEqualPointsResampler(4);

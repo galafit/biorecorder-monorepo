@@ -1,7 +1,7 @@
 package com.biorecorder.data.frame;
 
 import com.biorecorder.data.frame.impl.ColumnFactory;
-import com.biorecorder.data.list.IntEditableArrayList;
+import com.biorecorder.data.list.IntArrayList;
 import com.biorecorder.data.sequence.*;
 
 import java.util.*;
@@ -658,8 +658,8 @@ public class DataFrame {
         DataFrame df = new DataFrame(true);
         int[] xData = {2, 4, 5, 9, 12, 33, 34, 35, 40};
         int[] yData = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-        IntEditableArrayList xList = new IntEditableArrayList(xData);
-        IntEditableArrayList yList = new IntEditableArrayList(yData);
+        IntArrayList xList = new IntArrayList(xData);
+        IntArrayList yList = new IntArrayList(yData);
 
         df.addColumn("x", xList);
         df.addColumn("y", yList);

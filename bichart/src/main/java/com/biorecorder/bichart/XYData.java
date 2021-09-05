@@ -99,16 +99,23 @@ public class XYData implements ChartData {
 
     @Override
     public Range columnMinMax(int columnIndex) {
-        double min = dataTable.min(columnIndex);
-        double max = dataTable.max(columnIndex);
-        if(!Double.isNaN(min) && !Double.isNaN(max)) {
-            return new Range(min, max);
+        double[] minMax = dataTable.minMax(columnIndex);
+        if(minMax != null) {
+            return new Range(minMax[0], minMax[1]);
         }
         return null;
     }
 
-    public double xValue(int rowIndex) {
-        return value(rowIndex, 0);
+    public double xValue(int index) {
+        return value(index, 0);
+    }
+
+    public double yValue(int index) {
+        return value(index, 1);
+    }
+
+    public int size() {
+        return rowCount();
     }
 
     public Range xMinMax() {

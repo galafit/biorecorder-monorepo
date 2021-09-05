@@ -6,7 +6,6 @@ import com.biorecorder.bichart.traces.LineTracePainter;
 import javax.swing.*;
 import java.awt.*;
 
-
 public class SmartChartTest  extends JFrame{
     public SmartChartTest() {
         int width = 400;
@@ -22,17 +21,17 @@ public class SmartChartTest  extends JFrame{
 
         XYData xyData1 = new XYData(data, data);
         XYData xyData2 = new XYData(data);
-        System.out.println("data Size " + xyData2.rowCount() + " "+ xyData2.columnMinMax(1));
 
-        ChartPanel chartPanel = new ChartPanel(true);
+        ChartPanel chartPanel = new ChartPanel(false);
         chartPanel.addChartTrace("No Regular", xyData1, new LineTracePainter());
         chartPanel.addChartStack();
-        chartPanel.addChartTrace("Regular", xyData2, new LineTracePainter());
+       // chartPanel.addChartTrace("Regular", xyData2, new LineTracePainter());
 
-        chartPanel.addNavigatorTrace("No Regular", xyData1, new LineTracePainter() );
+        chartPanel.addNavigatorTrace("zero", new XYData(new int[0]), new LineTracePainter() );
+      /*  chartPanel.addNavigatorTrace("No Regular", xyData1, new LineTracePainter() );
         chartPanel.addNavigatorStack();
         chartPanel.addNavigatorTrace("Regular", xyData2, new LineTracePainter());
-
+*/
         chartPanel.setPreferredSize(new Dimension(width, height));
         add(chartPanel, BorderLayout.CENTER);
         pack();
@@ -64,3 +63,4 @@ public class SmartChartTest  extends JFrame{
         new SmartChartTest();
     }
 }
+

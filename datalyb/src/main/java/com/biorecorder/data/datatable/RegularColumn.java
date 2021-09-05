@@ -56,20 +56,14 @@ public class RegularColumn extends DoubleColumn {
     }
 
     @Override
-    public double min() {
+    public double[] minMax() {
         if(size() == 0 ) {
-            return Double.NaN;
+            return null;
         }
-        return value(0);
+        double[] minMax = {value(0), value(size() - 1)};
+        return minMax;
     }
 
-    @Override
-    public double max() {
-        if(size() == 0 ) {
-            return Double.NaN;
-        }
-        return value(size() - 1);
-    }
 
     @Override
     public void append(Column col) throws IllegalArgumentException {

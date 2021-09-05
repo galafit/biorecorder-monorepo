@@ -30,8 +30,8 @@ public class DataProcessor {
     }
 
     public void addNavigatorTraceData(XYData data) {
-       navigatorRowData.add(data);
-       navigatorGroupedData.add(null);
+        navigatorRowData.add(data);
+        navigatorGroupedData.add(null);
     }
 
     public void setChartTraceData(int traceNumber, XYData data) {
@@ -53,7 +53,7 @@ public class DataProcessor {
         data.appendData(dataToAppend);
     }
 
-    public XYData getProcessedNavigatorData(int traceNumber, int xLength, int markSize) {
+    public XYData getProcessedNavigatorData(int traceNumber, double xLength, int markSize) {
         if(!config.isDataGroupingEnabled()) {
             return navigatorRowData.get(traceNumber);
         }
@@ -71,12 +71,12 @@ public class DataProcessor {
         return groupedData.getData(xLength, markSize);
     }
 
-    public XYData getProcessedChartData(int traceNumber, Range xMinMax, int xLength, int markSize) {
+    public XYData getProcessedChartData(int traceNumber, Range xMinMax, double xLength, int markSize) {
         XYData data = chartRowData.get(traceNumber);
         Range dataXRange = GroupedData.dataRange(data);
         int pointsPerGroup = 1;
         if(config.isDataCropEnabled() && dataXRange != null &&
-              !xMinMax.contain(dataXRange) && data.rowCount() > minPointsForCrop) {
+                !xMinMax.contain(dataXRange) && data.rowCount() > minPointsForCrop) {
             int indexFrom = data.bisectLeft(xMinMax.getMin());
             int indexTill = data.bisectRight(xMinMax.getMax());
             if(indexFrom == indexTill || indexFrom >= data.rowCount() || indexTill < 0) {

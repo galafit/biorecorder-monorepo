@@ -1,17 +1,17 @@
 package com.biorecorder.data.list;
 
-import com.biorecorder.data.sequence.IntEditableSequence;
+import com.biorecorder.data.sequence.DoubleEditableSequence;
 
 /**
- * A resizable, array-backed list of int primitives.
+ * A resizable, array-backed list of double primitives.
  *<p>
  * Based on openjdk ArrayList.java -
  * http://hg.openjdk.java.net/jdk7/jdk7/jdk/file/00cd9dc3c2b5/src/share/classes/java/util/ArrayList.java
  * <br> and trove ArrayListTemplate -
  * https://bitbucket.org/trove4j/trove/src/24dd57f48bf385fa41a878f8fad7ac44d8b1d53a/core/src/main/templates/gnu/trove/list/array/_E_ArrayList.template?at=master&fileviewer=file-view-default
  */
-public class IntEditableArrayList implements IntEditableSequence {
-    private int[] data;
+public class DoubleArrayList implements DoubleEditableSequence {
+    private double[] data;
     private int size;
     /**
      * The maximum size of array to allocate.
@@ -21,20 +21,20 @@ public class IntEditableArrayList implements IntEditableSequence {
      */
     private static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
 
-    public IntEditableArrayList(int initialCapacity) {
+    public DoubleArrayList(int initialCapacity) {
         if (initialCapacity < 0) {
             throw new IllegalArgumentException("Illegal Capacity: "+ initialCapacity);
         }
-        data = new int[initialCapacity];
+        data = new double[initialCapacity];
     }
 
-    public IntEditableArrayList() {
+    public DoubleArrayList() {
         this(10);
     }
 
-    public IntEditableArrayList(int[] source) {
+    public DoubleArrayList(double[] source) {
         size = source.length;
-        data = new int[size];
+        data = new double[size];
         System.arraycopy(source, 0, data, 0, size);
     }
 
@@ -44,7 +44,7 @@ public class IntEditableArrayList implements IntEditableSequence {
     }
 
     @Override
-    public int get(int index) {
+    public double get(int index) {
         rangeCheck(index);
         return data[index];
     }
@@ -52,8 +52,8 @@ public class IntEditableArrayList implements IntEditableSequence {
     /**
      * Remove an element from the specified index
      */
-    public int remove(int index) {
-        int old = data[index];
+    public double remove(int index) {
+        double old = data[index];
         remove(index, 1);
         return old;
     }
@@ -81,7 +81,7 @@ public class IntEditableArrayList implements IntEditableSequence {
         size = 0;
     }
 
-    public void set( int index, int value) {
+    public void set( int index, double value) {
         rangeCheck(index);
         data[index] = value;
     }
@@ -89,7 +89,7 @@ public class IntEditableArrayList implements IntEditableSequence {
     /**
      * Adds a new element to the to the end of the list
      */
-    public void add(int value) {
+    public void add(double value) {
         ensureCapacity(size + 1);  // Increments modCount!!
         data[size] = value;
         size++;
@@ -99,7 +99,7 @@ public class IntEditableArrayList implements IntEditableSequence {
      * Adds the values from the array <tt>values</tt> to the end of the
      * list, in order.
      */
-    public void add(int[] values) {
+    public void add(double[] values) {
         int numNew = values.length;
         ensureCapacity(size + numNew);  // Increments modCount
         System.arraycopy(values, 0, data, size, numNew);
@@ -119,7 +119,7 @@ public class IntEditableArrayList implements IntEditableSequence {
      * @throws NullPointerException if the given array is null
      */
 
-    public void add(int index, int[] values) {
+    public void add(int index, double[] values) {
         rangeCheckForAdd(index);
 
         int numNew = values.length;
@@ -138,11 +138,19 @@ public class IntEditableArrayList implements IntEditableSequence {
      */
     public void trimToSize() {
         if ( data.length > size ) {
-            int[] tmp = new int[size];
+            double[] tmp = new double[size];
             System.arraycopy( data, 0, tmp, 0, size );
             data = tmp;
         }
     }
+
+    @Override
+    public double[] toArray() {
+        double[] dest = new double[size];
+        System.arraycopy( data, 0, dest, 0, size );
+        return dest;
+    }
+
 
     private void ensureCapacity(int minCapacity) {
         int oldCapacity = data.length;
@@ -157,17 +165,10 @@ public class IntEditableArrayList implements IntEditableSequence {
                 newCapacity = hugeCapacity(minCapacity);
 
             // minCapacity is usually close to size, so this is a win:
-            int[] tmp = new int[newCapacity];
+            double[] tmp = new double[newCapacity];
             System.arraycopy( data, 0, tmp, 0, data.length );
             data = tmp;
         }
-    }
-
-    @Override
-    public int[] toArray() {
-        int[] dest = new int[size];
-        System.arraycopy( data, 0, dest, 0, size );
-        return dest;
     }
 
     private static int hugeCapacity(int minCapacity) {

@@ -2,8 +2,8 @@ package com.biorecorder.data.frame.impl;
 
 import com.biorecorder.data.frame.*;
 import com.biorecorder.data.frame.Interval;
-import com.biorecorder.data.list.IntEditableArrayList;
-import com.biorecorder.data.list.DoubleEditableArrayList;
+import com.biorecorder.data.list.IntArrayList;
+import com.biorecorder.data.list.DoubleArrayList;
 import com.biorecorder.data.sequence.IntSequence;
 import com.biorecorder.data.sequence.DoubleSequence;
 import com.biorecorder.data.utils.PrimitiveUtils;
@@ -51,7 +51,7 @@ class DoubleColumn implements Column {
 
     @Override
     public Column slice(int from, int length) {
-        DoubleEditableArrayList slicedData = new DoubleEditableArrayList(length);
+        DoubleArrayList slicedData = new DoubleArrayList(length);
         for (int i = 0; i < length; i++) {
             slicedData.add(dataSequence.get(from + i));
         }
@@ -61,7 +61,7 @@ class DoubleColumn implements Column {
     @Override
     public Column slice(int from) {
         DoubleSequence slicedSequence = new DoubleSequence() {
-            DoubleEditableArrayList slicedData = new DoubleEditableArrayList();
+            DoubleArrayList slicedData = new DoubleArrayList();
             @Override
             public int size() {
                 return dataSequence.size() - from;
@@ -156,7 +156,7 @@ class DoubleColumn implements Column {
 
     private IntSequence group(IntervalProvider intervalProvider, DynamicSize length) {
         IntSequence groupIndexes = new IntSequence() {
-            IntEditableArrayList groupIndexesList = new IntEditableArrayList();
+            IntArrayList groupIndexesList = new IntArrayList();
             @Override
             public int size() {
                 update();

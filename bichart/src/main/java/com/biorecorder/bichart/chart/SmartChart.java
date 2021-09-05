@@ -57,12 +57,12 @@ public class SmartChart implements InteractiveDrawable {
         return null;
     }
 
-    public void autoScaleNavigatorX() {
-        navigableChart.autoScaleNavigatorX();
+    public void autoScaleX(XAxisPosition xPosition) {
+        navigableChart.autoScaleX(xPosition);
     }
 
-    public void autoScaleChartX() {
-        navigableChart.autoScaleChartX();
+    public void autoScaleX() {
+        navigableChart.autoScaleX();
     }
 
     private void updateNavigatorRange(XYData data) {
@@ -122,20 +122,19 @@ public class SmartChart implements InteractiveDrawable {
         navigableChart.autoScaleNavigatorY();
     }
 
-    private int getXLength() {
-        return (int) navigableChart.getNavigatorXScale().getLength();
+    private double getXLength() {
+        return  navigableChart.getNavigatorXScale().getLength();
     }
 
     private void configure() {
-        navigableChart.autoScaleNavigatorX();
-        navigableChart.autoScaleChartX();
+        navigableChart.autoScaleX();
         for (int i = 0; i < navigableChart.chartTraceCount(); i++) {
             setChartTraceData(i);
         }
         for (int i = 0; i < navigableChart.navigatorTraceCount(); i++) {
             setNavigatorTraceData(i);
         }
-        int xLength = getXLength();
+        double xLength = getXLength();
         for (XAxisPosition xPosition : XAxisPosition.values()) {
             ScrollListener l = new ScrollListener() {
                 @Override
@@ -150,8 +149,8 @@ public class SmartChart implements InteractiveDrawable {
             };
             navigableChart.addScrollListener(xPosition, l);
         }
-        navigableChart.autoScaleNavigatorX();
-        navigableChart.autoScaleChartX();
+        navigableChart.autoScaleNavigatorY();
+        navigableChart.autoScaleChartY();
         isConfigured = true;
     }
 
@@ -189,17 +188,17 @@ public class SmartChart implements InteractiveDrawable {
     @Override
     public boolean onDoubleTap(int x, int y) {
         // AUTO SCALE both chart and navigator
-        if (navigableChart.isChartTraceSelected()) {
+        if(navigableChart.isChartTraceSelected()) {
             // if some trace is selected we auto scale only axis belonging to that trace
-            navigableChart.autoScaleChartX(navigableChart.getChartSelectedTraceX());
+            navigableChart.autoScaleX(navigableChart.getChartSelectedTraceX());
             navigableChart.autoScaleChartY(navigableChart.getChartSelectedTraceStack(), navigableChart.getChartSelectedTraceY());
+
         } else {
-            // if no selected trace in chart we scale all x and y axis
-            navigableChart.autoScaleChartX();
+            navigableChart.autoScaleX();
             navigableChart.autoScaleChartY();
         }
         // do the same with navigator...
-        if (navigableChart.isNavigatorTraceSelected()) {
+        if(navigableChart.isNavigatorTraceSelected()) {
             // if some trace is selected we auto scale only axis belonging to that trace
             navigableChart.autoScaleNavigatorY(navigableChart.getNavigatorSelectedTraceStack(), navigableChart.getNavigatorSelectedTraceY());
         } else {
@@ -208,6 +207,7 @@ public class SmartChart implements InteractiveDrawable {
         }
         return true;
     }
+
 
     @Override
     public boolean onTapUp(int x, int y) {

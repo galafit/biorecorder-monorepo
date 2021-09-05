@@ -2,7 +2,7 @@ package com.biorecorder.data.frame.impl;
 
 import com.biorecorder.data.frame.*;
 import com.biorecorder.data.frame.Interval;
-import com.biorecorder.data.list.IntEditableArrayList;
+import com.biorecorder.data.list.IntArrayList;
 import com.biorecorder.data.list.FloatArrayList;
 import com.biorecorder.data.sequence.IntSequence;
 import com.biorecorder.data.sequence.FloatSequence;
@@ -156,7 +156,7 @@ class FloatColumn implements Column {
 
     private IntSequence group(IntervalProvider intervalProvider, DynamicSize length) {
         IntSequence groupIndexes = new IntSequence() {
-            IntEditableArrayList groupIndexesList = new IntEditableArrayList();
+            IntArrayList groupIndexesList = new IntArrayList();
             @Override
             public int size() {
                 update();

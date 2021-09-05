@@ -1,14 +1,12 @@
 package com.biorecorder.data.datatable;
 
-
 public interface Column {
     String name();
     BaseType type();
     int size();
     double value(int index);
     String label(int index);
-    double min();
-    double max();
+    double[] minMax();
     void append(Column col) throws IllegalArgumentException;
     Column view(int from, int length);
     Column view(int[] order);

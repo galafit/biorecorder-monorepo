@@ -2,7 +2,7 @@ package com.biorecorder.data.frame.impl;
 
 import com.biorecorder.data.frame.*;
 import com.biorecorder.data.frame.Interval;
-import com.biorecorder.data.list.IntEditableArrayList;
+import com.biorecorder.data.list.IntArrayList;
 import com.biorecorder.data.list.ShortArrayList;
 import com.biorecorder.data.sequence.IntSequence;
 import com.biorecorder.data.sequence.ShortSequence;
@@ -156,7 +156,7 @@ class ShortColumn implements Column {
 
     private IntSequence group(IntervalProvider intervalProvider, DynamicSize length) {
         IntSequence groupIndexes = new IntSequence() {
-            IntEditableArrayList groupIndexesList = new IntEditableArrayList();
+            IntArrayList groupIndexesList = new IntArrayList();
             @Override
             public int size() {
                 update();

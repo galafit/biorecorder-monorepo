@@ -1,25 +1,21 @@
 package com.biorecorder.bichart.traces;
 
-
 import com.biorecorder.bichart.chart.ChartData;
 import com.biorecorder.bichart.graphics.*;
 import com.biorecorder.bichart.scales.Scale;
 
-/**
- * Created by galafit on 11/10/17.
- */
 public class LineTracePainter implements TracePainter {
     private LineTraceConfig traceConfig;
 
     public LineTracePainter() {
         this(new LineTraceConfig());
     }
-    
+
     public LineTracePainter(LineTraceConfig config) {
         traceConfig = config;
     }
 
-   @Override
+    @Override
     public int markSize() {
         return traceConfig.getMarkSize();
     }
@@ -87,22 +83,28 @@ public class LineTracePainter implements TracePainter {
         }
     }
 
+
+
     private BPath drawLinearPath(BCanvas canvas, XYViewer xyData, Scale xScale, Scale yScale, BColor lineColor, BColor markColor) {
         BPath path = canvas.getEmptyPath();
         int x = (int) xScale.scale(xyData.getX(0));
         int y = (int) yScale.scale(xyData.getY(0));
         path.moveTo(x, y);
         canvas.setColor(markColor);
-        int pointRadius = traceConfig.getMarkSize() / 2;
-        canvas.fillOval(x - pointRadius, y - pointRadius, 2 * pointRadius,2 * pointRadius);
+        int markSize = traceConfig.getMarkSize();
+        canvas.fillOval(x - markSize / 2,y - markSize / 2, markSize, markSize);
         for (int i = 1; i < xyData.size(); i++) {
             x = (int) xScale.scale(xyData.getX(i));
             y = (int) yScale.scale(xyData.getY(i));
             path.lineTo(x, y);
-            canvas.fillOval(x - pointRadius,y - pointRadius, 2 * pointRadius,2 * pointRadius);
+            canvas.fillOval(x - markSize / 2,y - markSize / 2, markSize, markSize);
+
         }
-        canvas.setColor(lineColor);
-        canvas.drawPath(path);
+        if(traceConfig.getLineWidth() > 0) {
+            canvas.setColor(lineColor);
+            canvas.drawPath(path);
+        }
+
         return path;
     }
 

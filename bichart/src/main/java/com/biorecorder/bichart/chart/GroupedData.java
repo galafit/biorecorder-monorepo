@@ -10,14 +10,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 class GroupedData {
-    List<DataWrapper> dataList;
+    List<DataWrapper> dataList = new ArrayList<>();
 
-    public GroupedData(XYData xyData, GroupingType groupingType, double[] intervals, int xLength, int markSize) {
+    public GroupedData(XYData xyData, GroupingType groupingType, double[] intervals, double xLength, int markSize) {
+        if(xyData.size() <= 1) {
+            dataList.add(new RawData(xyData));
+            return;
+        }
         if(intervals == null || intervals.length == 0) {
             intervals = new double[1];
             intervals[0] = bestInterval(xyData, xLength, markSize);
         }
-        dataList = new ArrayList<>(intervals.length);
+
         for (int i = 0; i < intervals.length; i++) {
             double interval = intervals[i];
             int pointsPerInterval = intervalToPoints(xyData, interval);
@@ -38,12 +42,16 @@ class GroupedData {
         }
     }
 
-    public GroupedData(XYData xyData, GroupingType groupingType, TimeInterval[] timeIntervals, int xLength, int markSize) {
+    public GroupedData(XYData xyData, GroupingType groupingType, TimeInterval[] timeIntervals, double xLength, int markSize) {
+        if(xyData.size() <= 1) {
+            dataList.add(new RawData(xyData));
+            return;
+        }
+
         if(timeIntervals == null || timeIntervals.length == 0) {
             timeIntervals = new TimeInterval[1];
             timeIntervals[0] = TimeInterval.getUpper(Math.round(bestInterval(xyData, xLength, markSize)), false);
         }
-        dataList = new ArrayList<>(timeIntervals.length);
         for (int i = 0; i < timeIntervals.length; i++) {
             TimeInterval timeInterval = timeIntervals[i];
             int pointsPerInterval = intervalToPoints(xyData, timeInterval.toMilliseconds());
@@ -66,13 +74,13 @@ class GroupedData {
         }
     }
 
-    public XYData getData(int xLength, int markSize) {
+    public XYData getData(double xLength, int markSize) {
         if (dataList.size() == 1) {
             return dataList.get(0).getData();
         } else {
             for (int i = 0; i < dataList.size(); i++) {
                 XYData data = dataList.get(i).getData();
-                int dataPoints = xLength / markSize + 1;
+                int dataPoints = (int) (xLength / markSize) + 1;
                 if (data.rowCount() <= dataPoints) {
                     return dataList.get(i).getData();
                 }
@@ -95,17 +103,17 @@ class GroupedData {
         return pointsPerGroup;
     }
 
-    static double bestInterval(XYData data, int xLength, int markSize) {
+    static double bestInterval(XYData data, double xLength, int markSize) {
         return dataRange(data).length() * markSize / xLength;
     }
 
-    static int bestPointsInGroup(int dataSize, int xLength, int markSize) {
-        return (int)Math.round(1.0 * dataSize * markSize / xLength);
+    static int bestPointsInGroup(int dataSize, double xLength, int markSize) {
+        return (int)Math.round(dataSize * markSize / xLength);
     }
 
     // suppose that data is ordered
     static Range dataRange(XYData data) {
-        if(data != null) {
+        if(data != null && data.size() > 0) {
             return new Range(data.xValue(0), data.xValue(data.rowCount() - 1));
         }
         return null;

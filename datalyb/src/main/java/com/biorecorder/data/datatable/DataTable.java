@@ -37,7 +37,7 @@ public class DataTable {
 
     public int rowCount() {
         if(columns.size() > 0) {
-          return columns.get(0).size();
+            return columns.get(0).size();
         }
         return 0;
     }
@@ -90,12 +90,8 @@ public class DataTable {
         return columns.get(columnNumber).name();
     }
 
-    public double min(int columnNumber) {
-        return columns.get(columnNumber).min();
-    }
-
-    public double max(int columnNumber) {
-        return columns.get(columnNumber).max();
+    public double[] minMax(int columnNumber) {
+        return columns.get(columnNumber).minMax();
     }
 
     /**
@@ -158,5 +154,4 @@ public class DataTable {
         }
         return true;
     }
-
 }

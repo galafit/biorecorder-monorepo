@@ -4,10 +4,11 @@ import com.biorecorder.bichart.axis.XAxisPosition;
 import com.biorecorder.bichart.axis.YAxisPosition;
 import com.biorecorder.bichart.chart.NavigableChart;
 import com.biorecorder.bichart.XYData;
+import com.biorecorder.bichart.scales.LinearScale;
 import com.biorecorder.bichart.scales.TimeScale;
 import com.biorecorder.bichart.themes.DarkTheme;
 import com.biorecorder.bichart.traces.LineTracePainter;
-import com.biorecorder.data.list.IntEditableArrayList;
+import com.biorecorder.data.list.IntArrayList;
 import com.biorecorder.bichart.swing.ChartPanelOld;
 
 import javax.swing.*;
@@ -18,8 +19,8 @@ import java.util.*;
  * Created by galafit on 27/9/18.
  */
 public class NavigableChartTest extends JFrame{
-    IntEditableArrayList yData;
-    IntEditableArrayList xData;
+    IntArrayList yData;
+    IntArrayList xData;
     java.util.List<String> labels = new ArrayList();
     ChartPanelOld chartPanel;
     NavigableChart chart;
@@ -30,10 +31,10 @@ public class NavigableChartTest extends JFrame{
 
         setTitle("Test chart");
 
-        yData = new IntEditableArrayList();
-        xData = new IntEditableArrayList();
+        yData = new IntArrayList();
+        xData = new IntArrayList();
 
-       for (int i = 0; i <= 10; i++) {
+       for (int i = 0; i <= 100; i++) {
             yData.add(i);
             xData.add(i);
             labels.add("l_"+i);
@@ -45,12 +46,16 @@ public class NavigableChartTest extends JFrame{
         XYData xyData2 = new XYData(-20, 2, yData.toArray());
 
 
-        chart = new NavigableChart(DarkTheme.getNavigableChartConfig(), new TimeScale());
+        chart = new NavigableChart(DarkTheme.getNavigableChartConfig(), new LinearScale());
 
         chart.addChartTrace("trace1", xyData1, new LineTracePainter());
         chart.addChartStack();
-        chart.addChartTrace("trace2", xyData2, new LineTracePainter(), XAxisPosition.BOTTOM, YAxisPosition.RIGHT);
-        chart.addNavigatorTrace("trace3", xyData1, new LineTracePainter());
+       // chart.addChartTrace("trace2", xyData2, new LineTracePainter(), XAxisPosition.BOTTOM, YAxisPosition.RIGHT);
+        chart.addChartTrace("trace2", xyData2, new LineTracePainter());
+
+        chart.addNavigatorTrace("trace", xyData1, new LineTracePainter());
+       // chart.addNavigatorTrace("trace", new XYData(new int[0]), new LineTracePainter());
+
 
         chartPanel = new ChartPanelOld(chart);
 

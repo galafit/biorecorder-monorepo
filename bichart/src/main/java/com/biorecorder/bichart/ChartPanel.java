@@ -1,5 +1,6 @@
 package com.biorecorder.bichart;
 
+import com.biorecorder.bichart.axis.XAxisPosition;
 import com.biorecorder.bichart.chart.SmartChart;
 import com.biorecorder.bichart.axis.YAxisPosition;
 import com.biorecorder.bichart.traces.TracePainter;
@@ -21,12 +22,12 @@ public class ChartPanel extends InteractivePanel {
         smartChart.appendNavigatorTraceData(traceNumber, dataToAppend);
     }
 
-    public void autoScaleNavigatorX() {
-        smartChart.autoScaleNavigatorX();
+    public void autoScaleX() {
+        smartChart.autoScaleX();
     }
 
-    public void autoScaleChartX() {
-        smartChart.autoScaleChartX();
+    public void autoScaleX(XAxisPosition xPosition) {
+        smartChart.autoScaleX(xPosition);
     }
 
     public void setChartYMinMax(int stack, YAxisPosition yPosition, double min, double max) {

@@ -2,7 +2,7 @@ package com.biorecorder.data.frame.impl;
 
 import com.biorecorder.data.frame.*;
 import com.biorecorder.data.frame.Interval;
-import com.biorecorder.data.list.IntEditableArrayList;
+import com.biorecorder.data.list.IntArrayList;
 import com.biorecorder.data.sequence.IntSequence;
 import com.biorecorder.data.utils.PrimitiveUtils;
 import com.biorecorder.data.sequence.SequenceUtils;
@@ -49,7 +49,7 @@ class IntColumn implements Column {
 
     @Override
     public Column slice(int from, int length) {
-        IntEditableArrayList slicedData = new IntEditableArrayList(length);
+        IntArrayList slicedData = new IntArrayList(length);
         for (int i = 0; i < length; i++) {
             slicedData.add(dataSequence.get(from + i));
         }
@@ -59,7 +59,7 @@ class IntColumn implements Column {
     @Override
     public Column slice(int from) {
         IntSequence slicedSequence = new IntSequence() {
-            IntEditableArrayList slicedData = new IntEditableArrayList();
+            IntArrayList slicedData = new IntArrayList();
             @Override
             public int size() {
                 return dataSequence.size() - from;
@@ -154,7 +154,7 @@ class IntColumn implements Column {
 
     private IntSequence group(IntervalProvider intervalProvider, DynamicSize length) {
         IntSequence groupIndexes = new IntSequence() {
-            IntEditableArrayList groupIndexesList = new IntEditableArrayList();
+            IntArrayList groupIndexesList = new IntArrayList();
             @Override
             public int size() {
                 update();

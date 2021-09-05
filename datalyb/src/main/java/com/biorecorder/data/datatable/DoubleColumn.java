@@ -1,13 +1,9 @@
 package com.biorecorder.data.datatable;
 
-import com.biorecorder.data.datatable.aggregation.AggFunction;
-import com.biorecorder.data.datatable.aggregation.Max;
-import com.biorecorder.data.datatable.aggregation.Min;
-import com.biorecorder.data.list.DoubleEditableArrayList;
+import com.biorecorder.data.list.DoubleArrayList;
 import com.biorecorder.data.sequence.DoubleEditableSequence;
 import com.biorecorder.data.sequence.DoubleSequence;
 import com.biorecorder.data.sequence.SequenceUtils;
-
 import java.util.Arrays;
 
 public class DoubleColumn implements Column {
@@ -24,11 +20,11 @@ public class DoubleColumn implements Column {
     }
 
     public DoubleColumn(String name, double[] arrData) {
-        this(name, new DoubleEditableArrayList(arrData));
+        this(name, new DoubleArrayList(arrData));
     }
 
     public DoubleColumn(String name) {
-        this(name, new DoubleEditableArrayList());
+        this(name, new DoubleArrayList());
     }
 
     @Override
@@ -106,27 +102,25 @@ public class DoubleColumn implements Column {
     }
 
     @Override
-    public double min() {
-        AggFunction agg = new Min();
+    public double[] minMax() {
+        double min = Integer.MAX_VALUE;
+        double max = Integer.MIN_VALUE;
+        double value;
         if(size() > 0) {
             for (int i = 0; i < size(); i++) {
-                agg.addDouble(data.get(i));
+                value = data.get(i);
+                if(min > value) {
+                    min = value;
+                }
+                if(max < value) {
+                    max = value;
+                }
             }
-            return agg.getDouble();
+            double[] minMax  = {min, max};
+            return minMax;
         }
-        return Double.NaN;
-    }
+        return null;
 
-    @Override
-    public double max() {
-        AggFunction agg = new Max();
-        if(size() > 0) {
-            for (int i = 0; i < size(); i++) {
-                agg.addDouble(data.get(i));
-            }
-            return agg.getDouble();
-        }
-        return Double.NaN;
     }
 
     @Override

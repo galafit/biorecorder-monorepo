@@ -1,13 +1,9 @@
 package com.biorecorder.data.datatable;
 
-import com.biorecorder.data.datatable.aggregation.AggFunction;
-import com.biorecorder.data.datatable.aggregation.Max;
-import com.biorecorder.data.datatable.aggregation.Min;
-import com.biorecorder.data.list.IntEditableArrayList;
+import com.biorecorder.data.list.IntArrayList;
 import com.biorecorder.data.sequence.IntEditableSequence;
 import com.biorecorder.data.sequence.IntSequence;
 import com.biorecorder.data.sequence.SequenceUtils;
-
 import java.util.Arrays;
 
 public class IntColumn implements Column {
@@ -25,11 +21,11 @@ public class IntColumn implements Column {
     }
 
     public IntColumn(String name, int[] arrData) {
-        this(name, new IntEditableArrayList(arrData));
+        this(name, new IntArrayList(arrData));
     }
 
     public IntColumn(String name) {
-        this(name, new IntEditableArrayList());
+        this(name, new IntArrayList());
     }
 
     public int intValue(int index) {
@@ -77,33 +73,33 @@ public class IntColumn implements Column {
             try {
                 data.add(ic.data.toArray());
             } catch (UnsupportedOperationException ex) {
-               try{
-                   for (int i = 0; i < ic.size(); i++) {
-                       data.add(ic.intValue(i));
-                   }
-               } catch (UnsupportedOperationException ex1) {
-                   IntSequence dataJoined = new IntSequence() {
-                       IntSequence data1 = data;
-                       IntSequence data2 = ic.data;
-                       int size1 = data1.size();
-                       int size2 = data2.size();
-                       int size =  size1 + size2;
-                       @Override
-                       public int size() {
-                           return size;
-                       }
+                try{
+                    for (int i = 0; i < ic.size(); i++) {
+                        data.add(ic.intValue(i));
+                    }
+                } catch (UnsupportedOperationException ex1) {
+                    IntSequence dataJoined = new IntSequence() {
+                        IntSequence data1 = data;
+                        IntSequence data2 = ic.data;
+                        int size1 = data1.size();
+                        int size2 = data2.size();
+                        int size =  size1 + size2;
+                        @Override
+                        public int size() {
+                            return size;
+                        }
 
-                       @Override
-                       public int get(int index) {
-                           if(index < size1) {
-                               return data1.get(index);
-                           } else {
-                               return data2.get(index - size1);
-                           }
-                       }
-                   };
-                   data = new BaseIntEditableSequence(dataJoined);
-               }
+                        @Override
+                        public int get(int index) {
+                            if(index < size1) {
+                                return data1.get(index);
+                            } else {
+                                return data2.get(index - size1);
+                            }
+                        }
+                    };
+                    data = new BaseIntEditableSequence(dataJoined);
+                }
             }
         } else {
             String errMsg = "Column of different type can not be append: "+ type + " and " + col.type();
@@ -112,27 +108,24 @@ public class IntColumn implements Column {
     }
 
     @Override
-    public double min() {
-        AggFunction agg = new Min();
+    public double[] minMax() {
+        int min = Integer.MAX_VALUE;
+        int max = Integer.MIN_VALUE;
+        int value;
         if(size() > 0) {
             for (int i = 0; i < size(); i++) {
-               agg.addInt(data.get(i));
+                value = data.get(i);
+                if(min > value) {
+                    min = value;
+                }
+                if(max < value) {
+                    max = value;
+                }
             }
-            return agg.getInt();
+            double[] minMax  = {min, max};
+            return minMax;
         }
-        return Double.NaN;
-    }
-
-    @Override
-    public double max() {
-        AggFunction agg = new Max();
-        if(size() > 0) {
-            for (int i = 0; i < size(); i++) {
-                agg.addInt(data.get(i));
-            }
-            return agg.getInt();
-        }
-        return Double.NaN;
+        return null;
     }
 
     @Override

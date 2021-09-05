@@ -7,8 +7,9 @@ import com.biorecorder.bichart.XYData;
 import com.biorecorder.bichart.scales.LinearScale;
 import com.biorecorder.bichart.themes.DarkTheme;
 import com.biorecorder.bichart.themes.WhiteTheme;
+import com.biorecorder.bichart.traces.LineTraceConfig;
 import com.biorecorder.bichart.traces.LineTracePainter;
-import com.biorecorder.data.list.IntEditableArrayList;
+import com.biorecorder.data.list.IntArrayList;
 import com.biorecorder.bichart.swing.ChartPanelOld;
 import com.biorecorder.data.list.LongArrayList;
 
@@ -22,11 +23,11 @@ import java.util.List;
  * Created by galafit on 21/9/18.
  */
 public class ChartTest extends JFrame {
-    IntEditableArrayList yUnsort = new IntEditableArrayList();
-    IntEditableArrayList xUnsort = new IntEditableArrayList();
+    IntArrayList yUnsort = new IntArrayList();
+    IntArrayList xUnsort = new IntArrayList();
 
-    IntEditableArrayList list1 = new IntEditableArrayList();
-    IntEditableArrayList list2 = new IntEditableArrayList();
+    IntArrayList list1 = new IntArrayList();
+    IntArrayList list2 = new IntArrayList();
 
     List<String> labels = new ArrayList();
 
@@ -71,7 +72,7 @@ public class ChartTest extends JFrame {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(0);
         LongArrayList timeArray = new LongArrayList();
-        for (int i = 0; i < 150; i++) {
+        for (int i = 0; i < 15; i++) {
             timeArray.add(calendar.getTimeInMillis());
             calendar.add(Calendar.DAY_OF_MONTH, 1);
         }
@@ -82,7 +83,8 @@ public class ChartTest extends JFrame {
 
         chart.addTrace("trace1", unsortedData, new LineTracePainter(),  XAxisPosition.TOP, YAxisPosition.RIGHT);
         chart.addStack();
-        chart.addTrace("trace2", regularData, new LineTracePainter());
+        chart.addTrace("trace2", regularData,
+                new LineTracePainter(new LineTraceConfig(LineTraceConfig.VERTICAL_LINES)));
 
         chart.autoScaleY();
         chart.autoScaleX();
