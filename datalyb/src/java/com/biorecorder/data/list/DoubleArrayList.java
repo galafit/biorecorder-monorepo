@@ -10,7 +10,7 @@ import com.biorecorder.data.sequence.DoubleEditableSequence;
  * <br> and trove ArrayListTemplate -
  * https://bitbucket.org/trove4j/trove/src/24dd57f48bf385fa41a878f8fad7ac44d8b1d53a/core/src/main/templates/gnu/trove/list/array/_E_ArrayList.template?at=master&fileviewer=file-view-default
  */
-public class DoubleArrayList implements DoubleEditableSequence {
+public class DoubleArrayList {
     private double[] data;
     private int size;
     /**
@@ -38,12 +38,10 @@ public class DoubleArrayList implements DoubleEditableSequence {
         System.arraycopy(source, 0, data, 0, size);
     }
 
-    @Override
     public int size() {
         return size;
     }
 
-    @Override
     public double get(int index) {
         rangeCheck(index);
         return data[index];
@@ -144,7 +142,6 @@ public class DoubleArrayList implements DoubleEditableSequence {
         }
     }
 
-    @Override
     public double[] toArray() {
         double[] dest = new double[size];
         System.arraycopy( data, 0, dest, 0, size );

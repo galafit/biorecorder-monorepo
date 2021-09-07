@@ -21,11 +21,11 @@ public class IntColumn implements Column {
     }
 
     public IntColumn(String name, int[] arrData) {
-        this(name, new IntArrayList(arrData));
+        this(name, new IntArrayWrapper(new IntArrayList(arrData)));
     }
 
     public IntColumn(String name) {
-        this(name, new IntArrayList());
+        this(name, new IntArrayWrapper(new IntArrayList()));
     }
 
     public int intValue(int index) {
@@ -229,6 +229,44 @@ public class IntColumn implements Column {
         @Override
         public int[] toArray() throws UnsupportedOperationException {
             throw new UnsupportedOperationException();
+        }
+    }
+
+    static class IntArrayWrapper implements IntEditableSequence {
+        private final IntArrayList intArrayList;
+
+        public IntArrayWrapper(IntArrayList intArrayList) {
+            this.intArrayList = intArrayList;
+        }
+
+        @Override
+        public void add(int value) throws UnsupportedOperationException {
+            intArrayList.add(value);
+        }
+
+        @Override
+        public void add(int... values) throws UnsupportedOperationException {
+            intArrayList.add(values);
+        }
+
+        @Override
+        public void set(int index, int value) throws UnsupportedOperationException {
+            intArrayList.set(index, value);
+        }
+
+        @Override
+        public int[] toArray() throws UnsupportedOperationException {
+            return intArrayList.toArray();
+        }
+
+        @Override
+        public int size() {
+            return intArrayList.size();
+        }
+
+        @Override
+        public int get(int index) {
+            return intArrayList.get(index);
         }
     }
 }

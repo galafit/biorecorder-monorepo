@@ -11,7 +11,6 @@ import com.biorecorder.bichart.traces.LineTraceConfig;
 import com.biorecorder.bichart.traces.LineTracePainter;
 import com.biorecorder.data.list.IntArrayList;
 import com.biorecorder.bichart.swing.ChartPanelOld;
-import com.biorecorder.data.list.LongArrayList;
 
 import javax.swing.*;
 import java.awt.*;
@@ -71,11 +70,6 @@ public class ChartTest extends JFrame {
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(0);
-        LongArrayList timeArray = new LongArrayList();
-        for (int i = 0; i < 15; i++) {
-            timeArray.add(calendar.getTimeInMillis());
-            calendar.add(Calendar.DAY_OF_MONTH, 1);
-        }
 
         chart = new Chart(DarkTheme.getChartConfig(), new LinearScale());
         chart.setTitle("как дела? все хорошо как поживаете вы олрдлорлор лорор лорлор");

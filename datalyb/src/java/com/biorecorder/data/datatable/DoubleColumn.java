@@ -20,11 +20,11 @@ public class DoubleColumn implements Column {
     }
 
     public DoubleColumn(String name, double[] arrData) {
-        this(name, new DoubleArrayList(arrData));
+        this(name, new DoubleArrayWrapper(new DoubleArrayList(arrData)));
     }
 
     public DoubleColumn(String name) {
-        this(name, new DoubleArrayList());
+        this(name, new DoubleArrayWrapper(new DoubleArrayList()));
     }
 
     @Override
@@ -212,6 +212,44 @@ public class DoubleColumn implements Column {
         @Override
         public double[] toArray() throws UnsupportedOperationException {
             throw new UnsupportedOperationException();
+        }
+    }
+
+    static class DoubleArrayWrapper implements DoubleEditableSequence {
+        private final DoubleArrayList doubleArrayList;
+
+        public DoubleArrayWrapper(DoubleArrayList doubleArrayList) {
+            this.doubleArrayList = doubleArrayList;
+        }
+
+        @Override
+        public void add(double value) throws UnsupportedOperationException {
+            doubleArrayList.add(value);
+        }
+
+        @Override
+        public void add(double... values) throws UnsupportedOperationException {
+            doubleArrayList.add(values);
+        }
+
+        @Override
+        public void set(int index, double value) throws UnsupportedOperationException {
+            doubleArrayList.set(index, value);
+        }
+
+        @Override
+        public double[] toArray() throws UnsupportedOperationException {
+            return doubleArrayList.toArray();
+        }
+
+        @Override
+        public int size() {
+            return doubleArrayList.size();
+        }
+
+        @Override
+        public double get(int index) {
+            return doubleArrayList.get(index);
         }
     }
 }

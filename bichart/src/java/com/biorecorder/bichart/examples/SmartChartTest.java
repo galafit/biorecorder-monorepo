@@ -11,27 +11,31 @@ public class SmartChartTest  extends JFrame{
         int width = 400;
         int height = 500;
 
-        int n = 1000;
-
-        int[] data = new int[n];
+        int[] data = new int[1000];
+        int[] data1 = new int[10];
 
         for (int i = 0; i < data.length; i++) {
-            data[i] = i - 100;
+            data[i] = i;
         }
 
+        for (int i = 0; i < data1.length; i++) {
+            data1[i] = i;
+        }
+
+
         XYData xyData1 = new XYData(data, data);
-        XYData xyData2 = new XYData(data);
+        XYData xyData2 = new XYData(data1);
 
         ChartPanel chartPanel = new ChartPanel(false);
         chartPanel.addChartTrace("No Regular", xyData1, new LineTracePainter());
         chartPanel.addChartStack();
        // chartPanel.addChartTrace("Regular", xyData2, new LineTracePainter());
 
-        chartPanel.addNavigatorTrace("zero", new XYData(new int[0]), new LineTracePainter() );
-      /*  chartPanel.addNavigatorTrace("No Regular", xyData1, new LineTracePainter() );
-        chartPanel.addNavigatorStack();
+      //  chartPanel.addNavigatorTrace("zero", new XYData(new int[0]), new LineTracePainter() );
+       // chartPanel.addNavigatorTrace("No Regular", xyData1, new LineTracePainter() );
+       // chartPanel.addNavigatorStack();
         chartPanel.addNavigatorTrace("Regular", xyData2, new LineTracePainter());
-*/
+
         chartPanel.setPreferredSize(new Dimension(width, height));
         add(chartPanel, BorderLayout.CENTER);
         pack();

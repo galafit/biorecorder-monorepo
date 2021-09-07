@@ -139,7 +139,18 @@ public class Resampler {
                     }
                 }
             }
-            return groupStarts;
+            IntSequence groupStartsSeq = new IntSequence() {
+                @Override
+                public int size() {
+                    return groupStarts.size();
+                }
+
+                @Override
+                public int get(int index) {
+                    return groupStarts.get(index);
+                }
+            };
+            return groupStartsSeq;
         }
     }
 

@@ -38,6 +38,11 @@ public class DataProcessor {
         chartRowData.set(traceNumber, data);
     }
 
+    public void setNavigatorTraceData(int traceNumber, XYData data) {
+        navigatorRowData.set(traceNumber, data);
+        navigatorGroupedData.set(traceNumber, null);
+    }
+
     public void appendNavigatorTraceData(int traceNumber, XYData data) {
         GroupedData groupedData = navigatorGroupedData.get(traceNumber);
         if(groupedData != null) {

@@ -10,7 +10,7 @@ import com.biorecorder.data.sequence.IntEditableSequence;
  * <br> and trove ArrayListTemplate -
  * https://bitbucket.org/trove4j/trove/src/24dd57f48bf385fa41a878f8fad7ac44d8b1d53a/core/src/main/templates/gnu/trove/list/array/_E_ArrayList.template?at=master&fileviewer=file-view-default
  */
-public class IntArrayList implements IntEditableSequence {
+public class IntArrayList {
     private int[] data;
     private int size;
     /**
@@ -38,12 +38,10 @@ public class IntArrayList implements IntEditableSequence {
         System.arraycopy(source, 0, data, 0, size);
     }
 
-    @Override
     public int size() {
         return size;
     }
 
-    @Override
     public int get(int index) {
         rangeCheck(index);
         return data[index];
@@ -163,7 +161,6 @@ public class IntArrayList implements IntEditableSequence {
         }
     }
 
-    @Override
     public int[] toArray() {
         int[] dest = new int[size];
         System.arraycopy( data, 0, dest, 0, size );

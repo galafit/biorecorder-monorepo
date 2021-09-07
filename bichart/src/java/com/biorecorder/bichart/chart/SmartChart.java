@@ -80,6 +80,14 @@ public class SmartChart implements InteractiveDrawable {
         }
     }
 
+    public void setNavigatorTraceData(int traceNumber, XYData data) {
+        dataProcessor.setNavigatorTraceData(traceNumber, data);
+        if (isConfigured) {
+            setNavigatorTraceData(traceNumber);
+            updateNavigatorRange(data);
+        }
+    }
+
     public void appendNavigatorTraceData(int traceNumber, XYData dataToAppend) {
         dataProcessor.appendNavigatorTraceData(traceNumber, dataToAppend);
         if (isConfigured) {

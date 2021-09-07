@@ -19,6 +19,10 @@ public class ChartPanel extends InteractivePanel {
         smartChart.setChartTraceData(traceNumber, data);
     }
 
+    public void setNavigatorTraceData(int traceNumber, XYData data) {
+        smartChart.setNavigatorTraceData(traceNumber, data);
+    }
+
     public void appendNavigatorTraceData(int traceNumber, XYData dataToAppend) {
         smartChart.appendNavigatorTraceData(traceNumber, dataToAppend);
     }
