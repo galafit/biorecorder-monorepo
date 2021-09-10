@@ -3,13 +3,13 @@ package com.biorecorder.bichart.examples;
 import com.biorecorder.bichart.axis.XAxisPosition;
 import com.biorecorder.bichart.axis.YAxisPosition;
 import com.biorecorder.bichart.chart.Chart;
-import com.biorecorder.bichart.XYData;
+import com.biorecorder.bichart.XYSeries;
 import com.biorecorder.bichart.scales.LinearScale;
 import com.biorecorder.bichart.themes.DarkTheme;
 import com.biorecorder.bichart.themes.WhiteTheme;
 import com.biorecorder.bichart.traces.LineTraceConfig;
 import com.biorecorder.bichart.traces.LineTracePainter;
-import com.biorecorder.data.list.IntArrayList;
+import com.biorecorder.datalyb.list.IntArrayList;
 import com.biorecorder.bichart.swing.ChartPanelOld;
 
 import javax.swing.*;
@@ -63,9 +63,9 @@ public class ChartTest extends JFrame {
         yUnsort.add(300);
 
 
-        XYData regularData = new XYData(list1.toArray());
+        XYSeries regularData = new XYSeries(list1.toArray());
 
-        XYData unsortedData = new XYData(xUnsort.toArray(), yUnsort.toArray());
+        XYSeries unsortedData = new XYSeries(xUnsort.toArray(), yUnsort.toArray());
 
 
         Calendar calendar = Calendar.getInstance();

@@ -1,6 +1,6 @@
 package com.biorecorder.filters.oldfilters;
 
-import com.biorecorder.data.sequence.IntSequence;
+import com.biorecorder.datalyb.series.IntSeries;
 
 /**
  *
@@ -10,7 +10,7 @@ public class FilterDerivativeRem extends Function {
     private static final int DEFAULT_DISTANCE_MSEC = 120;
     private int distance_point;
 
-    public FilterDerivativeRem(IntSequence inputData, int timeMs, double sampleRate) {
+    public FilterDerivativeRem(IntSeries inputData, int timeMs, double sampleRate) {
         super(inputData);
 
         distance_point = Math.round((float)(timeMs * sampleRate / 1000));
@@ -19,7 +19,7 @@ public class FilterDerivativeRem extends Function {
         }
     }
 
-    public FilterDerivativeRem(IntSequence inputData, double sampleRate) {
+    public FilterDerivativeRem(IntSeries inputData, double sampleRate) {
        this(inputData, DEFAULT_DISTANCE_MSEC, sampleRate);
     }
 

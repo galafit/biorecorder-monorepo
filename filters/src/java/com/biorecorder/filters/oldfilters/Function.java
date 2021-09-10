@@ -1,15 +1,15 @@
 package com.biorecorder.filters.oldfilters;
 
 
-import com.biorecorder.data.sequence.IntSequence;
+import com.biorecorder.datalyb.series.IntSeries;
 
 /**
  *
  */
-public abstract class Function implements IntSequence {
-    protected IntSequence inputData;
+public abstract class Function implements IntSeries {
+    protected IntSeries inputData;
 
-    protected Function(IntSequence inputData) {
+    protected Function(IntSeries inputData) {
         this.inputData = inputData;
     }
 

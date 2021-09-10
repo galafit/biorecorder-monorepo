@@ -1,6 +1,6 @@
 package com.biorecorder.filters.oldfilters;
 
-import com.biorecorder.data.sequence.IntSequence;
+import com.biorecorder.datalyb.series.IntSeries;
 
 /**
  *
@@ -8,7 +8,7 @@ import com.biorecorder.data.sequence.IntSequence;
 
 public class FilterDerivative extends Function {
 
-    public FilterDerivative(IntSequence inputData) {
+    public FilterDerivative(IntSeries inputData) {
         super(inputData);
     }
 

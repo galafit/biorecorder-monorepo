@@ -5,7 +5,7 @@ package com.biorecorder.bichart.axis;
         import com.biorecorder.bichart.graphics.*;
         import com.biorecorder.bichart.scales.*;
         import com.biorecorder.bichart.utils.StringUtils;
-        import com.biorecorder.data.list.IntArrayList;
+        import com.biorecorder.datalyb.list.IntArrayList;
 
         import java.util.ArrayList;
         import java.util.List;

@@ -1,6 +1,6 @@
 package com.biorecorder.filters.oldfilters;
 
-import com.biorecorder.data.sequence.IntSequence;
+import com.biorecorder.datalyb.series.IntSeries;
 
 /**
  *
@@ -11,7 +11,7 @@ public class FilterLowPass extends Function {
     private int indexBefore = -10;
     private long sumBefore = 0;
 
-    public FilterLowPass(IntSequence inputData, int bufferSize) {
+    public FilterLowPass(IntSeries inputData, int bufferSize) {
         super(inputData);
         this.bufferSize = bufferSize;
     }

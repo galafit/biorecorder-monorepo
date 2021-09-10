@@ -1,6 +1,6 @@
 package com.biorecorder.filters.oldfilters;
 
-import com.biorecorder.data.sequence.IntSequence;
+import com.biorecorder.datalyb.series.IntSeries;
 
 /**
  * Based on Teager Kaiser Energy operator :
@@ -12,12 +12,12 @@ public class FilterPower extends Function {
 
     private int  distance = 1;
 
-    public FilterPower(IntSequence inputData, int distance) {
+    public FilterPower(IntSeries inputData, int distance) {
         super(inputData);
         this.distance = distance;
     }
 
-    public FilterPower(IntSequence inputData) {
+    public FilterPower(IntSeries inputData) {
         this(inputData, 1);
     }
 

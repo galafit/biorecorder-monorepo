@@ -1,6 +1,6 @@
 package com.biorecorder.bichart.chart;
 
-import com.biorecorder.bichart.XYData;
+import com.biorecorder.bichart.XYSeries;
 import com.biorecorder.bichart.configs.NavigableChartConfig;
 import com.biorecorder.bichart.configs.ProcessingConfig;
 import com.biorecorder.bichart.axis.XAxisPosition;
@@ -39,18 +39,18 @@ public class SmartChart implements InteractiveDrawable {
 
     private void setChartTraceData(int traceNumber) {
         Range minMax = navigableChart.getChartXMinMax(navigableChart.getChartTraceXAxisPosition(traceNumber));
-        XYData data = dataProcessor.getProcessedChartData(traceNumber, minMax, getXLength(), navigableChart.getChartTraceMarkSize(traceNumber));
+        XYSeries data = dataProcessor.getProcessedChartData(traceNumber, minMax, getXLength(), navigableChart.getChartTraceMarkSize(traceNumber));
         navigableChart.setChartTraceData(traceNumber, data);
     }
 
     private void setNavigatorTraceData(int traceNumber) {
-        XYData data = dataProcessor.getProcessedNavigatorData(traceNumber, getXLength(), navigableChart.getNavigatorTraceMarkSize(traceNumber));
+        XYSeries data = dataProcessor.getProcessedNavigatorData(traceNumber, getXLength(), navigableChart.getNavigatorTraceMarkSize(traceNumber));
         navigableChart.setNavigatorTraceData(traceNumber, data);
     }
 
 
     // suppose that data is ordered
-    private Range dataMinMax(XYData data) {
+    private Range dataMinMax(XYSeries data) {
         if (data != null) {
             return new Range(data.xValue(0), data.xValue(data.rowCount() - 1));
         }
@@ -65,14 +65,14 @@ public class SmartChart implements InteractiveDrawable {
         navigableChart.autoScaleX();
     }
 
-    private void updateNavigatorRange(XYData data) {
+    private void updateNavigatorRange(XYSeries data) {
         Range dataMinMax = dataMinMax(data);
         Range navigatorRange = navigableChart.getNavigatorXMinMax();
         navigatorRange = Range.join(navigatorRange, dataMinMax);
         navigableChart.setNavigatorXMinMax(navigatorRange.getMin(), navigatorRange.getMax());
     }
 
-    public void setChartTraceData(int traceNumber, XYData data) {
+    public void setChartTraceData(int traceNumber, XYSeries data) {
         dataProcessor.setChartTraceData(traceNumber, data);
         if (isConfigured) {
             setChartTraceData(traceNumber);
@@ -80,7 +80,7 @@ public class SmartChart implements InteractiveDrawable {
         }
     }
 
-    public void setNavigatorTraceData(int traceNumber, XYData data) {
+    public void setNavigatorTraceData(int traceNumber, XYSeries data) {
         dataProcessor.setNavigatorTraceData(traceNumber, data);
         if (isConfigured) {
             setNavigatorTraceData(traceNumber);
@@ -88,7 +88,7 @@ public class SmartChart implements InteractiveDrawable {
         }
     }
 
-    public void appendNavigatorTraceData(int traceNumber, XYData dataToAppend) {
+    public void appendNavigatorTraceData(int traceNumber, XYSeries dataToAppend) {
         dataProcessor.appendNavigatorTraceData(traceNumber, dataToAppend);
         if (isConfigured) {
             setNavigatorTraceData(traceNumber);
@@ -108,7 +108,7 @@ public class SmartChart implements InteractiveDrawable {
         navigableChart.addChartStack();
     }
 
-    public void addChartTrace(String name, XYData data, TracePainter tracePainter) {
+    public void addChartTrace(String name, XYSeries data, TracePainter tracePainter) {
         navigableChart.addChartTrace(name, data, tracePainter);
         dataProcessor.addChartTraceData(data);
     }
@@ -117,7 +117,7 @@ public class SmartChart implements InteractiveDrawable {
         navigableChart.addNavigatorStack();
     }
 
-    public void addNavigatorTrace(String name, XYData data, TracePainter tracePainter) {
+    public void addNavigatorTrace(String name, XYSeries data, TracePainter tracePainter) {
         navigableChart.addNavigatorTrace(name, data, tracePainter);
         dataProcessor.addNavigatorTraceData(data);
     }
@@ -150,7 +150,7 @@ public class SmartChart implements InteractiveDrawable {
                     List<Integer> traceNumbers = navigableChart.getChartTraces(xPosition);
                     for (int i = 0; i < traceNumbers.size(); i++) {
                         int traceNumber = traceNumbers.get(i);
-                        XYData traceData = dataProcessor.getProcessedChartData(traceNumber, new Range(viewportMin, viewportMax), xLength, navigableChart.getChartTraceMarkSize(traceNumber));
+                        XYSeries traceData = dataProcessor.getProcessedChartData(traceNumber, new Range(viewportMin, viewportMax), xLength, navigableChart.getChartTraceMarkSize(traceNumber));
                         navigableChart.setChartTraceData(traceNumber, traceData);
                     }
                 }

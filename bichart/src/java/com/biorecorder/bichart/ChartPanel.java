@@ -15,15 +15,15 @@ public class ChartPanel extends InteractivePanel {
         smartChart = (SmartChart) chart;
     }
 
-    public void setChartTraceData(int traceNumber, XYData data) {
+    public void setChartTraceData(int traceNumber, XYSeries data) {
         smartChart.setChartTraceData(traceNumber, data);
     }
 
-    public void setNavigatorTraceData(int traceNumber, XYData data) {
+    public void setNavigatorTraceData(int traceNumber, XYSeries data) {
         smartChart.setNavigatorTraceData(traceNumber, data);
     }
 
-    public void appendNavigatorTraceData(int traceNumber, XYData dataToAppend) {
+    public void appendNavigatorTraceData(int traceNumber, XYSeries dataToAppend) {
         smartChart.appendNavigatorTraceData(traceNumber, dataToAppend);
     }
 
@@ -47,7 +47,7 @@ public class ChartPanel extends InteractivePanel {
         smartChart.addChartStack();
     }
 
-    public void addChartTrace(String name, XYData data, TracePainter tracePainter) {
+    public void addChartTrace(String name, XYSeries data, TracePainter tracePainter) {
         smartChart.addChartTrace(name, data, tracePainter);
     }
 
@@ -59,7 +59,7 @@ public class ChartPanel extends InteractivePanel {
         smartChart.addNavigatorStack();
     }
 
-    public void addNavigatorTrace(String name, XYData data, TracePainter tracePainter) {
+    public void addNavigatorTrace(String name, XYSeries data, TracePainter tracePainter) {
         smartChart.addNavigatorTrace(name, data, tracePainter);
     }
 

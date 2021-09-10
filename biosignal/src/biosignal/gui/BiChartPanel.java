@@ -1,16 +1,15 @@
 package biosignal.gui;
 
-import biosignal.application.XYValues;
+import biosignal.application.XYData;
 import com.biorecorder.bichart.ChartPanel;
-import com.biorecorder.bichart.XYData;
+import com.biorecorder.bichart.XYSeries;
 import com.biorecorder.bichart.graphics.Range;
 import com.biorecorder.bichart.traces.TracePainter;
-import com.biorecorder.data.datatable.DataTable;
-import com.biorecorder.data.datatable.DoubleColumn;
-import com.biorecorder.data.datatable.IntColumn;
-import com.biorecorder.data.datatable.RegularColumn;
-import com.biorecorder.data.sequence.DoubleSequence;
-import com.biorecorder.data.sequence.IntSequence;
+import com.biorecorder.datalyb.datatable.DataTable;
+import com.biorecorder.datalyb.datatable.DoubleColumn;
+import com.biorecorder.datalyb.datatable.IntColumn;
+import com.biorecorder.datalyb.datatable.RegularColumn;
+import com.biorecorder.datalyb.series.IntSeries;
 
 import javax.swing.*;
 import java.awt.*;
@@ -32,7 +31,7 @@ public class BiChartPanel extends JPanel {
         chartPanel.addChartStack();
     }
 
-    public void addChartTrace(String name, XYValues data, TracePainter tracePainter) {
+    public void addChartTrace(String name, XYData data, TracePainter tracePainter) {
         chartPanel.addChartTrace(name, convertData(data), tracePainter);
     }
 
@@ -40,11 +39,11 @@ public class BiChartPanel extends JPanel {
         chartPanel.addNavigatorStack();
     }
 
-    public void addNavigatorTrace(String name, XYValues data, TracePainter tracePainter) {
+    public void addNavigatorTrace(String name, XYData data, TracePainter tracePainter) {
         chartPanel.addNavigatorTrace(name, convertData(data), tracePainter);
     }
 
-    public void setChartTraceData(int traceNumber, XYValues data) {
+    public void setChartTraceData(int traceNumber, XYData data) {
         chartPanel.setChartTraceData(traceNumber, convertData(data));
     }
 
@@ -54,19 +53,19 @@ public class BiChartPanel extends JPanel {
         return range;
     }
 
-    public void setNavigatorTraceData(int traceNumber, XYValues data) {
+    public void setNavigatorTraceData(int traceNumber, XYData data) {
         chartPanel.setNavigatorTraceData(traceNumber, convertData(data));
     }
 
-    private XYData convertData(XYValues xyValues) {
+    private XYSeries convertData(XYData xyData) {
         DataTable dt = new DataTable();
-        IntSequence yData = xyValues.getYValues();
-        if(xyValues.isRegular()) {
-            dt.addColumn(new RegularColumn("x", xyValues.getStartValue(), xyValues.getStep(), yData.size()));
+        IntSeries yData = xyData.getYValues();
+        if(xyData.isRegular()) {
+            dt.addColumn(new RegularColumn("x", xyData.getStartValue(), xyData.getStep(), yData.size()));
         } else {
-            dt.addColumn(new DoubleColumn("x", xyValues.getXValues()));
+            dt.addColumn(new DoubleColumn("x", xyData.getXValues()));
         }
         dt.addColumn(new IntColumn("y", yData));
-        return new XYData(dt);
+        return new XYSeries(dt);
     }
 }

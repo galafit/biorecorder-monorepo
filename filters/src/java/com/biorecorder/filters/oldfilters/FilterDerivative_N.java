@@ -1,6 +1,6 @@
 package com.biorecorder.filters.oldfilters;
 
-import com.biorecorder.data.sequence.IntSequence;
+import com.biorecorder.datalyb.series.IntSeries;
 
 /**
  *
@@ -8,7 +8,7 @@ import com.biorecorder.data.sequence.IntSequence;
 
 public class FilterDerivative_N extends Function {
     private int n = 1;
-    public FilterDerivative_N(IntSequence inputData, int n) {
+    public FilterDerivative_N(IntSeries inputData, int n) {
         super(inputData);
         this.n = n;
     }

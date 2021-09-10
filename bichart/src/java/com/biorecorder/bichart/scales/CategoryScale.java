@@ -1,6 +1,6 @@
 package com.biorecorder.bichart.scales;
 
-import com.biorecorder.data.sequence.StringSequence;
+import com.biorecorder.datalyb.series.StringSeries;
 
 import java.text.MessageFormat;
 import java.util.List;
@@ -9,9 +9,9 @@ import java.util.List;
  * Created by galafit on 17/4/19.
  */
 public class CategoryScale extends LinearScale {
-    private StringSequence labels;
+    private StringSeries labels;
 
-    public CategoryScale(StringSequence labels) {
+    public CategoryScale(StringSeries labels) {
         this.labels = labels;
     }
 
@@ -21,7 +21,7 @@ public class CategoryScale extends LinearScale {
     }*/
 
     public CategoryScale(List<String> labels1) {
-        this.labels = new StringSequence() {
+        this.labels = new StringSeries() {
             @Override
             public int size() {
                 return labels1.size();
@@ -51,11 +51,11 @@ public class CategoryScale extends LinearScale {
         return max;
     }
 
-    public StringSequence getLabels() {
+    public StringSeries getLabels() {
         return labels;
     }
 
-    public void setLabels(StringSequence labels) {
+    public void setLabels(StringSeries labels) {
         this.labels = labels;
     }
 

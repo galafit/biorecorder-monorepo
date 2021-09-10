@@ -1,6 +1,6 @@
 package com.biorecorder.filters.oldfilters;
 
-import com.biorecorder.data.sequence.IntSequence;
+import com.biorecorder.datalyb.series.IntSeries;
 
 /**
  *
@@ -10,7 +10,7 @@ public class FilterHiPassSymmetric extends Function {
     private long sumBefore = 0;
     int bufferSize;
 
-    public FilterHiPassSymmetric(IntSequence inputData, int bufferSize) {
+    public FilterHiPassSymmetric(IntSeries inputData, int bufferSize) {
         super(inputData);
         this.bufferSize = bufferSize;
     }

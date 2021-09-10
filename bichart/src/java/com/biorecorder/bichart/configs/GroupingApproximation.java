@@ -1,6 +1,6 @@
 package com.biorecorder.bichart.configs;
 
-import com.biorecorder.data.datatable.aggregation.*;
+import com.biorecorder.datalyb.datatable.aggregation.*;
 
 /**
  * Created by galafit on 23/5/19.

@@ -1,8 +1,8 @@
 package biosignal.application.filter;
 
-import biosignal.application.XYValues;
-import com.biorecorder.data.list.IntArrayList;
-import com.biorecorder.data.sequence.IntSequence;
+import biosignal.application.XYData;
+import com.biorecorder.datalyb.list.IntArrayList;
+import com.biorecorder.datalyb.series.IntSeries;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +12,7 @@ public class FilterPipe implements DataReceiver {
     private double step;
     private Filter filter;
     private List<DataReceiver> dataReceivers = new ArrayList<>(1);
-    private List<XYReceiver> xyReceivers = new ArrayList<>(1);
+    private List<BiDataReceiver> biDataReceivers = new ArrayList<>(1);
     private int counter;
 
     public FilterPipe(double startValue, double step, Filter... filters) {
@@ -25,14 +25,14 @@ public class FilterPipe implements DataReceiver {
         dataReceivers.add(receiver);
     }
 
-    public void addXYReceiver(XYReceiver xyReceiver) {
-        xyReceivers.add(xyReceiver);
+    public void addXYReceiver(BiDataReceiver biDataReceiver) {
+        biDataReceivers.add(biDataReceiver);
     }
 
     /**
      * @return XYValues where data will be stored
      */
-    public XYValues enableDataStoring() {
+    public XYData enableDataAccumulation() {
         DataSink dataSink = new DataSink(startValue, step);
         dataReceivers.add(dataSink);
         return dataSink.getXYValues();
@@ -50,8 +50,8 @@ public class FilterPipe implements DataReceiver {
         for (DataReceiver dataReceiver : dataReceivers) {
             dataReceiver.put(filteredValue);
         }
-        for (XYReceiver xyReceiver : xyReceivers) {
-            xyReceiver.put(startValue + step * counter, filteredValue);
+        for (BiDataReceiver biDataReceiver : biDataReceivers) {
+            biDataReceiver.put(startValue + step * counter, filteredValue);
         }
         counter++;
     }
@@ -66,8 +66,8 @@ public class FilterPipe implements DataReceiver {
             this.step = step;
         }
 
-        public XYValues getXYValues() {
-            return new XYValues(startValue, step, new IntSequence() {
+        public XYData getXYValues() {
+            return new XYData(startValue, step, new IntSeries() {
                 @Override
                 public int size() {
                     return data.size();

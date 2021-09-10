@@ -1,6 +1,6 @@
 package com.biorecorder.filters.oldfilters;
 
-import com.biorecorder.data.sequence.IntSequence;
+import com.biorecorder.datalyb.series.IntSeries;
 
 /**
  * Created by mac on 20/02/15.
@@ -8,7 +8,7 @@ import com.biorecorder.data.sequence.IntSequence;
 public class FilterHiPass extends Function {
     int bufferSize;
 
-    public FilterHiPass(IntSequence inputData, int bufferSize) {
+    public FilterHiPass(IntSeries inputData, int bufferSize) {
         super(inputData);
         this.bufferSize = bufferSize;
     }

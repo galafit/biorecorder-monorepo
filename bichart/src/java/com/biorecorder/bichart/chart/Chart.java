@@ -7,7 +7,7 @@ import com.biorecorder.bichart.scales.CategoryScale;
 import com.biorecorder.bichart.scales.LinearScale;
 import com.biorecorder.bichart.scales.Scale;
 import com.biorecorder.bichart.traces.TracePainter;
-import com.biorecorder.data.sequence.StringSequence;
+import com.biorecorder.datalyb.series.StringSeries;
 import com.sun.istack.internal.Nullable;
 
 import java.util.*;
@@ -164,9 +164,10 @@ public class Chart {
         }
     }
 
-    private @Nullable StringSequence getXLabels(ChartData data) {
+    private @Nullable
+    StringSeries getXLabels(ChartData data) {
         if (!data.isNumberColumn(0)) {
-            return new StringSequence() {
+            return new StringSeries() {
                 @Override
                 public int size() {
                     return data.rowCount();
@@ -524,7 +525,7 @@ public class Chart {
 
         AxisWrapper xAxis = xAxisList.get(xIndex);
         AxisWrapper yAxis = yAxisList.get(yIndex);
-        StringSequence dataXLabels = getXLabels(data);
+        StringSeries dataXLabels = getXLabels(data);
         if (dataXLabels != null) {
             xAxis.setScale(new CategoryScale(dataXLabels));
         }

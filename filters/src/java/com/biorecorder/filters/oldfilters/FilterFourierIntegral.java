@@ -1,11 +1,11 @@
 package com.biorecorder.filters.oldfilters;
 
-import com.biorecorder.data.sequence.IntSequence;
+import com.biorecorder.datalyb.series.IntSeries;
 
 public class FilterFourierIntegral extends Function {
     private double frequency;
 
-    public FilterFourierIntegral(IntSequence inputData, double frequency) {
+    public FilterFourierIntegral(IntSeries inputData, double frequency) {
         super(inputData);
         this.frequency = frequency;
     }

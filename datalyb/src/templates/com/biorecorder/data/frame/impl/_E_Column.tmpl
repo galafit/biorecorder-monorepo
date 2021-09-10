@@ -1,13 +1,13 @@
-package com.biorecorder.data.frame.impl;
+package com.biorecorder.datalyb.frame.impl;
 
-import com.biorecorder.data.frame.*;
-import com.biorecorder.data.frame.Interval;
-import com.biorecorder.data.list.IntArrayList;
-import com.biorecorder.data.list.#E#ArrayList;
-import com.biorecorder.data.sequence.IntSequence;
-import com.biorecorder.data.sequence.#E#Sequence;
-import com.biorecorder.data.utils.PrimitiveUtils;
-import com.biorecorder.data.sequence.SequenceUtils;
+import com.biorecorder.datalyb.frame.*;
+import com.biorecorder.datalyb.frame.Interval;
+import com.biorecorder.datalyb.list.IntArrayList;
+import com.biorecorder.datalyb.list.#E#ArrayList;
+import com.biorecorder.datalyb.series.IntSeries;
+import com.biorecorder.datalyb.series.#E#Sequence;
+import com.biorecorder.datalyb.utils.PrimitiveUtils;
+import com.biorecorder.datalyb.series.SeriesUtils;
 
 
 /**************************************
@@ -210,7 +210,7 @@ class #E#Column implements Column {
     private #E#AggFunction getAggFunction(Aggregation aggregation) {
         // Capitalize the first letter of dataType string
         String type = dataType().toString().substring(0, 1).toUpperCase() + dataType().toString().substring(1);
-        String functionClassName = "com.biorecorder.data.frame.impl." + type + aggregation.toString();
+        String functionClassName = "com.biorecorder.datalyb.frame.impl." + type + aggregation.toString();
         try {
             return (#E#AggFunction) (Class.forName(functionClassName)).newInstance();
         } catch (Throwable e) {

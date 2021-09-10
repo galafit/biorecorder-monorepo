@@ -1,6 +1,6 @@
 package com.biorecorder.bichart.configs;
 
-import com.biorecorder.data.time.TimeInterval;
+import com.biorecorder.datalyb.time.TimeInterval;
 
 public enum TimeGroupInterval {
     MILLISECOND_1(TimeInterval.MILLISECOND_1),

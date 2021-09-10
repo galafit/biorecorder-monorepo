@@ -1,6 +1,6 @@
 package com.biorecorder.filters.oldfilters;
 
-import com.biorecorder.data.sequence.IntSequence;
+import com.biorecorder.datalyb.series.IntSeries;
 
 /**
  *
@@ -10,7 +10,7 @@ public class FilterBandPass_Alfa_2 extends Function {
     private int period = 4;
     private int bufferHalf = period * 4;
 
-    public FilterBandPass_Alfa_2(IntSequence inputData) {
+    public FilterBandPass_Alfa_2(IntSeries inputData) {
         super(inputData);
     }
 

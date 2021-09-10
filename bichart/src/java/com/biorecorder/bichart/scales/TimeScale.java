@@ -1,8 +1,8 @@
 package com.biorecorder.bichart.scales;
 
-import com.biorecorder.data.time.TimeInterval;
-import com.biorecorder.data.datatable.aggregation.TimeIntervalProvider;
-import com.biorecorder.data.time.TimeUnit;
+import com.biorecorder.datalyb.time.TimeInterval;
+import com.biorecorder.datalyb.datatable.aggregation.TimeIntervalProvider;
+import com.biorecorder.datalyb.time.TimeUnit;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;

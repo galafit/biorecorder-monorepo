@@ -1,6 +1,6 @@
 package com.biorecorder.bichart.examples;
 
-import com.biorecorder.bichart.XYData;
+import com.biorecorder.bichart.XYSeries;
 import com.biorecorder.bichart.ChartPanel;
 import com.biorecorder.bichart.traces.LineTracePainter;
 import javax.swing.*;
@@ -23,18 +23,18 @@ public class SmartChartTest  extends JFrame{
         }
 
 
-        XYData xyData1 = new XYData(data, data);
-        XYData xyData2 = new XYData(data1);
+        XYSeries xySeries1 = new XYSeries(data, data);
+        XYSeries xySeries2 = new XYSeries(data1);
 
         ChartPanel chartPanel = new ChartPanel(false);
-        chartPanel.addChartTrace("No Regular", xyData1, new LineTracePainter());
+        chartPanel.addChartTrace("No Regular", xySeries1, new LineTracePainter());
         chartPanel.addChartStack();
        // chartPanel.addChartTrace("Regular", xyData2, new LineTracePainter());
 
       //  chartPanel.addNavigatorTrace("zero", new XYData(new int[0]), new LineTracePainter() );
        // chartPanel.addNavigatorTrace("No Regular", xyData1, new LineTracePainter() );
        // chartPanel.addNavigatorStack();
-        chartPanel.addNavigatorTrace("Regular", xyData2, new LineTracePainter());
+        chartPanel.addNavigatorTrace("Regular", xySeries2, new LineTracePainter());
 
         chartPanel.setPreferredSize(new Dimension(width, height));
         add(chartPanel, BorderLayout.CENTER);

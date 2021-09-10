@@ -1,16 +1,16 @@
 package com.biorecorder.filters.oldfilters;
 
-import com.biorecorder.data.list.IntArrayList;
-import com.biorecorder.data.sequence.IntSequence;
+import com.biorecorder.datalyb.list.IntArrayList;
+import com.biorecorder.datalyb.series.IntSeries;
 
-public class HiPassCollectingFilter implements IntSequence {
-    private IntSequence inputData;
+public class HiPassCollectingFilter implements IntSeries {
+    private IntSeries inputData;
     private IntArrayList outputData;
     int bufferSize;
     private int counter;
     private long sum;
 
-    public HiPassCollectingFilter(IntSequence inputData, double cutOffInterval ) {
+    public HiPassCollectingFilter(IntSeries inputData, double cutOffInterval ) {
         this.inputData = inputData;
         outputData = new IntArrayList();
 

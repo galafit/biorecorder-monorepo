@@ -142,7 +142,7 @@ public class NavigableChart {
         }
         if (xMinMax != null) {
             Range minBestRange = null;
-            for (int i = 0; i < navigatorDataList.size(); i++) {
+           /* for (int i = 0; i < navigatorDataList.size(); i++) {
                 Range dataBestRange = dataBestRange(navigatorDataList.get(i), navigator.getTraceMarkSize(i), xScale, xLength, xMinMax.getMin());
                 if (dataBestRange != null) {
                     if(minBestRange == null || minBestRange.length() > dataBestRange.length()) {
@@ -152,7 +152,7 @@ public class NavigableChart {
             }
             if (minBestRange != null && minBestRange.getMax() > xMinMax.getMax()) {
                 xMinMax = new Range(xMinMax.getMin(), minBestRange.getMax());
-            }
+            }*/
             for (XAxisPosition xPosition : XAxisPosition.values()) {
                 minBestRange = null;
                 List<Integer> traceNumbers = chart.getTraces(xPosition);

@@ -1,6 +1,6 @@
 package com.biorecorder.bichart.configs;
 
-import com.biorecorder.data.time.TimeInterval;
+import com.biorecorder.datalyb.time.TimeInterval;
 
 import java.util.Arrays;
 import java.util.Comparator;
