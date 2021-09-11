@@ -18,8 +18,8 @@ public class MainFrame extends JFrame {
     private static final int X_START = 10; // Левый  угол фрейма от начала экрана
     private static final int Y_START = 10; // Верхий угол фрейма  от начала экрана
 
-    private static final int HEIGHT_START = 1000; // Высота фрейма
-    public   static final int WIDTH_START =1800;  // Ширина фрейма
+    private static final int HEIGHT_START = 700; // Высота фрейма
+    public   static final int WIDTH_START =1200;  // Ширина фрейма
     private final Facade facade;
     private BiChartPanel chartPanel;
     private long startTimeMs = 0;
@@ -51,10 +51,9 @@ public class MainFrame extends JFrame {
         System.exit(0);  // Закрытие приложения без ошибок
     }
 
-    private static BiChartPanel createChartPanel(Facade facade){
+    private static  BiChartPanel createChartPanel(Facade facade){
         boolean isTimeXAxis = false; // XAxis: false - index; true - time
         BiChartPanel chartPanel = new BiChartPanel(isTimeXAxis);
-
         for (int i = 0; i < facade.getCanalsCount() - 2; i++) {
             XYData xyData = facade.getData(i);
             xyData.setGroupingApproximationY(GroupingApproximation.HIGH);
@@ -70,9 +69,9 @@ public class MainFrame extends JFrame {
 
         XYData xyData = facade.getData(1);
         xyData.setGroupingApproximationY(GroupingApproximation.LOW);
-       // chartPanel.addNavigatorTrace("ecg", xyData, new VerticalLinePainter());
+        chartPanel.addNavigatorTrace("ecg", xyData, new VerticalLinePainter());
 
-        //chartPanel.addNavigatorStack();
+        chartPanel.addNavigatorStack();
         xyData = facade.getData(3);
         xyData.setGroupingApproximationY(GroupingApproximation.HIGH);
         chartPanel.addNavigatorTrace("rythm", xyData, new VerticalLinePainter());
@@ -93,21 +92,27 @@ public class MainFrame extends JFrame {
                 System.out.println("end: "+ endTimeMs);
             }
             if (e.getKeyCode() == KeyEvent.VK_U) {
+                System.out.println("read data from " + startTimeMs + " till: "+ endTimeMs);
                 facade.setReadTimeInterval(startTimeMs, endTimeMs - startTimeMs);
                 facade.read();
-                System.out.println("read com.biorecorder.data from " + startTimeMs + " till: "+ endTimeMs);
                 getContentPane().remove(chartPanel);
+                int width = chartPanel.getWidth();
+                int height = chartPanel.getHeight();
                 chartPanel = createChartPanel(facade);
+                chartPanel.setPreferredSize(new Dimension(width, height));
                 add(chartPanel);
                 revalidate();
                 repaint();
             }
             if (e.getKeyCode() == KeyEvent.VK_F) {
+                System.out.println("read full data");
                 facade.setFullReadInterval();
                 facade.read();
-                System.out.println("read full com.biorecorder.data");
                 getContentPane().remove(chartPanel);
+                int width = chartPanel.getWidth();
+                int height = chartPanel.getHeight();
                 chartPanel = createChartPanel(facade);
+                chartPanel.setPreferredSize(new Dimension(width, height));
                 add(chartPanel);
                 revalidate();
                 repaint();

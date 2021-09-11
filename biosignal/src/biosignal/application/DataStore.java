@@ -41,6 +41,7 @@ public class DataStore {
     }
 
     public XYData getData(int channel) {
+        XYData d = dataList.get(channel);
         return dataList.get(channel);
     }
 

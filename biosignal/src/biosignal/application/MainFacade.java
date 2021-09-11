@@ -72,6 +72,4 @@ public class MainFacade implements Facade {
     public int getCanalsCount() {
         return dataStore.dataChannelCount();
     }
-
-
 }

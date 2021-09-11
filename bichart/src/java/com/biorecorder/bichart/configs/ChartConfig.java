@@ -24,7 +24,6 @@ public class ChartConfig {
     private YAxisPosition defaultYPosition = YAxisPosition.LEFT;
 
     private int stackGap = 4; //px
-    private int defaultStackWeight = 4;
 
     public ChartConfig() {
         final BColor[] colors = {BColor.BLUE, BColor.RED, BColor.GRAY};
@@ -60,7 +59,6 @@ public class ChartConfig {
         xAxisConfig = new AxisConfig(chartConfig.xAxisConfig);
         defaultXPosition = chartConfig.defaultXPosition;
         defaultYPosition = chartConfig.defaultYPosition;
-        defaultStackWeight = chartConfig.defaultStackWeight;
     }
 
     public int getStackGap() {
@@ -85,14 +83,6 @@ public class ChartConfig {
 
     public void setDefaultYPosition(YAxisPosition defaultYPosition) {
         this.defaultYPosition = defaultYPosition;
-    }
-
-    public int getDefaultStackWeight() {
-        return defaultStackWeight;
-    }
-
-    public void setDefaultStackWeight(int defaultStackWeight) {
-        this.defaultStackWeight = defaultStackWeight;
     }
 
     public TitleConfig getTitleConfig() {

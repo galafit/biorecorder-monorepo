@@ -21,6 +21,7 @@ public class Chart {
     private Insets fixedMargin;
     private Insets margin;
     private Insets spacing = new Insets(5);
+    private int defaultStackWeight = 2;
 
     /*
      * 2 X-axis: 0(even) - BOTTOM and 1(odd) - TOP
@@ -38,8 +39,8 @@ public class Chart {
     private Tooltip tooltip;
     private int x;
     private int y;
-    private int width;
-    private int height;
+    private int width = 100;
+    private int height = 100;
     private boolean isValid = false;
 
     public Chart(ChartConfig config, Scale xScale) {
@@ -453,7 +454,7 @@ public class Chart {
     }*/
 
     public void addStack() {
-        addStack(config.getDefaultStackWeight());
+        addStack(defaultStackWeight);
     }
 
     public void addStack(int weight) {

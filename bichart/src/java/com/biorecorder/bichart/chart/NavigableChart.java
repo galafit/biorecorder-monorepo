@@ -24,8 +24,8 @@ public class NavigableChart {
     private Chart chart;
     private Chart navigator;
     private NavigableChartConfig config;
-    private int width;
-    private int height;
+    private int width = 250;
+    private int height = 100;
     private List<ChartData> chartDataList = new ArrayList<>();
     private List<ChartData> navigatorDataList = new ArrayList<>();
     private Map<XAxisPosition, Scroll> axisToScrolls = new HashMap<>(2);
@@ -306,6 +306,7 @@ public class NavigableChart {
 
 
     public void setSize(int width, int height) {
+        System.out.println();
         this.width = width;
         this.height = height;
         invalidate();

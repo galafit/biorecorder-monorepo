@@ -72,7 +72,6 @@ public class WhiteTheme {
         chartConfig.setYAxisConfig(yAxisConfig);
         chartConfig.setXAxisConfig(xAxisConfig);
         chartConfig.getLegendConfig().setBackgroundColor(BG_COLOR);
-        chartConfig.setDefaultStackWeight(CHART_STACK_WEIGHT);
         chartConfig.setDefaultYPosition(YAxisPosition.LEFT);
         chartConfig.setDefaultXPosition(XAxisPosition.BOTTOM);
 
@@ -90,7 +89,6 @@ public class WhiteTheme {
         navigatorConfig.setMarginColor(navigatorMarginColor);
         navigatorConfig.getTitleConfig().setTextColor(TEXT_COLOR);
         navigatorConfig.getLegendConfig().setBackgroundColor(navigatorBgColor);
-        navigatorConfig.setDefaultStackWeight(NAVIGATOR_STACK_WEIGHT);
         navigatorConfig.setStackGap(0);
         navigatorConfig.getYAxisConfig().setTickLabelOutside(false);
         navigatorConfig.setDefaultYPosition(YAxisPosition.RIGHT);

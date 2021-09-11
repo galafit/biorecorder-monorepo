@@ -37,15 +37,15 @@ public class EdfProvider {
         for (int i = 0; i < dataListeners.length; i++) {
             dataListeners[i] = new ArrayList<>();
         }
-        //recordingStarTimeMs = header.getRecordingStartTimeMs();
+       // recordingStarTimeMs = header.getRecordingStartTimeMs();
         // setFullReadInterval
-        readStartMs = recordingStarTimeMs;
-        readEndMs = 5000;//header.getDurationOfDataRecordMs() *
+        readStartMs = 0;
+        readEndMs = 5000; //header.getDurationOfDataRecordMs() *
                 //header.getNumberOfDataRecords();
     }
 
      public void setFullReadInterval(){
-        readStartMs = recordingStarTimeMs;
+        readStartMs = 0;
         readEndMs = header.getDurationOfDataRecordMs() *
                     header.getNumberOfDataRecords();
      }
@@ -125,7 +125,7 @@ public class EdfProvider {
     }
 
     public long getRecordingStartTimeMs() {
-        return recordingStarTimeMs;
+        return recordingStarTimeMs + readStartMs;
     }
 
     public String copyReadIntervalToFile() {

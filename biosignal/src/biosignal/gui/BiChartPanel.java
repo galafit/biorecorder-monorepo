@@ -68,4 +68,10 @@ public class BiChartPanel extends JPanel {
         dt.addColumn(new IntColumn("y", yData));
         return new XYSeries(dt);
     }
+
+    @Override
+    public void setPreferredSize(Dimension preferredSize) {
+        super.setPreferredSize(preferredSize);
+        chartPanel.setPreferredSize(preferredSize);
+    }
 }
