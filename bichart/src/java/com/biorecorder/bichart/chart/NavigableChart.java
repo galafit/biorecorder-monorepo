@@ -31,6 +31,8 @@ public class NavigableChart {
     private Map<XAxisPosition, Scroll> axisToScrolls = new HashMap<>(2);
     private Map<XAxisPosition, List<ScrollListener>> axisToScrollListeners = new HashMap<>(2);
 
+    private boolean isPointToPointChart = false;
+
     private boolean isValid = false;
     private boolean isChanged = false;
     private boolean isConfigured = false;
@@ -155,20 +157,22 @@ public class NavigableChart {
             if (minBestRange != null && minBestRange.getMax() > xMinMax.getMax()) {
                 xMinMax = new Range(xMinMax.getMin(), minBestRange.getMax());
             }*/
-            for (XAxisPosition xPosition : XAxisPosition.values()) {
-                minBestRange = null;
-                List<Integer> traceNumbers = chart.getTraces(xPosition);
-                for (int i = 0; i < traceNumbers.size(); i++) {
-                    int traceNumber = traceNumbers.get(i);
-                    Range dataBestRange = dataBestRange(chartDataList.get(traceNumber), chart.getTraceMarkSize(traceNumber), xScale, xLength, xMinMax.getMin());
-                    if (dataBestRange != null) {
-                        if(minBestRange == null || minBestRange.length() > dataBestRange.length()) {
-                            minBestRange = dataBestRange;
+            if(isPointToPointChart) {
+                for (XAxisPosition xPosition : XAxisPosition.values()) {
+                    minBestRange = null;
+                    List<Integer> traceNumbers = chart.getTraces(xPosition);
+                    for (int i = 0; i < traceNumbers.size(); i++) {
+                        int traceNumber = traceNumbers.get(i);
+                        Range dataBestRange = dataBestRange(chartDataList.get(traceNumber), chart.getTraceMarkSize(traceNumber), xScale, xLength, xMinMax.getMin());
+                        if (dataBestRange != null) {
+                            if(minBestRange == null || minBestRange.length() > dataBestRange.length()) {
+                                minBestRange = dataBestRange;
+                            }
                         }
                     }
-                }
-                if (minBestRange != null && minBestRange.getMax() > xMinMax.getMax()) {
-                    xMinMax = new Range(xMinMax.getMin(), minBestRange.getMax());
+                    if (minBestRange != null && minBestRange.getMax() > xMinMax.getMax()) {
+                        xMinMax = new Range(xMinMax.getMin(), minBestRange.getMax());
+                    }
                 }
             }
         }
