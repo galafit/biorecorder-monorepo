@@ -75,7 +75,7 @@ public class ChartTest extends JFrame {
         chart.setTitle("как дела? все хорошо как поживаете вы олрдлорлор лорор лорлор");
         chart.setConfig(WhiteTheme.getChartConfig());
 
-        chart.addTrace("trace1", unsortedData, new LineTracePainter(),  XAxisPosition.TOP, YAxisPosition.RIGHT);
+        chart.addTrace("trace1", unsortedData, new LineTracePainter(),  true, true);
         chart.addStack();
         chart.addTrace("trace2", regularData,
                 new LineTracePainter(new LineTraceConfig(LineTraceConfig.VERTICAL_LINES)));

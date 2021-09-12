@@ -1,6 +1,7 @@
 package biosignal.application.filter;
 
-public interface BiFilter {
+public interface
+BiFilter {
     /**
      * @return true if "result" is  ready,
      * false if "result" is not ready

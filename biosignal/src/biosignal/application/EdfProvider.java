@@ -40,8 +40,8 @@ public class EdfProvider {
        // recordingStarTimeMs = header.getRecordingStartTimeMs();
         // setFullReadInterval
         readStartMs = 0;
-        readEndMs = 5000; //header.getDurationOfDataRecordMs() *
-                //header.getNumberOfDataRecords();
+        readEndMs = header.getDurationOfDataRecordMs() *
+                header.getNumberOfDataRecords();
     }
 
      public void setFullReadInterval(){
@@ -136,8 +136,8 @@ public class EdfProvider {
         Date start = new Date(recordingStartMs + readStartMs);
         Date end = new Date(recordingStartMs + readEndMs);
         String newFilename = filename.split("\\.")[0] + "_"+
-                start.getHours() + ":" + start.getMinutes() + ":" + start.getSeconds() + "-" +
-                end.getHours() + ":" + end.getMinutes() + ":" + end.getSeconds() + ".bdf";
+                start.getHours() + "%" + start.getMinutes() + "%" + start.getSeconds() + "-" +
+                end.getHours() + "%" + end.getMinutes() + "%" + end.getSeconds() + ".bdf";
         File newFile = new File(dir, newFilename);
         try {
             FileOutputStream out = new FileOutputStream(newFile);

@@ -2,7 +2,7 @@ package biosignal.gui;
 
 import biosignal.application.Facade;
 import biosignal.application.XYData;
-import com.biorecorder.bichart.configs.GroupingApproximation;
+import com.biorecorder.bichart.GroupingApproximation;
 import com.biorecorder.bichart.traces.LineTraceConfig;
 import com.biorecorder.bichart.traces.LineTracePainter;
 import com.biorecorder.bichart.traces.VerticalLinePainter;
@@ -18,8 +18,8 @@ public class MainFrame extends JFrame {
     private static final int X_START = 10; // Левый  угол фрейма от начала экрана
     private static final int Y_START = 10; // Верхий угол фрейма  от начала экрана
 
-    private static final int HEIGHT_START = 700; // Высота фрейма
-    public   static final int WIDTH_START =1200;  // Ширина фрейма
+    private static final int HEIGHT_START = 1000; // Высота фрейма
+    public   static final int WIDTH_START =1800;  // Ширина фрейма
     private final Facade facade;
     private BiChartPanel chartPanel;
     private long startTimeMs = 0;
@@ -59,7 +59,7 @@ public class MainFrame extends JFrame {
             xyData.setGroupingApproximationY(GroupingApproximation.HIGH);
             if(i > 0) {
                 chartPanel.addChartStack();
-                xyData.setGroupingApproximationY(GroupingApproximation.LOW);
+                xyData.setGroupingApproximationY(GroupingApproximation.HIGH);
             }
             LineTraceConfig lineConfig = new LineTraceConfig();
             lineConfig.setLineWidth(1);
@@ -67,14 +67,17 @@ public class MainFrame extends JFrame {
             chartPanel.addChartTrace("trace"+i, xyData, new LineTracePainter(lineConfig));
         }
 
-        XYData xyData = facade.getData(1);
-        xyData.setGroupingApproximationY(GroupingApproximation.LOW);
-        chartPanel.addNavigatorTrace("ecg", xyData, new VerticalLinePainter());
 
-        chartPanel.addNavigatorStack();
-        xyData = facade.getData(3);
+        XYData xyData = facade.getData(3);
         xyData.setGroupingApproximationY(GroupingApproximation.HIGH);
-        chartPanel.addNavigatorTrace("rythm", xyData, new VerticalLinePainter());
+
+        LineTraceConfig lineConfig = new LineTraceConfig();
+        lineConfig.setLineWidth(1);
+        lineConfig.setMarkSize(3);
+        chartPanel.addChartStack();
+        chartPanel.addChartTrace("rhythm", xyData, new LineTracePainter(lineConfig), true, false);
+
+        chartPanel.addNavigatorTrace("rhythm", xyData, new VerticalLinePainter());
         return chartPanel;
     }
 

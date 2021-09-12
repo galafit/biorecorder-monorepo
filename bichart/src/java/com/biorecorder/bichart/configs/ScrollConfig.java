@@ -8,38 +8,20 @@ import com.biorecorder.bichart.graphics.BColor;
  */
 public class ScrollConfig {
     private BColor color = BColor.GRAY;
-    private BColor fillColor;
     private int touchRadius = 10; //px
-    private int borderWidth = 1; // px
 
     public ScrollConfig() {
     }
 
     public ScrollConfig(ScrollConfig config) {
-        color = config.color;
-        fillColor = config.fillColor;
         touchRadius = config.touchRadius;
-        borderWidth = config.borderWidth;
+        color = config.color;
+
     }
 
-    public BColor getFillColor() {
-        if(fillColor != null) {
-            return fillColor;
-        }
-        return new BColor(color.getRed(), color.getGreen(), color.getBlue(), 40);
-    }
-
-    public void setFillColor(BColor fillColor) {
-        this.fillColor = fillColor;
-    }
-
-    public int getBorderWidth() {
-        return borderWidth;
-    }
-
-    public void setBorderWidth(int borderWidth) {
-        this.borderWidth = borderWidth;
-    }
+    public BColor getColor() {
+         return new BColor(color.getRed(), color.getBlue(), color.getGreen(), 60);
+     }
 
     public void setColor(BColor color) {
         this.color = color;
@@ -47,10 +29,6 @@ public class ScrollConfig {
 
     public void setTouchRadius(int activeExtraSpace) {
         this.touchRadius = activeExtraSpace;
-    }
-
-    public BColor getColor() {
-        return color;
     }
 
     public int getTouchRadius() {

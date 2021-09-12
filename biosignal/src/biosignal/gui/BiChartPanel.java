@@ -35,6 +35,10 @@ public class BiChartPanel extends JPanel {
         chartPanel.addChartTrace(name, convertData(data), tracePainter);
     }
 
+    public void addChartTrace(String name, XYData data, TracePainter tracePainter, boolean isXOpposite,  boolean isYOpposite) {
+        chartPanel.addChartTrace(name, convertData(data), tracePainter, isXOpposite, isYOpposite);
+    }
+
     public void addNavigatorStack() {
         chartPanel.addNavigatorStack();
     }
@@ -66,7 +70,9 @@ public class BiChartPanel extends JPanel {
             dt.addColumn(new DoubleColumn("x", xyData.getXValues()));
         }
         dt.addColumn(new IntColumn("y", yData));
-        return new XYSeries(dt);
+        XYSeries xySeries = new XYSeries(dt);
+        xySeries.setGroupingApproximationY(xyData.getGroupingApproximationY());
+        return xySeries;
     }
 
     @Override

@@ -2,18 +2,15 @@ package com.biorecorder.bichart.scroll;
 
 
 import com.biorecorder.bichart.configs.ScrollConfig;
-import com.biorecorder.bichart.graphics.BCanvas;
-import com.biorecorder.bichart.graphics.BRectangle;
-import com.biorecorder.bichart.graphics.DashStyle;
-import com.biorecorder.bichart.graphics.Range;
+import com.biorecorder.bichart.graphics.*;
 import com.biorecorder.bichart.scales.Scale;
 
 public class Scroll {
     private ScrollConfig config;
-    private ScrollModel2 model;
+    private ScrollModel model;
 
     public Scroll(ScrollConfig config, Scale chartScale) {
-        this.model = new ScrollModel2(chartScale);
+        this.model = new ScrollModel(chartScale);
         this.config = config;
     }
 
@@ -86,27 +83,29 @@ public class Scroll {
     }
 
     public void draw(BCanvas canvas, Range scrollTrack, BRectangle area) {
-        int scrollY = area.y;
-        int height = area.height;
-        double scrollStart = viewToScrollTrackPosition(model.getViewportPosition(), scrollTrack);
-        double scrollEnd = viewToScrollTrackPosition(model.getViewportPosition() + model.getViewportExtent(), scrollTrack);
-        int scrollWidth = (int)(scrollEnd - scrollStart);
-        if(scrollWidth < 1) {
-            scrollWidth = 1;
-        }
-        Range touchRange = getTouchRange(scrollTrack);
-        int touchWidth = (int) touchRange.length();
+        int border = 6;
+        int scrollWidthMin = 2;
+        int scrollTop = area.y;
+        int scrollHeight = area.height;
+        int scrollBottom = scrollTop + scrollHeight;
 
-        canvas.setColor(config.getFillColor());
-        if (touchRange.length() != scrollWidth) {
-            canvas.fillRect((int)touchRange.getMin(), scrollY, touchWidth, height);
-        } else {
-            canvas.fillRect((int)scrollStart, scrollY, scrollWidth, height);
+        double start = viewToScrollTrackPosition(model.getViewportPosition(), scrollTrack);
+        double end = viewToScrollTrackPosition(model.getViewportPosition() + model.getViewportExtent(), scrollTrack);
+        //   System.out.println("viewport "+ model.getViewportExtent() +"  " + (end - start));
+
+        int scrollStart = (int)Math.round(viewToScrollTrackPosition(model.getViewportPosition(), scrollTrack));
+        int scrollEnd = (int)Math.round(viewToScrollTrackPosition(model.getViewportPosition() + model.getViewportExtent(), scrollTrack));
+        int scrollWidth = scrollEnd - scrollStart;
+        if(scrollWidth < scrollWidthMin) {
+            scrollWidth = scrollWidthMin;
+            scrollStart = scrollStart - scrollWidth/2;
+            scrollEnd = scrollEnd + scrollWidth/2;
         }
+
         canvas.setColor(config.getColor());
-        canvas.setStroke(config.getBorderWidth(), DashStyle.SOLID);
-        canvas.drawRect((int)scrollStart, scrollY, scrollWidth, height);
+        canvas.fillRect(scrollStart - border, scrollTop, border, scrollHeight);
+        canvas.fillRect(scrollEnd, scrollTop, border, scrollHeight);
+        canvas.fillRect(scrollStart, scrollTop, scrollWidth, border);
+        canvas.fillRect(scrollStart, scrollBottom - border, scrollWidth, border);
     }
-
-
 }

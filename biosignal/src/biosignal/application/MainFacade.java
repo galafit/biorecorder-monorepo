@@ -13,14 +13,16 @@ public class MainFacade implements Facade {
 
     private static DataStore createDataStore(EdfProvider provider) {
         DataStore ds = new DataStore(provider);
+        int stepMs = 10;
         int signal = 0;
         double signalSampleRate = provider.signalSampleRate(signal);
         ds.addDataChannel(signal);
-        ds.addDataChannel(signal, new DerivateFilter(signalSampleRate, 8));
-        ds.addDataChannel(signal, new DerivateFilter(signalSampleRate, 8),
+        ds.addDataChannel(signal, new DerivateFilter(signalSampleRate, stepMs),
+                new PeakFilter());
+        ds.addDataChannel(signal, new DerivateFilter(signalSampleRate, stepMs),
                 new PeakFilter(), new QRSFilter(signalSampleRate));
 
-        FilterChain fc = new FilterChain(new DerivateFilter(signalSampleRate, 8),
+        FilterChain fc = new FilterChain(new DerivateFilter(signalSampleRate, stepMs),
                 new PeakFilter(), new QRSFilter(signalSampleRate));
         ds.addDataChannel(signal,fc ,
                 new RhythmBiFilter());
@@ -28,6 +30,7 @@ public class MainFacade implements Facade {
         signal = 1;
         ds.addDataChannel(signal);
         return ds;
+
     }
 
     @Override

@@ -39,6 +39,8 @@ public class NavigableChart {
         this.config = new NavigableChartConfig(config);
         chart = new Chart(config.getChartConfig(), xScale);
         navigator = new Chart(config.getNavigatorConfig(), xScale);
+        chart.setDefaultXPosition(XAxisPosition.TOP);
+        navigator.setDefaultXPosition(XAxisPosition.BOTTOM);
         chart.setSpacing(new Insets(0));
         navigator.setSpacing(new Insets(0));
         for (XAxisPosition xPosition : XAxisPosition.values()) {
@@ -360,8 +362,8 @@ public class NavigableChart {
     }
 
 
-    public void addChartTrace(String name, ChartData data, TracePainter tracePainter, XAxisPosition xPosition, YAxisPosition yPosition) {
-        chart.addTrace(name, data, tracePainter, xPosition, yPosition);
+    public void addChartTrace(String name, ChartData data, TracePainter tracePainter, boolean isXOpposite,  boolean isYOpposite) {
+        chart.addTrace(name, data, tracePainter, isXOpposite, isYOpposite);
         chartDataList.add(data);
         invalidate();
     }
@@ -372,8 +374,8 @@ public class NavigableChart {
         invalidate();
     }
 
-    public void addChartTrace(String name, ChartData data, TracePainter tracePainter, int stackNumber, XAxisPosition xPosition, YAxisPosition yPosition) {
-        chart.addTrace(name, data, tracePainter, stackNumber, xPosition, yPosition);
+    public void addChartTrace(String name, ChartData data, TracePainter tracePainter, int stackNumber, boolean isXOpposite,  boolean isYOpposite) {
+        chart.addTrace(name, data, tracePainter, stackNumber, isXOpposite, isYOpposite);
         chartDataList.add(data);
         invalidate();
     }

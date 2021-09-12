@@ -20,11 +20,6 @@ public class ChartConfig {
     private AxisConfig yAxisConfig = new AxisConfig();
     private AxisConfig xAxisConfig = new AxisConfig();
 
-    private XAxisPosition defaultXPosition = XAxisPosition.BOTTOM;
-    private YAxisPosition defaultYPosition = YAxisPosition.LEFT;
-
-    private int stackGap = 4; //px
-
     public ChartConfig() {
         final BColor[] colors = {BColor.BLUE, BColor.RED, BColor.GRAY};
         BColor bgColor = BColor.WHITE;
@@ -54,35 +49,8 @@ public class ChartConfig {
         titleConfig = new TitleConfig(chartConfig.titleConfig);
         legendConfig = new LegendConfig(chartConfig.legendConfig);
         tooltipConfig = new TooltipConfig(chartConfig.tooltipConfig);
-        stackGap = chartConfig.stackGap;
         yAxisConfig = new AxisConfig(chartConfig.yAxisConfig);
         xAxisConfig = new AxisConfig(chartConfig.xAxisConfig);
-        defaultXPosition = chartConfig.defaultXPosition;
-        defaultYPosition = chartConfig.defaultYPosition;
-    }
-
-    public int getStackGap() {
-        return stackGap;
-    }
-
-    public void setStackGap(int stackGap) {
-        this.stackGap = stackGap;
-    }
-
-    public XAxisPosition getDefaultXPosition() {
-        return defaultXPosition;
-    }
-
-    public void setDefaultXPosition(XAxisPosition defaultXPosition) {
-        this.defaultXPosition = defaultXPosition;
-    }
-
-    public YAxisPosition getDefaultYPosition() {
-        return defaultYPosition;
-    }
-
-    public void setDefaultYPosition(YAxisPosition defaultYPosition) {
-        this.defaultYPosition = defaultYPosition;
     }
 
     public TitleConfig getTitleConfig() {

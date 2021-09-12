@@ -6,7 +6,7 @@ import com.biorecorder.bichart.scales.Scale;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ScrollModel2 {
+public class ScrollModel {
     private Scale scale; // view scale
     private double start = 0; // view start
     private double end = 100; // view end (start-end are limits where move viewport)
@@ -15,7 +15,7 @@ public class ScrollModel2 {
 
     private List<ScrollListener> eventListeners = new ArrayList<ScrollListener>();
 
-    public ScrollModel2(Scale scale) {
+    public ScrollModel(Scale scale) {
         this.scale = scale;
     }
 

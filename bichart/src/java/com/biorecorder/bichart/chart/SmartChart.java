@@ -113,6 +113,11 @@ public class SmartChart implements InteractiveDrawable {
         dataProcessor.addChartTraceData(data);
     }
 
+    public void addChartTrace(String name, XYSeries data, TracePainter tracePainter, boolean isXOpposite,  boolean isYOpposite) {
+        navigableChart.addChartTrace(name, data, tracePainter, isXOpposite, isYOpposite);
+        dataProcessor.addChartTraceData(data);
+    }
+
     public void addNavigatorStack() {
         navigableChart.addNavigatorStack();
     }

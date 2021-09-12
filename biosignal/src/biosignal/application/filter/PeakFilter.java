@@ -1,16 +1,16 @@
 package biosignal.application.filter;
 
-public class PeakFilter implements Filter {
-    private int peak = 30000;
-    private int peakHalf = peak/2;
-    private int noiseMax = peak/4;
+public class PeakFilter implements Filter{
+    private int peak = 40000;
+    private int noiseMax = peak/8;
 
     @Override
     public int apply(int value) {
         int v = -value;
-        if(v > peakHalf) {
+        if(v > noiseMax || v < -noiseMax) {
            return v;
         }
         return 0;
     }
+
 }

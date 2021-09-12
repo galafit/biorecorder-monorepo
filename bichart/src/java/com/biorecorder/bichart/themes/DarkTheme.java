@@ -2,8 +2,6 @@ package com.biorecorder.bichart.themes;
 
 import com.biorecorder.bichart.configs.ChartConfig;
 import com.biorecorder.bichart.configs.NavigableChartConfig;
-import com.biorecorder.bichart.axis.XAxisPosition;
-import com.biorecorder.bichart.axis.YAxisPosition;
 import com.biorecorder.bichart.axis.AxisConfig;
 import com.biorecorder.bichart.graphics.BColor;
 import com.biorecorder.bichart.configs.ScrollConfig;
@@ -27,9 +25,6 @@ public class DarkTheme {
     private static final int X_MARK_SIZE = 4;
     private static final int Y_MARK_SIZE = 6;
 
-    private static final int CHART_STACK_WEIGHT = 4;
-    private static final int NAVIGATOR_STACK_WEIGHT = 2;
-
     private static final BColor BG_COLOR = new BColor(30, 30, 40);
     private static final BColor MARGIN_COLOR = new BColor(20, 20, 20);
 
@@ -37,6 +32,8 @@ public class DarkTheme {
     private static final BColor AXIS_COLOR = new BColor(100, 86, 60);
     private static final BColor GRID_COLOR = new BColor(70, 65, 45);
     private static final BColor CROSSHAIR_COLOR = BColor.WHITE_OBSCURE;
+    private static final BColor SCROLL_COLOR = BColor.CYAN;
+
 
     public static ChartConfig getChartConfig() {
         AxisConfig xAxisConfig = new AxisConfig();
@@ -61,16 +58,12 @@ public class DarkTheme {
         chartConfig.setYAxisConfig(yAxisConfig);
         chartConfig.setXAxisConfig(xAxisConfig);
         chartConfig.getLegendConfig().setBackgroundColor(BG_COLOR);
-        chartConfig.setDefaultYPosition(YAxisPosition.LEFT);
-        chartConfig.setDefaultXPosition(XAxisPosition.BOTTOM);
-
         return chartConfig;
     }
 
     public static NavigableChartConfig getNavigableChartConfig() {
         BColor navigatorBgColor = MARGIN_COLOR;
         BColor navigatorMarginColor = navigatorBgColor;
-        BColor scrollColor = CROSSHAIR_COLOR;
         BColor bgColor = navigatorBgColor;
 
         ChartConfig navigatorConfig = getChartConfig();
@@ -78,19 +71,13 @@ public class DarkTheme {
         navigatorConfig.setMarginColor(navigatorMarginColor);
         navigatorConfig.getTitleConfig().setTextColor(TEXT_COLOR);
         navigatorConfig.getLegendConfig().setBackgroundColor(navigatorBgColor);
-        navigatorConfig.setStackGap(0);
         navigatorConfig.getYAxisConfig().setTickLabelOutside(false);
-        navigatorConfig.setDefaultYPosition(YAxisPosition.RIGHT);
-        navigatorConfig.setDefaultXPosition(XAxisPosition.BOTTOM);
 
         ScrollConfig scrollConfig = new ScrollConfig();
-        scrollConfig.setColor(scrollColor);
+        scrollConfig.setColor(SCROLL_COLOR);
 
         ChartConfig chartConfig1 = getChartConfig();
         chartConfig1.getYAxisConfig().setTickLabelOutside(false);
-        chartConfig1.setDefaultYPosition(YAxisPosition.RIGHT);
-        chartConfig1.setDefaultXPosition(XAxisPosition.TOP);
-
         NavigableChartConfig navigableChartConfig = new NavigableChartConfig(chartConfig1, navigatorConfig, scrollConfig);
         navigableChartConfig.setBackgroundColor(bgColor);
         return navigableChartConfig;

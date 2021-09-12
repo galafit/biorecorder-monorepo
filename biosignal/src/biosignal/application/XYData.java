@@ -1,6 +1,6 @@
 package biosignal.application;
 
-import com.biorecorder.bichart.configs.GroupingApproximation;
+import com.biorecorder.bichart.GroupingApproximation;
 import com.biorecorder.datalyb.series.DoubleSeries;
 import com.biorecorder.datalyb.series.IntSeries;
 

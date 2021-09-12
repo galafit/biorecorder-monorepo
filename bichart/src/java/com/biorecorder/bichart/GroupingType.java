@@ -1,4 +1,4 @@
-package com.biorecorder.bichart.configs;
+package com.biorecorder.bichart;
 
 /**
  * Created by galafit on 3/11/18.

@@ -68,6 +68,10 @@ public class ChartPanel extends JPanel implements KeyListener {
         chart.addChartTrace(name, data, tracePainter);
     }
 
+    public void addChartTrace(String name, XYSeries data, TracePainter tracePainter, boolean isXOpposite,  boolean isYOpposite) {
+        chart.addChartTrace(name, data, tracePainter, isXOpposite, isYOpposite);
+    }
+
     public Range getChartXRange() {
         return chart.getChartXMinMax(XAxisPosition.TOP);
     }

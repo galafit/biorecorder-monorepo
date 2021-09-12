@@ -1,7 +1,5 @@
 package com.biorecorder.bichart.configs;
 
-import com.biorecorder.bichart.axis.XAxisPosition;
-import com.biorecorder.bichart.axis.YAxisPosition;
 import com.biorecorder.bichart.graphics.BColor;
 
 /**
@@ -23,15 +21,10 @@ public class NavigableChartConfig {
         scrollConfig = new ScrollConfig();
 
         chartConfig.getYAxisConfig().setTickLabelOutside(false);
-        chartConfig.setDefaultYPosition(YAxisPosition.RIGHT);
-        chartConfig.setDefaultXPosition(XAxisPosition.TOP);
 
         navigatorConfig.getYAxisConfig().setTickLabelOutside(false);
-        navigatorConfig.setDefaultYPosition(YAxisPosition.RIGHT);
-        navigatorConfig.setDefaultXPosition(XAxisPosition.TOP);
         navigatorConfig.setBackgroundColor(navigatorBgColor);
         navigatorConfig.setMarginColor(navigatorMarginColor);
-        navigatorConfig.setStackGap(0);
         navigatorConfig.getLegendConfig().setBackgroundColor(navigatorBgColor);
 
         BColor scrollColor = BColor.GRAY_LIGHT;

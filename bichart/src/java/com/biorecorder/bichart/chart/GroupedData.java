@@ -1,7 +1,8 @@
 package com.biorecorder.bichart.chart;
 
+import com.biorecorder.bichart.GroupingApproximation;
 import com.biorecorder.bichart.XYSeries;
-import com.biorecorder.bichart.configs.GroupingType;
+import com.biorecorder.bichart.GroupingType;
 import com.biorecorder.bichart.graphics.Range;
 import com.biorecorder.datalyb.datatable.aggregation.Resampler;
 import com.biorecorder.datalyb.time.TimeInterval;
@@ -35,7 +36,7 @@ class GroupedData {
                 resampler.setColumnAggregations(0, xySeries.getGroupingApproximationX().getAggregation());
                 resampler.setColumnAggregations(1, xySeries.getGroupingApproximationY().getAggregation());
                 resampler.resampleAndAppend(xySeries.getDataTable());
-                dataList.add(new ResampledData(resampler));
+                dataList.add(new ResampledData(resampler, xySeries.getGroupingApproximationX(), xySeries.getGroupingApproximationY()));
             } else {
                 dataList.add(new RawData(xySeries));
             }
@@ -62,12 +63,10 @@ class GroupedData {
                 } else {
                     resampler = Resampler.createEqualTimeIntervalResampler(timeInterval);
                 }
-
                 resampler.setColumnAggregations(0, xySeries.getGroupingApproximationX().getAggregation());
                 resampler.setColumnAggregations(1, xySeries.getGroupingApproximationY().getAggregation());
-
                 resampler.resampleAndAppend(xySeries.getDataTable());
-                dataList.add(new ResampledData(resampler));
+                dataList.add(new ResampledData(resampler, xySeries.getGroupingApproximationX(), xySeries.getGroupingApproximationY()));
             } else {
                 dataList.add(new RawData(xySeries));
             }
@@ -145,14 +144,21 @@ class GroupedData {
 
     class ResampledData implements DataWrapper {
         Resampler resampler;
+        GroupingApproximation xApprox;
+        GroupingApproximation yApprox;
 
-        public ResampledData(Resampler r) {
+        public ResampledData(Resampler r, GroupingApproximation xApprox, GroupingApproximation yApprox) {
             resampler = r;
+            this.xApprox = xApprox;
+            this.yApprox = yApprox;
         }
 
         @Override
         public XYSeries getData() {
-            return new XYSeries(resampler.resultantData());
+            XYSeries xySeries = new XYSeries(resampler.resultantData());
+            xySeries.setGroupingApproximationX(xApprox);
+            xySeries.setGroupingApproximationY(yApprox);
+            return xySeries;
         }
 
         @Override

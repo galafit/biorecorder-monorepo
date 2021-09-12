@@ -22,6 +22,10 @@ public class Chart {
     private Insets margin;
     private Insets spacing = new Insets(5);
     private int defaultStackWeight = 2;
+    private XAxisPosition defaultXPosition = XAxisPosition.BOTTOM;
+    private YAxisPosition defaultYPosition = YAxisPosition.RIGHT;
+    private int stackGap = 0; //px
+
 
     /*
      * 2 X-axis: 0(even) - BOTTOM and 1(odd) - TOP
@@ -82,7 +86,7 @@ public class Chart {
     private void setYStartEnd(int areaY, int areaHeight) {
         int weightSum = getStacksSumWeight();
         int stackCount = yAxisList.size() / 2;
-        int gap = Math.abs(config.getStackGap());
+        int gap = Math.abs(stackGap);
         int height = areaHeight - (stackCount - 1) * gap;
         if (height <= 0) {
             height = areaHeight;
@@ -183,10 +187,37 @@ public class Chart {
         return null;
     }
 
+    private XAxisPosition getOppositeYPosition(XAxisPosition xAxisPosition) {
+        for (XAxisPosition position : XAxisPosition.values()) {
+            if(position != xAxisPosition) {
+                return position;
+            }
+        }
+        return xAxisPosition;
+    }
+
+    private YAxisPosition getOppositeYPosition(YAxisPosition yAxisPosition) {
+        for (YAxisPosition position : YAxisPosition.values()) {
+            if(position != yAxisPosition) {
+                return position;
+            }
+        }
+        return yAxisPosition;
+    }
+
+    public void setDefaultXPosition(XAxisPosition defaultXPosition) {
+        this.defaultXPosition = defaultXPosition;
+    }
+
+    public void setDefaultYPosition(YAxisPosition defaultYPosition) {
+        this.defaultYPosition = defaultYPosition;
+    }
+
     /*** ================================================
      * Base methods to interact
      * ==================================================
      */
+
 
     public List<Integer> getTraces(XAxisPosition xAxisPosition) {
        return  traceList.getTraces(xAxisPosition);
@@ -367,7 +398,7 @@ public class Chart {
             } else if (!isBottomAxesUsed) {
                 topAxis.drawGrid(canvas, stackArea);
             } else { // both axis used use primary axis
-                 xAxisList.get(xPositionToIndex(config.getDefaultXPosition())).drawGrid(canvas, stackArea);;
+                 xAxisList.get(xPositionToIndex(defaultXPosition)).drawGrid(canvas, stackArea);;
             }
         }
         // draw Y axes grids
@@ -383,7 +414,7 @@ public class Chart {
             } else if (!isRightAxisUsed) {
                 leftAxis.drawGrid(canvas, graphArea);
             } else { // both axis is used we choose primary axis
-                yAxisList.get(yPositionToIndex(i, config.getDefaultYPosition())).drawGrid(canvas, graphArea);
+                yAxisList.get(yPositionToIndex(i, defaultYPosition)).drawGrid(canvas, graphArea);
             }
         }
         // draw X axes
@@ -440,7 +471,7 @@ public class Chart {
     }
 
     public XAxisPosition getDefaultXAxisPosition() {
-        return config.getDefaultXPosition();
+        return defaultXPosition;
     }
 
     public void setTraceData(int traceIndex, ChartData data) {
@@ -502,25 +533,33 @@ public class Chart {
      * @throws IllegalArgumentException if stack number > total number of stacks in the chart
      */
     public void addTrace(String name,ChartData data, TracePainter tracePainter, int stack) throws IllegalArgumentException{
-        addTrace(name, data, tracePainter, stack, config.getDefaultXPosition(), config.getDefaultYPosition());
+        addTrace(name, data, tracePainter, stack, false, false);
     }
 
-    public void addTrace(String name, ChartData data, TracePainter tracePainter, XAxisPosition xPosition, YAxisPosition yPosition) {
+    public void addTrace(String name, ChartData data, TracePainter tracePainter, boolean isXOpposite,  boolean isYOpposite) {
         int stack = Math.max(0, yAxisList.size() / 2 - 1);
-        addTrace(name, data, tracePainter, stack, xPosition, yPosition);
+        addTrace(name, data, tracePainter, stack, isXOpposite, isYOpposite);
     }
-
 
     /**
      * Add trace to the stack with the given number
      * @param stack number of the stack to add trace
      * @throws IllegalArgumentException if stack number > total number of stacks in the chart
      */
-    public void addTrace(String name, ChartData data, TracePainter tracePainter, int stack, XAxisPosition xPosition, YAxisPosition yPosition) throws IllegalArgumentException {
+    public void addTrace(String name, ChartData data, TracePainter tracePainter, int stack, boolean isXOpposite,  boolean isYOpposite) throws IllegalArgumentException {
         if (yAxisList.size() == 0) {
             addStack(); // add stack if there is no stack
         }
         checkStackNumber(stack);
+        XAxisPosition xPosition = defaultXPosition;
+        YAxisPosition yPosition = defaultYPosition;
+        if(isXOpposite) {
+            xPosition = getOppositeYPosition(defaultXPosition);
+        }
+        if(isYOpposite) {
+            yPosition = getOppositeYPosition(defaultYPosition);
+        }
+
         int xIndex = xPositionToIndex(xPosition);
         int yIndex = yPositionToIndex(stack, yPosition);
 

@@ -1,7 +1,6 @@
 package com.biorecorder.bichart;
 
 import com.biorecorder.bichart.chart.ChartData;
-import com.biorecorder.bichart.configs.GroupingApproximation;
 import com.biorecorder.bichart.graphics.Range;
 import com.biorecorder.datalyb.datatable.BaseType;
 import com.biorecorder.datalyb.datatable.DataTable;
@@ -41,7 +40,10 @@ public class XYSeries implements ChartData {
         for (int i = 0; i < dataTable.columnCount(); i++) {
             emptyData.addColumn(dataTable.getColumn(i).emptyCopy());
         }
-        return new XYSeries(emptyData);
+        XYSeries copy = new XYSeries(emptyData);
+        copy.groupingApproximationX = groupingApproximationX;
+        copy.groupingApproximationY = groupingApproximationY;
+        return copy;
     }
 
     public void appendData(XYSeries dataToAppend) {
@@ -141,6 +143,9 @@ public class XYSeries implements ChartData {
     }
 
     public XYSeries view(int from, int length) {
-        return new XYSeries(dataTable.view(from, length));
+        XYSeries view = new XYSeries(dataTable.view(from, length));
+        view.groupingApproximationX = groupingApproximationX;
+        view.groupingApproximationY = groupingApproximationY;
+        return view;
     }
 }
