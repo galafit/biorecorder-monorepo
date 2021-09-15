@@ -8,8 +8,6 @@ import com.sun.istack.internal.Nullable;
  * Axis is visual representation of Scale that generates and draws
  * visual elements such as axis lines, labels, and ticks.
  * Also it is a wrapper class that gives simplified access to the Scale methods
- * and some advanced functionality such as Zooming and Translating. See
- * {@link #setConfig(AxisConfig)}
  */
 public class Axis {
     private Scale scale;
@@ -179,15 +177,15 @@ public class Axis {
         return scale.invert(value);
     }
 
-    public boolean contain(BPoint point) {
+    public boolean contain(int x, int y) {
         int start = (int) getStart();
         int end = (int) getEnd();
         if(isVertical()) {
-            return (point.getY() >= end && point.getY() <= start) ||
-                    (point.getY() >= start && point.getY() <= end);
+            return (y >= end && y <= start) ||
+                    (y >= start && y <= end);
         } else {
-            return (point.getX() >= start && point.getX() <= end) ||
-                    (point.getX() <= end && point.getX() <= start);
+            return (x >= start && x <= end) ||
+                    (x <= end && x <= start);
         }
     }
 

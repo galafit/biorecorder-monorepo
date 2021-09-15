@@ -9,9 +9,10 @@ public interface Interactive {
     boolean scaleY(int x, int y, double scaleFactor);
     boolean switchTraceSelection(int x, int y);
     boolean setScrollPosition(int x, int y);
-    boolean translateScroll(int x, int y, int dx);
     boolean translateScroll(int dx);
-    boolean autoScale();
+    boolean scrollContain(int x, int y);
+    boolean autoScaleX();
+    boolean autoScaleY();
     boolean hoverOn(int x, int y);
     boolean hoverOff();
     boolean resize(int width, int height);

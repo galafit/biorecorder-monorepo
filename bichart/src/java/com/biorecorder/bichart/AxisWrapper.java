@@ -1,4 +1,4 @@
-package com.biorecorder.bichart.chart;
+package com.biorecorder.bichart;
 
 import com.biorecorder.bichart.axis.Axis;
 import com.biorecorder.bichart.axis.AxisConfig;
@@ -126,8 +126,8 @@ class AxisWrapper {
         axis.setTickLabelPrefixAndSuffix(prefix, suffix);
     }
 
-    public boolean contain(BPoint point) {
-       return axis.contain(point);
+    public boolean contain(int x, int y) {
+       return axis.contain(x, y);
     }
 
     public boolean isSizeDependsOnMinMax() {

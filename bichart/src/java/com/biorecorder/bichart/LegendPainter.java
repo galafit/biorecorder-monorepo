@@ -1,4 +1,4 @@
-package com.biorecorder.bichart.chart;
+package com.biorecorder.bichart;
 
 import com.biorecorder.bichart.configs.LegendConfig;
 import com.biorecorder.bichart.button.SwitchButton;

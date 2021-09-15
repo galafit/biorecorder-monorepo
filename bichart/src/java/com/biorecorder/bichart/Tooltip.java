@@ -1,13 +1,13 @@
-package com.biorecorder.bichart.chart;
+package com.biorecorder.bichart;
 
 import com.biorecorder.bichart.configs.TooltipConfig;
 import com.biorecorder.bichart.graphics.TextMetric;
 import com.biorecorder.bichart.graphics.*;
-import com.sun.istack.internal.Nullable;
 
 
 class Tooltip {
-    private TracePoint hoverPoint;
+    private Trace trace;
+    private int pointIndex;
     private TooltipConfig config;
 
     public Tooltip(TooltipConfig tooltipConfig) {
@@ -21,29 +21,32 @@ class Tooltip {
     /**
      * @return true if hoverPoint changed and false if new hoverPoint equal this.hoverPoint
      */
-    public boolean setHoverPoint(@Nullable TracePoint newHoverPoint) {
-        boolean isEqual;
-        if(hoverPoint == null && newHoverPoint == null) {
-            isEqual = true;
-        } else if(hoverPoint == null && newHoverPoint != null || hoverPoint != null && newHoverPoint == null) {
-            isEqual = false;
-        } else {
-           isEqual  = this.hoverPoint.equals(newHoverPoint);
-
+    public boolean setHoverPoint(Trace trace, int pointIndex) {
+        if(this.trace != trace || this.pointIndex != pointIndex) {
+            this.trace = trace;
+            this.pointIndex = pointIndex;
+            return true;
         }
-        this.hoverPoint = newHoverPoint;
-        return !isEqual;
+        return false;
+    }
+
+    public boolean removeHoverPoint() {
+        if(trace != null) {
+            trace = null;
+            return true;
+        }
+        return false;
     }
 
     public void draw(BCanvas canvas, BRectangle area) {
-        if(hoverPoint == null || hoverPoint.getPointIndex() < 0) {
+        if(trace == null || pointIndex < 0) {
             return;
         }
         // draw cross hair
-        BPoint crossPoint = hoverPoint.getTrace().getCrosshairPoint(hoverPoint.getPointIndex());
-        hoverPoint.getTrace().getXAxis().drawCrosshair(canvas, area, crossPoint.getX());
-        hoverPoint.getTrace().getYAxis().drawCrosshair(canvas, area, crossPoint.getY());
-        String[] items = hoverPoint.getTrace().getTooltipInfo(hoverPoint.getPointIndex());
+        BPoint crossPoint = trace.getCrosshairPoint(pointIndex);
+        trace.getXAxis().drawCrosshair(canvas, area, crossPoint.getX());
+        trace.getYAxis().drawCrosshair(canvas, area, crossPoint.getY());
+        String[] items = trace.getTooltipInfo(pointIndex);
         canvas.setTextStyle(config.getTextStyle());
         BDimension tooltipDimension  = getTextSize(canvas, items);
         int tooltipAreaX = crossPoint.getX() - tooltipDimension.width / 2;
@@ -97,7 +100,7 @@ class Tooltip {
     private void drawItem(BCanvas canvas, int x, int y, String item) {
         TextMetric tm = canvas.getRenderContext().getTextMetric(config.getTextStyle());
         int string_y = y + tm.ascent();
-        canvas.setColor(hoverPoint.getTrace().getColor());
+        canvas.setColor(trace.getColor());
         int colorMarkerSize = getColorMarkerSize();
         canvas.fillRect(x, y + (tm.height() - colorMarkerSize) / 2 + 1, colorMarkerSize, colorMarkerSize);
         x = x + colorMarkerSize + getColorMarkerPadding();

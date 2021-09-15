@@ -1,6 +1,6 @@
 package com.biorecorder.bichart.traces;
 
-import com.biorecorder.bichart.chart.ChartData;
+import com.biorecorder.bichart.ChartData;
 import com.biorecorder.bichart.graphics.*;
 import com.biorecorder.bichart.scales.Scale;
 

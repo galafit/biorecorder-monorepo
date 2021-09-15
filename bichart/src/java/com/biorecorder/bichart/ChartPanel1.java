@@ -1,35 +1,30 @@
-package com.biorecorder.bichart.swing;
+package com.biorecorder.bichart;
 
-import com.biorecorder.bichart.chart.*;
-import com.biorecorder.bichart.graphics.BPoint;
+import com.biorecorder.bichart.swing.SwingCanvas;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
-/**
- * Created by galafit on 21/9/18.
- */
-public class ChartPanelOld extends JPanel implements KeyListener {
-    InteractiveDrawable chart;
+public class ChartPanel1 extends JPanel {
+    Interactive interactive;
 
     final int scrollPointsPerRotation = 10;
     // во сколько раз растягивается или сжимается ось при автозуме
     private double defaultZoom = 2;
-    private BPoint pressPoint;
     private int pastX;
     private int pastY;
-    private boolean isXDirection;
-    private boolean isYDirection;
+    private int pressedX;
+    private int pressedY;
+    private boolean isScrollMoving;
 
-
-    public ChartPanelOld(Chart chart1) {
-        this.chart = new InteractiveChart(chart1);
+    public ChartPanel1(Chart chart) {
+        interactive = new InteractiveChart(chart);
         init();
     }
 
-    public ChartPanelOld(NavigableChart chart1) {
-        this.chart = new InteractiveNavigableChart(chart1);
+    public ChartPanel1(BiChart chart) {
+        interactive = new InteractiveBiChart(chart);
         init();
     }
 
@@ -38,7 +33,7 @@ public class ChartPanelOld extends JPanel implements KeyListener {
             @Override
             public void mouseDragged(MouseEvent e) {
                 if (SwingUtilities.isRightMouseButton(e)) {
-                    if(chart.onLongPress(e.getX(), e.getY())) {
+                    if(interactive.hoverOn(e.getX(), e.getY())) {
                         repaint();
                     }
                 } else {
@@ -47,31 +42,21 @@ public class ChartPanelOld extends JPanel implements KeyListener {
 
                     pastX = e.getX();
                     pastY = e.getY();
-                    if(!isXDirection && !isYDirection) {
-                        if(Math.abs(dy) >= Math.abs(dx)) {
-                            isYDirection = true;
-                        } else {
-                            isXDirection = true;
-                        }
-                    }
 
-                    if (e.isAltDown()
+                    if (e.isAltDown() // zoom Y
                             || e.isControlDown()
                             // || e.isShiftDown()
-                            || e.isMetaDown()) { // zoom
-
-                        if(chart.onScaleY(pressPoint, distanceToScaleFactor(dy))) {
+                            || e.isMetaDown()) {
+                        if(interactive.scaleY(pressedX, pressedY, distanceToScaleFactor(dy))) {
                             repaint();
                         }
-                    } else { // scroll
-                        if(isYDirection) {
-                            if(chart.onScrollY(pressPoint, dy)) {
+                    } else {
+                        if(interactive.scrollContain(pastX, pastY)) {
+                            if(interactive.translateScroll(dx)) {
                                 repaint();
                             }
-                        } else {
-                            if(chart.onScrollX(pressPoint, dx)) {
-                                repaint();
-                            }
+                        } else if(interactive.translateY(pressedX, pressedY, dy)) {
+                            repaint();
                         }
                     }
                 }
@@ -81,13 +66,15 @@ public class ChartPanelOld extends JPanel implements KeyListener {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2) {
-                    if(chart.onDoubleTap(e.getX(), e.getY())) {
-                        repaint();
-                    }
+                if (e.getClickCount() == 2) { // double click
+                    interactive.autoScaleX();
+                    interactive.autoScaleY();
+                    repaint();
                 }
-                if (e.getClickCount() == 1) {
-                    if(chart.onTap(e.getX(), e.getY())) {
+                if (e.getClickCount() == 1) { // single click
+                    if(interactive.switchTraceSelection(e.getX(), e.getY())) {
+                        repaint();
+                    } else if(interactive.setScrollPosition(e.getX(), e.getY())) {
                         repaint();
                     }
                 }
@@ -96,22 +83,20 @@ public class ChartPanelOld extends JPanel implements KeyListener {
             @Override
             public void mousePressed(MouseEvent e) {
                 if (SwingUtilities.isRightMouseButton(e)) {
-                    if(chart.onLongPress(e.getX(), e.getY())) {
+                    if(interactive.hoverOn(e.getX(), e.getY())) {
                         repaint();
                     }
                 } else {
+                    pressedX = e.getX();
+                    pressedY = e.getY();
                     pastX = e.getX();
                     pastY = e.getY();
-                    pressPoint = new BPoint(e.getX(), e.getY());
-                    isXDirection = false;
-                    isYDirection = false;
                 }
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
-                pressPoint = null;
-                if(chart.onTapUp(e.getX(), e.getY())) {
+                if(interactive.hoverOff()) {
                     repaint();
                 }
             }
@@ -122,16 +107,17 @@ public class ChartPanelOld extends JPanel implements KeyListener {
             public void mouseWheelMoved(MouseWheelEvent e) {
                 e.consume(); // avoid the event to be triggered twice
                 int dx = e.getWheelRotation() * scrollPointsPerRotation;
+                dx = e.getUnitsToScroll();
                 if (e.isAltDown()
                         || e.isControlDown()
                         //    || e.isShiftDown() // JAVA BUG on MAC!!!!
                         || e.isMetaDown()) { // scaleX
-                    if(chart.onScaleX(null, distanceToScaleFactor(dx))) {
+                    if(interactive.scaleX(e.getX(), e.getY(), distanceToScaleFactor(dx))) {
                         repaint();
                     }
 
                 } else { // translateScrolls X
-                    if (chart.onScrollX(null, dx)) {
+                    if (interactive.translateX(e.getX(), e.getY(), dx)) {
                         repaint();
                     }
                 }
@@ -141,54 +127,38 @@ public class ChartPanelOld extends JPanel implements KeyListener {
         addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
-                chart.onResize(getWidth(), getHeight());
-                chart.update(new SwingRenderContext());
+                interactive.resize(getWidth(), getHeight());
                 repaint();
             }
         });
-    }
-
-
-    @Override
-    public void keyTyped(KeyEvent e) {
-
-    }
-
-    @Override
-    public void keyPressed(KeyEvent e) {
-        int dx = 0;
-        if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-            dx = scrollPointsPerRotation;
-        }
-        if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-            dx = -scrollPointsPerRotation;
-
-        }
-        if (chart.onScrollX(null, dx)) {
-            repaint();
-        }
-    }
-
-    @Override
-    public void keyReleased(KeyEvent e) {
-
     }
 
     private double distanceToScaleFactor(int distance) {
         return 1 + defaultZoom * distance / 100;
     }
 
-    public void update() {
-        if (chart.update(new SwingRenderContext())) {
-            repaint();
-        }
-    }
-
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-        chart.draw(new SwingCanvas((Graphics2D) g));
+        interactive.draw(new SwingCanvas((Graphics2D) g));
     }
 
+    public KeyListener getKeyListener() {
+        return new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                int dx = 0;
+                if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+                    dx = 1;
+                }
+                if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+                    dx = -1;
 
+                }
+                if (interactive.translateScroll(dx)) {
+                    repaint();
+                }
+            }
+        };
+    }
 }

@@ -1,16 +1,13 @@
 package com.biorecorder.bichart.examples;
 
-import com.biorecorder.bichart.axis.XAxisPosition;
-import com.biorecorder.bichart.axis.YAxisPosition;
-import com.biorecorder.bichart.chart.Chart;
+import com.biorecorder.bichart.ChartPanel1;
+import com.biorecorder.bichart.Chart;
 import com.biorecorder.bichart.XYSeries;
 import com.biorecorder.bichart.scales.LinearScale;
 import com.biorecorder.bichart.themes.DarkTheme;
-import com.biorecorder.bichart.themes.WhiteTheme;
 import com.biorecorder.bichart.traces.LineTraceConfig;
 import com.biorecorder.bichart.traces.LineTracePainter;
 import com.biorecorder.datalyb.list.IntArrayList;
-import com.biorecorder.bichart.swing.ChartPanelOld;
 
 import javax.swing.*;
 import java.awt.*;
@@ -31,7 +28,7 @@ public class ChartTest extends JFrame {
     List<String> labels = new ArrayList();
 
     Chart chart;
-    ChartPanelOld chartPanel;
+    ChartPanel1 chartPanel;
 
     public ChartTest()  {
         int width = 500;
@@ -73,7 +70,6 @@ public class ChartTest extends JFrame {
 
         chart = new Chart(DarkTheme.getChartConfig(), new LinearScale());
         chart.setTitle("как дела? все хорошо как поживаете вы олрдлорлор лорор лорлор");
-        chart.setConfig(WhiteTheme.getChartConfig());
 
         chart.addTrace("trace1", unsortedData, new LineTracePainter(),  true, true);
         chart.addStack();
@@ -82,13 +78,13 @@ public class ChartTest extends JFrame {
 
         chart.autoScaleY();
         chart.autoScaleX();
-        chartPanel = new ChartPanelOld(chart);
+        chartPanel = new ChartPanel1(chart);
 
         chartPanel.setPreferredSize(new Dimension(width, height));
         add(chartPanel, BorderLayout.CENTER);
         pack();
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        addKeyListener(chartPanel);
+        addKeyListener(chartPanel.getKeyListener());
         setLocationRelativeTo(null);
         setVisible(true);
     }

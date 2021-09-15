@@ -1,4 +1,4 @@
-package com.biorecorder.bichart.chart;
+package com.biorecorder.bichart;
 
 import com.biorecorder.bichart.configs.LegendConfig;
 import com.biorecorder.bichart.graphics.*;
@@ -31,23 +31,14 @@ class Legend {
         painter = null;
     }
 
-    public boolean selectTrace(int x, int y) {
+    public int getTraceLegendButtonContaining(int x, int y) {
         if (painter != null) {
-            int index = painter.findButton(x, y);
-            if (index >= 0) {
-                int currentSelection = traceList.getSelection();
-                if (index == currentSelection) {
-                    traceList.setSelection(-1);
-                } else {
-                    traceList.setSelection(index);
-                }
-                return true;
-            }
+            return painter.findButton(x, y);
         }
-        return false;
+        return -1;
     }
 
-    public BDimension getPrefferedSize(RenderContext renderContext) {
+    public BDimension getPreferredSize(RenderContext renderContext) {
         if(isAttachedToStacks) {
             return new BDimension(0, 0);
         }

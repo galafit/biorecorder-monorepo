@@ -1,4 +1,4 @@
-package com.biorecorder.bichart.chart;
+package com.biorecorder.bichart;
 
 import com.biorecorder.bichart.axis.XAxisPosition;
 import com.biorecorder.bichart.axis.YAxisPosition;
@@ -7,23 +7,24 @@ import com.biorecorder.bichart.graphics.BColor;
 import com.biorecorder.bichart.graphics.BRectangle;
 import com.biorecorder.bichart.graphics.Range;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-public class TraceList {
+class TraceList {
     private List<Trace> traces = new ArrayList<>();
     private Map<AxisWrapper, List<Trace>> xAxisToTraces = new HashMap<>();
     private Map<AxisWrapper, List<Trace>> yAxisToTraces = new HashMap<>();
     private Map<XAxisPosition, List<Integer>> xPositionToTraceNumbers = new HashMap<>();
     private List<ChangeListener> changeListeners = new ArrayList<>(1);
-    private int selectedTrace = -1; // -1 no selection
+    private int selectedTraceNumber = -1; // -1 no selection
 
     private void notifyChangeListeners() {
         for (ChangeListener l : changeListeners) {
             l.onChange();
         }
+    }
+
+    public Trace getTrace(int traceNumber) {
+        return traces.get(traceNumber);
     }
 
     public int getMarkSize(int traceNumber) {
@@ -83,7 +84,26 @@ public class TraceList {
         return traceNumbers;
     }
 
-    private void remadeXAxisPositionToTraces() {
+    public boolean isXAxisUsed(AxisWrapper x) {
+        return xAxisToTraces.get(x) != null;
+    }
+
+    public boolean isXAxisUsedByStack(AxisWrapper x, AxisWrapper y1, AxisWrapper y2) {
+        List<Trace> xTraces = xAxisToTraces.get(x);
+        if(xTraces != null) {
+            for (Trace trace : xTraces) {
+                if(trace.getYAxis() == y1 || trace.getYAxis() == y2) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    public boolean isYAxisUsed(AxisWrapper y) {
+        return yAxisToTraces.get(y) != null;
+    }
+
+    private void remadeXAxisPositionToTraceNumbers() {
         xPositionToTraceNumbers = new HashMap<>();
         for (int i = 0; i < traces.size(); i++) {
             Trace trace = traces.get(i);
@@ -114,7 +134,7 @@ public class TraceList {
             yAxisToTraces.put(yAxis, yTraces);
         }
         yTraces.add(trace);
-        remadeXAxisPositionToTraces();
+        remadeXAxisPositionToTraceNumbers();
         notifyChangeListeners();
     }
 
@@ -133,7 +153,7 @@ public class TraceList {
         if(yTraces.size() == 0) {
             yAxisToTraces.remove(yAxis);
         }
-        remadeXAxisPositionToTraces();
+        remadeXAxisPositionToTraceNumbers();
         notifyChangeListeners();
     }
 
@@ -144,26 +164,6 @@ public class TraceList {
         int x =  (int) Math.min(xAxis.getStart(), xAxis.getEnd());
         int y =  (int) Math.min(yAxis.getStart(), yAxis.getEnd());
         return  new BRectangle(x, y, (int) xAxis.length(), (int) yAxis.length());
-    }
-
-    public boolean isXAxisUsedByStack(AxisWrapper x, AxisWrapper y1, AxisWrapper y2) {
-        List<Trace> xTraces = xAxisToTraces.get(x);
-        if(xTraces != null) {
-            for (Trace trace : xTraces) {
-                if(trace.getYAxis() == y1 || trace.getYAxis() == y2) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    public boolean isXAxisUsed(AxisWrapper x) {
-        return xAxisToTraces.get(x) != null;
-    }
-
-    public boolean isYAxisUsed(AxisWrapper y) {
-        return yAxisToTraces.get(y) != null;
     }
 
     public Range getTracesXMinMax(AxisWrapper xAxis) {
@@ -200,18 +200,18 @@ public class TraceList {
     }
 
     public int getSelection() {
-        return selectedTrace;
+        return selectedTraceNumber;
     }
 
     public void setSelection(int selectedTraceIndex) {
-        selectedTrace = selectedTraceIndex;
+        selectedTraceNumber = selectedTraceIndex;
     }
 
     public TracePoint getNearest(int x, int y) {
-        if (selectedTrace >= 0) {
-            Trace selection = traces.get(selectedTrace);
+        if (selectedTraceNumber >= 0) {
+            Trace selection = traces.get(selectedTraceNumber);
             int nearestIndex = selection.nearest(x, y);
-            return new TracePoint(selection, nearestIndex);
+            return new TracePoint(selectedTraceNumber, nearestIndex);
         } else {
             TracePoint nearestTracePoint = null;
             int minDistance = Integer.MAX_VALUE;
@@ -221,7 +221,7 @@ public class TraceList {
                 int distance = trace.distanceSqw(nearest, x, y);
                 if (minDistance >= distance) {
                     minDistance = distance;
-                    nearestTracePoint = new TracePoint(trace, nearest);
+                    nearestTracePoint = new TracePoint(i, nearest);
                 }
             }
             return nearestTracePoint;

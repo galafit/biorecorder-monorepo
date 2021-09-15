@@ -1,12 +1,12 @@
 package com.biorecorder.bichart.examples;
 
-import com.biorecorder.bichart.chart.NavigableChart;
+import com.biorecorder.bichart.ChartPanel1;
+import com.biorecorder.bichart.BiChart;
 import com.biorecorder.bichart.XYSeries;
 import com.biorecorder.bichart.scales.LinearScale;
 import com.biorecorder.bichart.themes.DarkTheme;
 import com.biorecorder.bichart.traces.LineTracePainter;
 import com.biorecorder.datalyb.list.IntArrayList;
-import com.biorecorder.bichart.swing.ChartPanelOld;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,14 +15,14 @@ import java.util.*;
 /**
  * Created by galafit on 27/9/18.
  */
-public class NavigableChartTest extends JFrame{
+public class BiChartTest extends JFrame{
     IntArrayList yData;
     IntArrayList xData;
     java.util.List<String> labels = new ArrayList();
-    ChartPanelOld chartPanel;
-    NavigableChart chart;
+    ChartPanel1 chartPanel;
+    BiChart chart;
 
-    public NavigableChartTest() {
+    public BiChartTest() {
         int width = 400;
         int height = 500;
 
@@ -43,7 +43,7 @@ public class NavigableChartTest extends JFrame{
         XYSeries xySeries2 = new XYSeries(-20, 2, yData.toArray());
 
 
-        chart = new NavigableChart(DarkTheme.getNavigableChartConfig(), new LinearScale());
+        chart = new BiChart(DarkTheme.getNavigableChartConfig(), new LinearScale());
 
         chart.addChartTrace("trace1", xySeries1, new LineTracePainter());
         chart.addChartStack();
@@ -54,19 +54,19 @@ public class NavigableChartTest extends JFrame{
        // chart.addNavigatorTrace("trace", new XYData(new int[0]), new LineTracePainter());
 
 
-        chartPanel = new ChartPanelOld(chart);
+        chartPanel = new ChartPanel1(chart);
 
         chartPanel.setPreferredSize(new Dimension(width, height));
         add(chartPanel, BorderLayout.CENTER);
         pack();
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        addKeyListener(chartPanel);
+        addKeyListener(chartPanel.getKeyListener());
         setLocationRelativeTo(null);
         setVisible(true);
     }
 
 
     public static void main(String[] args) {
-        NavigableChartTest chartTest = new NavigableChartTest();
+        BiChartTest chartTest = new BiChartTest();
     }
 }

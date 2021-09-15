@@ -40,7 +40,7 @@ public class SmartChartTest  extends JFrame{
         add(chartPanel, BorderLayout.CENTER);
         pack();
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        addKeyListener(chartPanel);
+        //addKeyListener(chartPanel);
         setLocationRelativeTo(null);
         setVisible(true);
 

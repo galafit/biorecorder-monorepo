@@ -1,4 +1,4 @@
-package com.biorecorder.bichart.chart;
+package com.biorecorder.bichart;
 
 import com.biorecorder.bichart.GroupingApproximation;
 import com.biorecorder.bichart.XYSeries;
