@@ -39,8 +39,8 @@ public class BiChart {
 
     public BiChart(BiChartConfig config, Scale xScale) {
         this.config = new BiChartConfig(config);
-        chart = new Chart(config.getChartConfig(), xScale, XAxisPosition.TOP, YAxisPosition.LEFT);
-        navigator = new Chart(config.getNavigatorConfig(), xScale, navDefaultXPosition , YAxisPosition.LEFT);
+        chart = new Chart(config.getChartConfig(), xScale, XAxisPosition.TOP, YAxisPosition.RIGHT);
+        navigator = new Chart(config.getNavigatorConfig(), xScale, navDefaultXPosition , YAxisPosition.RIGHT);
         chart.setSpacing(new Insets(0));
         navigator.setSpacing(new Insets(0));
         for (XAxisPosition xPosition : XAxisPosition.values()) {

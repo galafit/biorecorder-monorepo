@@ -16,11 +16,11 @@ import java.awt.*;
 
 public class BiChartPanel extends JPanel {
     BiChart biChart;
-    ChartPanel1 chartPanel;
+    ChartPanel chartPanel;
 
     public BiChartPanel(boolean isDateTime) {
         biChart = new SmartBiChart(isDateTime);
-        chartPanel = new ChartPanel1(biChart);
+        chartPanel = new ChartPanel(biChart);
         setLayout(new BorderLayout());
         add(chartPanel);
     }

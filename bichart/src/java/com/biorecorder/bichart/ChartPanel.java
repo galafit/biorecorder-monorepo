@@ -6,7 +6,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
-public class ChartPanel1 extends JPanel {
+public class ChartPanel extends JPanel {
     Interactive interactive;
 
     final int scrollPointsPerRotation = 10;
@@ -18,12 +18,12 @@ public class ChartPanel1 extends JPanel {
     private int pressedY;
     private boolean isScrollMoving;
 
-    public ChartPanel1(Chart chart) {
+    public ChartPanel(Chart chart) {
         interactive = new InteractiveChart(chart);
         init();
     }
 
-    public ChartPanel1(BiChart chart) {
+    public ChartPanel(BiChart chart) {
         interactive = new InteractiveBiChart(chart);
         init();
     }
@@ -39,7 +39,6 @@ public class ChartPanel1 extends JPanel {
                 } else {
                     int dy = pastY - e.getY();
                     int dx = pastX - e.getX();
-
                     pastX = e.getX();
                     pastY = e.getY();
 
@@ -47,13 +46,13 @@ public class ChartPanel1 extends JPanel {
                             || e.isControlDown()
                             // || e.isShiftDown()
                             || e.isMetaDown()) {
-                        if(interactive.scaleY(pressedX, pressedY, distanceToScaleFactor(dy))) {
+                        if(interactive.scaleX(pressedX, pressedY, distanceToScaleFactor(dx))) {
                             repaint();
                         }
                     } else {
                         if(interactive.scrollContain(pastX, pastY) && interactive.translateScroll(dx)) {
                             repaint();
-                        } else if(interactive.translateY(pressedX, pressedY, dy)) {
+                        } else if(interactive.translateX(pressedX, pressedY, dx)) {
                             repaint();
                         }
                     }
@@ -104,18 +103,17 @@ public class ChartPanel1 extends JPanel {
             @Override
             public void mouseWheelMoved(MouseWheelEvent e) {
                 e.consume(); // avoid the event to be triggered twice
-                int dx = e.getWheelRotation() * scrollPointsPerRotation;
-                dx = e.getUnitsToScroll();
+                int dy = e.getUnitsToScroll(); //e.getWheelRotation() * scrollPointsPerRotation;
                 if (e.isAltDown()
                         || e.isControlDown()
                         //    || e.isShiftDown() // JAVA BUG on MAC!!!!
-                        || e.isMetaDown()) { // scaleX
-                    if(interactive.scaleX(e.getX(), e.getY(), distanceToScaleFactor(dx))) {
+                        || e.isMetaDown()) { // scaleY
+                    if(interactive.scaleY(e.getX(), e.getY(), distanceToScaleFactor(dy))) {
                         repaint();
                     }
 
-                } else { // translates X
-                    if (interactive.translateX(e.getX(), e.getY(), dx)) {
+                } else { // translates Y
+                    if (interactive.translateY(e.getX(), e.getY(), dy)) {
                         repaint();
                     }
                 }

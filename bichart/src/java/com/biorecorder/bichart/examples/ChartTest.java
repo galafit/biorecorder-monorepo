@@ -1,6 +1,6 @@
 package com.biorecorder.bichart.examples;
 
-import com.biorecorder.bichart.ChartPanel1;
+import com.biorecorder.bichart.ChartPanel;
 import com.biorecorder.bichart.Chart;
 import com.biorecorder.bichart.XYSeries;
 import com.biorecorder.bichart.scales.LinearScale;
@@ -28,7 +28,7 @@ public class ChartTest extends JFrame {
     List<String> labels = new ArrayList();
 
     Chart chart;
-    ChartPanel1 chartPanel;
+    ChartPanel chartPanel;
 
     public ChartTest()  {
         int width = 500;
@@ -78,7 +78,7 @@ public class ChartTest extends JFrame {
 
         chart.autoScaleY();
         chart.autoScaleX();
-        chartPanel = new ChartPanel1(chart);
+        chartPanel = new ChartPanel(chart);
 
         chartPanel.setPreferredSize(new Dimension(width, height));
         add(chartPanel, BorderLayout.CENTER);

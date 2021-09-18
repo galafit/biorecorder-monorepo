@@ -1,6 +1,6 @@
 package com.biorecorder.bichart.examples;
 
-import com.biorecorder.bichart.ChartPanel1;
+import com.biorecorder.bichart.ChartPanel;
 import com.biorecorder.bichart.SmartBiChart;
 import com.biorecorder.bichart.XYSeries;
 import com.biorecorder.bichart.traces.LineTracePainter;
@@ -37,7 +37,7 @@ public class SmartBiChartTest extends JFrame{
        // chartPanel.addNavigatorStack();
         smartBiChart.addNavigatorTrace("Regular", xySeries2, new LineTracePainter());
 
-        ChartPanel1 chartPanel = new ChartPanel1(smartBiChart);
+        ChartPanel chartPanel = new ChartPanel(smartBiChart);
         chartPanel.setPreferredSize(new Dimension(width, height));
         add(chartPanel, BorderLayout.CENTER);
         pack();

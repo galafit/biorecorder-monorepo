@@ -1,6 +1,6 @@
 package com.biorecorder.bichart.examples;
 
-import com.biorecorder.bichart.ChartPanel1;
+import com.biorecorder.bichart.ChartPanel;
 import com.biorecorder.bichart.BiChart;
 import com.biorecorder.bichart.XYSeries;
 import com.biorecorder.bichart.scales.LinearScale;
@@ -19,7 +19,7 @@ public class BiChartTest extends JFrame{
     IntArrayList yData;
     IntArrayList xData;
     java.util.List<String> labels = new ArrayList();
-    ChartPanel1 chartPanel;
+    ChartPanel chartPanel;
     BiChart chart;
 
     public BiChartTest() {
@@ -54,7 +54,7 @@ public class BiChartTest extends JFrame{
         chart.addNavigatorTrace("trace2", xySeries2, new LineTracePainter(), true);
 
 
-        chartPanel = new ChartPanel1(chart);
+        chartPanel = new ChartPanel(chart);
 
         chartPanel.setPreferredSize(new Dimension(width, height));
         add(chartPanel, BorderLayout.CENTER);
