@@ -33,6 +33,15 @@ public class DataProcessor {
         navigatorGroupedData.add(null);
     }
 
+    public void removeNavigatorTraceData(int traceNumber) {
+        navigatorRowData.remove(traceNumber);
+        navigatorGroupedData.remove(traceNumber);
+    }
+
+    public void removeChartTraceData(int traceNumber) {
+        chartRowData.remove(traceNumber);
+    }
+
     public void setChartTraceData(int traceNumber, XYSeries data) {
         chartRowData.set(traceNumber, data);
     }

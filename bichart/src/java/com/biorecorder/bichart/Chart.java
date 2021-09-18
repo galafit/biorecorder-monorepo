@@ -52,6 +52,8 @@ public class Chart {
     }
 
     public Chart(ChartConfig config, Scale xScale, XAxisPosition defaultXPosition, YAxisPosition defaultYPosition) {
+       // this.defaultXPosition = defaultXPosition;
+       // this.defaultYPosition = defaultYPosition;
         this.config = new ChartConfig(config);
         AxisWrapper bottomAxis = new AxisWrapper(new Axis(xScale.copy(), config.getXAxisConfig(), XAxisPosition.BOTTOM));
         AxisWrapper topAxis = new AxisWrapper(new Axis(xScale.copy(), config.getXAxisConfig(), XAxisPosition.TOP));
@@ -681,12 +683,8 @@ public class Chart {
         return traceList.getMarkSize(traceNumber);
     }
 
-    XAxisPosition getDefaultXPosition() {
-        return defaultXPosition;
-    }
-
-    YAxisPosition getDefaultYPosition() {
-        return defaultYPosition;
+    Range getXMinMax(XAxisPosition xPosition) {
+        return xAxisList.get(xPositionToIndex(xPosition)).getMinMax();
     }
 
     int getStacksSumWeight() {

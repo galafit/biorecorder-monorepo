@@ -1,6 +1,6 @@
 package com.biorecorder.bichart;
 
-import com.biorecorder.bichart.configs.NavigableChartConfig;
+import com.biorecorder.bichart.configs.BiChartConfig;
 import com.biorecorder.bichart.axis.XAxisPosition;
 import com.biorecorder.bichart.axis.YAxisPosition;
 import com.biorecorder.bichart.graphics.*;
@@ -20,26 +20,27 @@ public class BiChart {
     private int gap = 0; // between Chart and Preview px
     private Insets spacing = new Insets(0);
     private int navigatorHeightMin = 16; // px
-    private Chart chart;
-    private Chart navigator;
-    private NavigableChartConfig config;
+    protected Chart chart;
+    protected Chart navigator;
+    private BiChartConfig config;
     private int width = 250;
     private int height = 100;
     private List<ChartData> chartDataList = new ArrayList<>();
     private List<ChartData> navigatorDataList = new ArrayList<>();
     private Map<XAxisPosition, Scroll> axisToScrolls = new HashMap<>(2);
-    private Map<XAxisPosition, List<ScrollListener>> axisToScrollListeners = new HashMap<>(2);
+    Map<XAxisPosition, List<ScrollListener>> axisToScrollListeners = new HashMap<>(2);
 
     private boolean isPointToPointChart = false;
+    XAxisPosition navDefaultXPosition = XAxisPosition.BOTTOM;
 
     private boolean isValid = false;
     private boolean isChanged = false;
     private boolean isScrollsConfigured = false;
 
-    public BiChart(NavigableChartConfig config, Scale xScale) {
-        this.config = new NavigableChartConfig(config);
+    public BiChart(BiChartConfig config, Scale xScale) {
+        this.config = new BiChartConfig(config);
         chart = new Chart(config.getChartConfig(), xScale, XAxisPosition.TOP, YAxisPosition.LEFT);
-        navigator = new Chart(config.getNavigatorConfig(), xScale, XAxisPosition.BOTTOM, YAxisPosition.LEFT);
+        navigator = new Chart(config.getNavigatorConfig(), xScale, navDefaultXPosition , YAxisPosition.LEFT);
         chart.setSpacing(new Insets(0));
         navigator.setSpacing(new Insets(0));
         for (XAxisPosition xPosition : XAxisPosition.values()) {
@@ -104,13 +105,6 @@ public class BiChart {
         isValid = true;
     }
 
-    private Range dataMinMax(ChartData data) {
-        if(data.rowCount() > 0) {
-            return new Range(data.value(0, 0), data.value(data.rowCount() - 1, 0));
-        }
-        return null;
-    }
-
     private Range dataBestRange(ChartData data, int markSize, Scale xScale, double xLength, double min) {
         int dataSize = data.rowCount();
         Range dataRange = dataMinMax(data);
@@ -126,10 +120,10 @@ public class BiChart {
     }
 
     private void autoScaleNavigatorX() {
-        if(!navigator.isValid()) {
+        if(!isValid) {
             return;
         }
-        Scale xScale = navigator.getXScale(navigator.getDefaultXPosition());
+        Scale xScale = navigator.getXScale(navDefaultXPosition);
         double xLength =  xScale.getLength();
         Range xMinMax = null;
         for (int i = 0; i < navigatorDataList.size(); i++) {
@@ -167,7 +161,7 @@ public class BiChart {
     }
 
     private void autoScaleChartX(XAxisPosition xPosition) {
-        if(!chart.isValid()) {
+        if(!isValid) {
             return;
         }
         Scale xScale = chart.getXScale(xPosition);
@@ -185,7 +179,7 @@ public class BiChart {
             }
         }
         Range xMinMax = minBestRange;
-        Scale navigatorXScale = navigator.getXScale(navigator.getDefaultXPosition());
+        Scale navigatorXScale = navigator.getXScale(navDefaultXPosition);
         Range navigatorMinMax = new Range(navigatorXScale.getMin(), navigatorXScale.getMax());
         if (xMinMax == null ) {
             // set chart default viewport extent (1/10 of navigator range)
@@ -217,7 +211,7 @@ public class BiChart {
 
     private Scroll createScroll(XAxisPosition xAxisPosition) {
         Scale chartScale = chart.getXScale(xAxisPosition);
-        Scale navigatorScale = navigator.getXScale(navigator.getDefaultXPosition());
+        Scale navigatorScale = navigator.getXScale(navDefaultXPosition);
         Range navigatorRange = new Range(navigatorScale.getMin(), navigatorScale.getMax());
         Range chartRange = new Range(chartScale.getMin(), chartScale.getMax());
         Scroll scroll = new Scroll(config.getScrollConfig(), chartScale);
@@ -239,6 +233,12 @@ public class BiChart {
         return scroll;
     }
 
+    public Range geChartXMinMax(XAxisPosition xPosition) {
+        return chart.getXMinMax(xPosition);
+    }
+
+
+
     /**
      * ==================================================*
      * Base methods to interact                          *
@@ -258,7 +258,7 @@ public class BiChart {
         chart.draw(canvas);
         canvas.save();
         navigator.draw(canvas);
-        Scale xScale = navigator.getXScale(navigator.getDefaultXPosition());
+        Scale xScale = navigator.getXScale(navDefaultXPosition);
         Range scrollTrack = new Range(xScale.getStart(), xScale.getEnd());
         for (XAxisPosition xPosition : XAxisPosition.values()) {
             if(chart.getTraces(xPosition).size() > 0) {
@@ -313,10 +313,6 @@ public class BiChart {
         return chart.getTraceXPosition(traceNumber);
     }
 
-    public XAxisPosition getChartDefaultXAxisPosition() {
-        return chart.getDefaultXPosition();
-    }
-
 
     public void setSize(int width, int height) throws IllegalArgumentException {
         if(width == 0 || height == 0) {
@@ -369,27 +365,16 @@ public class BiChart {
         invalidate();
     }
 
-    public void addChartTrace(String name, ChartData data, TracePainter tracePainter) {
-        chart.addTrace(name, data, tracePainter);
-        chartDataList.add(data);
-        invalidate();
+    public void addChartTrace(String name, XYSeries data, TracePainter tracePainter) {
+        addChartTrace(name, data, tracePainter, false, false);
     }
 
 
-    public void addChartTrace(String name, ChartData data, TracePainter tracePainter, boolean isXOpposite,  boolean isYOpposite) {
+    public void addChartTrace(String name, XYSeries data, TracePainter tracePainter, boolean isXOpposite,  boolean isYOpposite) {
         chart.addTrace(name, data, tracePainter, isXOpposite, isYOpposite);
         chartDataList.add(data);
     }
 
-    public void addChartTrace(String name, ChartData data, TracePainter tracePainter, int stackNumber) {
-        chart.addTrace(name, data, tracePainter, stackNumber);
-        chartDataList.add(data);
-    }
-
-    public void addChartTrace(String name, ChartData data, TracePainter tracePainter, int stackNumber, boolean isXOpposite,  boolean isYOpposite) {
-        chart.addTrace(name, data, tracePainter, stackNumber, isXOpposite, isYOpposite);
-        chartDataList.add(data);
-    }
 
     public void removeChartTrace(int traceNumber) {
         chart.removeTrace(traceNumber);
@@ -433,7 +418,7 @@ public class BiChart {
         return chart.stackCount();
     }
 
-    public void setChartTraceData(int traceNumber, ChartData data) {
+    public void setChartTraceData(int traceNumber, XYSeries data) {
         chart.setTraceData(traceNumber, data);
         chartDataList.set(traceNumber, data);
     }
@@ -469,13 +454,12 @@ public class BiChart {
         invalidate();
     }
 
-    public void addNavigatorTrace(String name, ChartData data, TracePainter tracePainter) {
-        navigator.addTrace(name, data, tracePainter);
-        navigatorDataList.add(data);
+    public void addNavigatorTrace(String name, XYSeries data, TracePainter tracePainter) {
+        addNavigatorTrace(name, data, tracePainter, false);
     }
 
-    public void addNavigatorTrace(String name,ChartData data, TracePainter tracePainter, int stack) {
-        navigator.addTrace(name, data, tracePainter, stack);
+    public void addNavigatorTrace(String name,XYSeries data, TracePainter tracePainter, boolean isYOpposite) {
+        navigator.addTrace(name, data, tracePainter, false, isYOpposite);
         navigatorDataList.add(data);
     }
 
@@ -488,7 +472,7 @@ public class BiChart {
         return navigator.traceCount();
     }
 
-    public void setNavigatorTraceData(int traceNumber, ChartData data) {
+    public void setNavigatorTraceData(int traceNumber, XYSeries data) {
         navigator.setTraceData(traceNumber, data);
         navigatorDataList.set(traceNumber, data);
     }
@@ -530,7 +514,7 @@ public class BiChart {
     }
 
     public Scale getNavigatorXScale() {
-        return navigator.getXScale(navigator.getDefaultXPosition());
+        return navigator.getXScale(navDefaultXPosition);
     }
 
     /**
@@ -538,6 +522,13 @@ public class BiChart {
      * Protected method for careful use  mostly to interact through GUI                          *
      * ==============================================================
      */
+    static Range dataMinMax(ChartData data) {
+        if(data.rowCount() > 0) {
+            return new Range(data.value(0, 0), data.value(data.rowCount() - 1, 0));
+        }
+        return null;
+    }
+
     List<XAxisPosition> getChartXPositionsUsedByStack(int stack) {
         return  chart.getXPositionsUsedByStack(stack);
     }
@@ -562,14 +553,6 @@ public class BiChart {
         return chart.getTraceStack(traceNumber);
     }
 
-    XAxisPosition getChartDefaultXPosition() {
-        return chart.getDefaultXPosition();
-    }
-
-    YAxisPosition getChartDefaultYPosition() {
-        return chart.getDefaultYPosition();
-    }
-
     XAxisPosition getNavigatorTraceXPosition(int traceNumber) {
         return navigator.getTraceXPosition(traceNumber);
     }
@@ -580,14 +563,6 @@ public class BiChart {
 
     int getNavigatorTraceStack(int traceNumber) {
         return navigator.getTraceStack(traceNumber);
-    }
-
-    XAxisPosition getNavigatorDefaultXPosition() {
-        return navigator.getDefaultXPosition();
-    }
-
-    YAxisPosition getNavigatorDefaultYPosition() {
-        return navigator.getDefaultYPosition();
     }
 
     boolean chartContain(int x, int y) {
@@ -667,7 +642,7 @@ public class BiChart {
             return false;
         }
         for (XAxisPosition xPosition : axisToScrolls.keySet()) {
-            Scale xScale = navigator.getXScale(navigator.getDefaultXPosition());
+            Scale xScale = navigator.getXScale(navDefaultXPosition);
             Range scrollTrack = new Range(xScale.getStart(), xScale.getEnd());
             if (axisToScrolls.get(xPosition).scrollbarContain(x, scrollTrack)) {
                 return true;
@@ -679,7 +654,7 @@ public class BiChart {
 
     boolean setScrollsPosition(double x) {
         isChanged = false;
-        Scale xScale = navigator.getXScale(navigator.getDefaultXPosition());
+        Scale xScale = navigator.getXScale(navDefaultXPosition);
         Range scrollTrack = new Range(xScale.getStart(), xScale.getEnd());
         for (XAxisPosition xPosition : axisToScrolls.keySet()) {
             axisToScrolls.get(xPosition).setScrollbarPosition(x, scrollTrack);
@@ -690,7 +665,7 @@ public class BiChart {
     boolean translateScrolls(double dx) {
         isChanged = false;
         for (XAxisPosition xPosition : axisToScrolls.keySet()) {
-            Scale xScale = navigator.getXScale(navigator.getDefaultXPosition());
+            Scale xScale = navigator.getXScale(navDefaultXPosition);
             Range scrollTrack = new Range(xScale.getStart(), xScale.getEnd());
             axisToScrolls.get(xPosition).moveScrollbar(dx, scrollTrack);
         }
@@ -701,7 +676,7 @@ public class BiChart {
     boolean translateScrollsViewport(double dx) {
         isChanged = false;
         double dx1 = dx;
-        Scale xScale = navigator.getXScale(navigator.getDefaultXPosition());
+        Scale xScale = navigator.getXScale(navDefaultXPosition);
         Range scrollTrack = new Range(xScale.getStart(), xScale.getEnd());
         for (XAxisPosition xPosition : axisToScrolls.keySet()) {
             double d = dx * axisToScrolls.get(xPosition).scrollTrackToViewRatio(scrollTrack);

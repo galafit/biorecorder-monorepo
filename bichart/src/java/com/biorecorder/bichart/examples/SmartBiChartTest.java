@@ -1,13 +1,14 @@
 package com.biorecorder.bichart.examples;
 
+import com.biorecorder.bichart.ChartPanel1;
+import com.biorecorder.bichart.SmartBiChart;
 import com.biorecorder.bichart.XYSeries;
-import com.biorecorder.bichart.ChartPanel;
 import com.biorecorder.bichart.traces.LineTracePainter;
 import javax.swing.*;
 import java.awt.*;
 
-public class SmartChartTest  extends JFrame{
-    public SmartChartTest() {
+public class SmartBiChartTest extends JFrame{
+    public SmartBiChartTest() {
         int width = 400;
         int height = 500;
 
@@ -24,23 +25,24 @@ public class SmartChartTest  extends JFrame{
 
 
         XYSeries xySeries1 = new XYSeries(data, data);
-        XYSeries xySeries2 = new XYSeries(data1);
+        XYSeries xySeries2 = new XYSeries(0, 2, data);
 
-        ChartPanel chartPanel = new ChartPanel(false);
-        chartPanel.addChartTrace("No Regular", xySeries1, new LineTracePainter());
-        chartPanel.addChartStack();
-       // chartPanel.addChartTrace("Regular", xyData2, new LineTracePainter());
+        SmartBiChart smartBiChart = new SmartBiChart(false);
+        smartBiChart.addChartTrace("No Regular", xySeries1, new LineTracePainter());
+        smartBiChart.addChartStack();
+        smartBiChart.addChartTrace("Regular", xySeries2, new LineTracePainter(), false, false);
 
       //  chartPanel.addNavigatorTrace("zero", new XYData(new int[0]), new LineTracePainter() );
        // chartPanel.addNavigatorTrace("No Regular", xyData1, new LineTracePainter() );
        // chartPanel.addNavigatorStack();
-        chartPanel.addNavigatorTrace("Regular", xySeries2, new LineTracePainter());
+        smartBiChart.addNavigatorTrace("Regular", xySeries2, new LineTracePainter());
 
+        ChartPanel1 chartPanel = new ChartPanel1(smartBiChart);
         chartPanel.setPreferredSize(new Dimension(width, height));
         add(chartPanel, BorderLayout.CENTER);
         pack();
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        //addKeyListener(chartPanel);
+       // addKeyListener(chartPanel);
         setLocationRelativeTo(null);
         setVisible(true);
 
@@ -64,7 +66,7 @@ public class SmartChartTest  extends JFrame{
     }
 
     public static void main(String[] args) {
-        new SmartChartTest();
+        new SmartBiChartTest();
     }
 }
 

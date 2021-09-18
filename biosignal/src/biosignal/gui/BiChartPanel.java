@@ -1,8 +1,8 @@
 package biosignal.gui;
 
 import biosignal.application.XYData;
-import com.biorecorder.bichart.ChartPanel;
-import com.biorecorder.bichart.XYSeries;
+import com.biorecorder.bichart.*;
+import com.biorecorder.bichart.axis.XAxisPosition;
 import com.biorecorder.bichart.graphics.Range;
 import com.biorecorder.bichart.traces.TracePainter;
 import com.biorecorder.datalyb.datatable.DataTable;
@@ -15,50 +15,51 @@ import javax.swing.*;
 import java.awt.*;
 
 public class BiChartPanel extends JPanel {
-    private final ChartPanel chartPanel;
+    BiChart biChart;
+    ChartPanel1 chartPanel;
 
     public BiChartPanel(boolean isDateTime) {
-        chartPanel = new ChartPanel(isDateTime);
+        biChart = new SmartBiChart(isDateTime);
+        chartPanel = new ChartPanel1(biChart);
         setLayout(new BorderLayout());
         add(chartPanel);
     }
 
-    public void autoScaleX() {
-        chartPanel.autoScaleX();
-    }
-
     public void addChartStack() {
-        chartPanel.addChartStack();
+        biChart.addChartStack();
     }
 
     public void addChartTrace(String name, XYData data, TracePainter tracePainter) {
-        chartPanel.addChartTrace(name, convertData(data), tracePainter);
+        biChart.addChartTrace(name, convertData(data), tracePainter);
     }
 
     public void addChartTrace(String name, XYData data, TracePainter tracePainter, boolean isXOpposite,  boolean isYOpposite) {
-        chartPanel.addChartTrace(name, convertData(data), tracePainter, isXOpposite, isYOpposite);
+        biChart.addChartTrace(name, convertData(data), tracePainter, isXOpposite, isYOpposite);
     }
 
     public void addNavigatorStack() {
-        chartPanel.addNavigatorStack();
+        biChart.addNavigatorStack();
     }
 
     public void addNavigatorTrace(String name, XYData data, TracePainter tracePainter) {
-        chartPanel.addNavigatorTrace(name, convertData(data), tracePainter);
+        biChart.addNavigatorTrace(name, convertData(data), tracePainter);
     }
 
     public void setChartTraceData(int traceNumber, XYData data) {
-        chartPanel.setChartTraceData(traceNumber, convertData(data));
+        biChart.setChartTraceData(traceNumber, convertData(data));
     }
 
     public double[] getChartXRange() {
-        Range r = chartPanel.getChartXRange();
+        Range r = null;
+        for (XAxisPosition xPosition : XAxisPosition.values()) {
+            r = Range.join(r, biChart.geChartXMinMax(xPosition));
+        }
         double[] range = {r.getMin(), r.getMax()};
         return range;
     }
 
     public void setNavigatorTraceData(int traceNumber, XYData data) {
-        chartPanel.setNavigatorTraceData(traceNumber, convertData(data));
+        biChart.setNavigatorTraceData(traceNumber, convertData(data));
     }
 
     private XYSeries convertData(XYData xyData) {

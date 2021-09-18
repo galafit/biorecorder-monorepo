@@ -84,7 +84,7 @@ class AxisWrapper {
         double zoomedEnd = start + zoomedLength;
         zoomedScale.setStartEnd(start, zoomedEnd);
         double maxNew = zoomedScale.invert(end);
-        return new Range(getMin(), maxNew);
+        return new Range(axis.getMin(), maxNew);
     }
 
     public Range translatedMinMax(int translation) {
@@ -134,12 +134,8 @@ class AxisWrapper {
         return axis.isSizeDependsOnMinMax();
     }
 
-    public double getMin() {
-        return axis.getMin();
-    }
-
-    public double getMax() {
-        return axis.getMax();
+    public Range getMinMax() {
+        return new Range(axis.getMin(), axis.getMax());
     }
 
     public double getStart() {

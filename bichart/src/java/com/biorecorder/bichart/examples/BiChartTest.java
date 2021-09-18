@@ -39,19 +39,19 @@ public class BiChartTest extends JFrame{
 
 
         XYSeries xySeries = new XYSeries(xData.toArray(), yData.toArray());
-        XYSeries xySeries1 = new XYSeries(-20, 1, yData.toArray());
-        XYSeries xySeries2 = new XYSeries(-20, 2, yData.toArray());
+        XYSeries xySeries1 = new XYSeries(0, 1, yData.toArray());
+        XYSeries xySeries2 = new XYSeries(-10, 2, yData.toArray());
 
 
         chart = new BiChart(DarkTheme.getNavigableChartConfig(), new LinearScale());
 
         chart.addChartTrace("trace1", xySeries1, new LineTracePainter());
         chart.addChartStack();
-       // chart.addChartTrace("trace2", xyData2, new LineTracePainter(), XAxisPosition.BOTTOM, YAxisPosition.RIGHT);
-        chart.addChartTrace("trace2", xySeries2, new LineTracePainter());
+        chart.addChartTrace("trace2", xySeries2, new LineTracePainter(), true, true);
 
-        chart.addNavigatorTrace("trace", xySeries1, new LineTracePainter());
-       // chart.addNavigatorTrace("trace", new XYData(new int[0]), new LineTracePainter());
+        chart.addNavigatorTrace("trace1", xySeries1, new LineTracePainter());
+        chart.addNavigatorStack();
+        chart.addNavigatorTrace("trace2", xySeries2, new LineTracePainter(), true);
 
 
         chartPanel = new ChartPanel1(chart);

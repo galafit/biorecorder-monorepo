@@ -1,7 +1,7 @@
 package com.biorecorder.bichart.themes;
 
 import com.biorecorder.bichart.configs.ChartConfig;
-import com.biorecorder.bichart.configs.NavigableChartConfig;
+import com.biorecorder.bichart.configs.BiChartConfig;
 import com.biorecorder.bichart.axis.AxisConfig;
 import com.biorecorder.bichart.graphics.BColor;
 import com.biorecorder.bichart.configs.ScrollConfig;
@@ -61,7 +61,7 @@ public class DarkTheme {
         return chartConfig;
     }
 
-    public static NavigableChartConfig getNavigableChartConfig() {
+    public static BiChartConfig getNavigableChartConfig() {
         BColor navigatorBgColor = MARGIN_COLOR;
         BColor navigatorMarginColor = navigatorBgColor;
         BColor bgColor = navigatorBgColor;
@@ -78,8 +78,8 @@ public class DarkTheme {
 
         ChartConfig chartConfig1 = getChartConfig();
         chartConfig1.getYAxisConfig().setTickLabelOutside(false);
-        NavigableChartConfig navigableChartConfig = new NavigableChartConfig(chartConfig1, navigatorConfig, scrollConfig);
-        navigableChartConfig.setBackgroundColor(bgColor);
-        return navigableChartConfig;
+        BiChartConfig biChartConfig = new BiChartConfig(chartConfig1, navigatorConfig, scrollConfig);
+        biChartConfig.setBackgroundColor(bgColor);
+        return biChartConfig;
     }
 }

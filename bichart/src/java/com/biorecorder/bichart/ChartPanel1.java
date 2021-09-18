@@ -51,10 +51,8 @@ public class ChartPanel1 extends JPanel {
                             repaint();
                         }
                     } else {
-                        if(interactive.scrollContain(pastX, pastY)) {
-                            if(interactive.translateScroll(dx)) {
-                                repaint();
-                            }
+                        if(interactive.scrollContain(pastX, pastY) && interactive.translateScroll(dx)) {
+                            repaint();
                         } else if(interactive.translateY(pressedX, pressedY, dy)) {
                             repaint();
                         }
@@ -116,7 +114,7 @@ public class ChartPanel1 extends JPanel {
                         repaint();
                     }
 
-                } else { // translateScrolls X
+                } else { // translates X
                     if (interactive.translateX(e.getX(), e.getY(), dx)) {
                         repaint();
                     }

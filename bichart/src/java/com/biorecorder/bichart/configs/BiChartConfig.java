@@ -5,14 +5,14 @@ import com.biorecorder.bichart.graphics.BColor;
 /**
  * Created by galafit on 31/8/18.
  */
-public class NavigableChartConfig {
+public class BiChartConfig {
     private ChartConfig chartConfig;
     private ChartConfig navigatorConfig;
     private ScrollConfig scrollConfig;
 
     private BColor backgroundColor = BColor.WHITE_OBSCURE;
 
-    public NavigableChartConfig() {
+    public BiChartConfig() {
         BColor navigatorBgColor = BColor.WHITE_OBSCURE;
         BColor navigatorMarginColor = navigatorBgColor;
 
@@ -32,13 +32,13 @@ public class NavigableChartConfig {
     }
 
 
-    public NavigableChartConfig(ChartConfig chartConfig, ChartConfig navigatorConfig, ScrollConfig scrollConfig) {
+    public BiChartConfig(ChartConfig chartConfig, ChartConfig navigatorConfig, ScrollConfig scrollConfig) {
         this.chartConfig = chartConfig;
         this.navigatorConfig = navigatorConfig;
         this.scrollConfig = scrollConfig;
     }
 
-    public NavigableChartConfig(NavigableChartConfig config) {
+    public BiChartConfig(BiChartConfig config) {
         chartConfig = new ChartConfig(config.chartConfig);
         navigatorConfig = new ChartConfig(config.navigatorConfig);
         scrollConfig = new ScrollConfig(config.scrollConfig);

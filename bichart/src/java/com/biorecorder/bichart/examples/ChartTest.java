@@ -74,7 +74,7 @@ public class ChartTest extends JFrame {
         chart.addTrace("trace1", unsortedData, new LineTracePainter(),  true, true);
         chart.addStack();
         chart.addTrace("trace2", regularData,
-                new LineTracePainter(new LineTraceConfig(LineTraceConfig.VERTICAL_LINES)));
+                new LineTracePainter(new LineTraceConfig()));
 
         chart.autoScaleY();
         chart.autoScaleX();

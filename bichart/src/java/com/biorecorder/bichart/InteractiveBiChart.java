@@ -37,7 +37,7 @@ public class InteractiveBiChart implements Interactive {
                 stack = biChart.getNavigatorStackContaining(x, y);
                 yPositions = biChart.getNavigatorYPositionsUsedByStack(stack);
             }
-            return new YAxisInfo(true, stack, yPositions);
+            return new YAxisInfo(false, stack, yPositions);
         }
     }
 
@@ -73,12 +73,15 @@ public class InteractiveBiChart implements Interactive {
         }
         List<XAxisPosition> xPositions;
         int selection =biChart.getChartSelectedTrace();
+        int stack;
+        xPositions = new ArrayList();
         if (selection >= 0) {
-            xPositions = new ArrayList();
             xPositions.add(biChart.getChartTraceXPosition(selection));
         } else {
-            int stack = biChart.getChartStackContaining(x, y);
-            xPositions = biChart.getChartXPositionsUsedByStack(stack);
+            stack = biChart.getChartStackContaining(x, y);
+            if(stack >= 0) {
+                xPositions = biChart.getChartXPositionsUsedByStack(stack);
+            }
         }
         for (XAxisPosition xPosition : xPositions) {
            biChart.zoomScrollExtent(xPosition, scaleFactor);
@@ -152,7 +155,7 @@ public class InteractiveBiChart implements Interactive {
 
     @Override
     public boolean translateScroll(int dx) {
-        return biChart.translateScrolls(dx);
+        return biChart.translateScrolls(-dx);
     }
 
     @Override

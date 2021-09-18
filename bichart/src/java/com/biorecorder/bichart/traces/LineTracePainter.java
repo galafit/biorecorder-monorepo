@@ -96,12 +96,12 @@ public class LineTracePainter implements TracePainter {
         path.moveTo(x, y);
         canvas.setColor(markColor);
         int markSize = traceConfig.getMarkSize();
-        canvas.fillRect(x - markSize / 2,y - markSize / 2, markSize, markSize);
+        canvas.fillOval(x - markSize / 2,y - markSize / 2, markSize, markSize);
         for (int i = 1; i < xyData.size(); i++) {
             x = (int) xScale.scale(xyData.getX(i));
             y = (int) yScale.scale(xyData.getY(i));
             path.lineTo(x, y);
-            canvas.fillRect(x - markSize / 2,y - markSize / 2, markSize, markSize);
+            canvas.fillOval(x - markSize / 2,y - markSize / 2, markSize, markSize);
 
         }
         if(traceConfig.getLineWidth() > 0) {
