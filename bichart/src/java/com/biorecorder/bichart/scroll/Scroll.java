@@ -48,8 +48,13 @@ public class Scroll {
         return model.getStart() + (scrollTrackPosition - scrollTrack.getMin()) / trackToViewRatio;
     }
 
-    public void setScrollbarPosition(double scrollBarPosition, Range scrollTrack) {
-        model.setViewportPosition(scrollTrackToViewPosition(scrollBarPosition, scrollTrack));
+    public void setScrollbarCenter(double position, Range scrollTrack) {
+        double viewportPosition = scrollTrackToViewPosition(position, scrollTrack) - model.getViewportExtent() / 2;
+        model.setViewportPosition(viewportPosition);
+    }
+
+    public void setScrollbarPosition(double position, Range scrollTrack) {
+        model.setViewportPosition(scrollTrackToViewPosition(position, scrollTrack));
     }
 
     public void moveViewport(double dx) {

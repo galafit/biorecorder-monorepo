@@ -657,7 +657,7 @@ public class BiChart {
         Scale xScale = navigator.getXScale(navDefaultXPosition);
         Range scrollTrack = new Range(xScale.getStart(), xScale.getEnd());
         for (XAxisPosition xPosition : axisToScrolls.keySet()) {
-            axisToScrolls.get(xPosition).setScrollbarPosition(x, scrollTrack);
+            axisToScrolls.get(xPosition).setScrollbarCenter(x, scrollTrack);
         }
         return isChanged;
     }
