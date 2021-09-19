@@ -48,6 +48,11 @@ public class ScrollModel {
         setRangeProperties(newPosition, viewportExtent, start, end);
     }
 
+    public void setViewportCenterValue(double centerValue) {
+        double newPosition = scale.scale(centerValue) - viewportExtent/2;
+        setRangeProperties(newPosition, viewportExtent, start, end);
+    }
+
     public double getViewportPosition() {
         return viewportPosition;
     }

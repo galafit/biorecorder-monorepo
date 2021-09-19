@@ -170,7 +170,7 @@ public class Chart {
 
     private void setAxisMinMax(AxisWrapper axis, double min, double max, boolean isAutoscale) {
         axis.setMinMax(min, max, isAutoscale);
-        if (!isMarginFixed || axis.isSizeDependsOnMinMax()) {
+        if (!isMarginFixed && axis.isSizeDependsOnMinMax()) {
             invalidate();
         }
     }

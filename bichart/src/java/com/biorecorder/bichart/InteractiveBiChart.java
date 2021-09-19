@@ -149,6 +149,22 @@ public class InteractiveBiChart implements Interactive {
     public boolean setScrollPosition(int x, int y) {
         if(biChart.navigatorContain(x, y)) {
             return biChart.setScrollsPosition(x);
+        } else {
+            List<XAxisPosition> xPositions;
+            int selection =biChart.getChartSelectedTrace();
+            int stack;
+            xPositions = new ArrayList();
+            if (selection >= 0) {
+                xPositions.add(biChart.getChartTraceXPosition(selection));
+            } else {
+                stack = biChart.getChartStackContaining(x, y);
+                if(stack >= 0) {
+                    xPositions = biChart.getChartXPositionsUsedByStack(stack);
+                }
+            }
+            if(xPositions.size() > 0) {
+                return biChart.setScrollsViewport(xPositions.get(0), x);
+            }
         }
         return false;
     }

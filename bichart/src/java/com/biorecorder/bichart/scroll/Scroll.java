@@ -34,6 +34,10 @@ public class Scroll {
         model.setViewportMin(min);
     }
 
+    public void setViewportCenterValue(double centerValue) {
+        model.setViewportCenterValue(centerValue);
+    }
+
     public double scrollTrackToViewRatio(Range scrollbarTrack) {
         return scrollbarTrack.length() / (model.getEnd() - model.getStart());
     }

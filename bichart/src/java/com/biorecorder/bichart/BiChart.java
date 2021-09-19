@@ -652,6 +652,7 @@ public class BiChart {
     }
 
 
+
     boolean setScrollsPosition(double x) {
         isChanged = false;
         Scale xScale = navigator.getXScale(navDefaultXPosition);
@@ -685,6 +686,16 @@ public class BiChart {
             }
         }
         translateScrolls(dx1);
+        return isChanged;
+    }
+
+    boolean setScrollsViewport(XAxisPosition xAxisPosition, double x) {
+        isChanged = false;
+        Scale xScale = chart.getXScale(xAxisPosition);
+        double xValue = xScale.invert(x);
+        for (XAxisPosition xPosition : axisToScrolls.keySet()) {
+            axisToScrolls.get(xPosition).setViewportCenterValue(xValue);
+        }
         return isChanged;
     }
 
