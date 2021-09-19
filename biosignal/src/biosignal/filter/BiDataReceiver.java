@@ -1,4 +1,4 @@
-package biosignal.application.filter;
+package biosignal.filter;
 
 public interface BiDataReceiver {
     void put(double x, int y);

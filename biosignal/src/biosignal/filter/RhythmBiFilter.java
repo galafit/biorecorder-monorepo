@@ -1,4 +1,4 @@
-package biosignal.application.filter;
+package biosignal.filter;
 
 public class RhythmBiFilter extends BaseBiFilter {
     private double lastPeakMs = -1;

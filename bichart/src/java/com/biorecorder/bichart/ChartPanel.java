@@ -46,7 +46,7 @@ public class ChartPanel extends JPanel {
                             || e.isControlDown()
                             // || e.isShiftDown()
                             || e.isMetaDown()) {
-                        if(interactive.scaleX(pressedX, pressedY, distanceToScaleFactor(dx))) {
+                        if(interactive.translateY(pressedX, pressedY, dy)) {
                             repaint();
                         }
                     } else {
@@ -63,12 +63,11 @@ public class ChartPanel extends JPanel {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2) { // double click
+                if (e.isAltDown() || e.isControlDown() || e.isMetaDown()) {
                     interactive.autoScaleX();
                     interactive.autoScaleY();
                     repaint();
-                }
-                if (e.getClickCount() == 1) { // single click
+                } else  {
                     if(interactive.switchTraceSelection(e.getX(), e.getY())) {
                         repaint();
                     } else if(interactive.setScrollPosition(e.getX(), e.getY())) {
@@ -103,17 +102,17 @@ public class ChartPanel extends JPanel {
             @Override
             public void mouseWheelMoved(MouseWheelEvent e) {
                 e.consume(); // avoid the event to be triggered twice
-                int dy = e.getUnitsToScroll(); //e.getWheelRotation() * scrollPointsPerRotation;
+                int d = e.getUnitsToScroll(); //e.getWheelRotation() * scrollPointsPerRotation;
                 if (e.isAltDown()
                         || e.isControlDown()
                         //    || e.isShiftDown() // JAVA BUG on MAC!!!!
                         || e.isMetaDown()) { // scaleY
-                    if(interactive.scaleY(e.getX(), e.getY(), distanceToScaleFactor(dy))) {
+                    if(interactive.scaleY(e.getX(), e.getY(), distanceToScaleFactor(d))) {
                         repaint();
                     }
 
-                } else { // translates Y
-                    if (interactive.translateY(e.getX(), e.getY(), dy)) {
+                } else { // scale X
+                    if (interactive.scaleX(e.getX(), e.getY(), distanceToScaleFactor(d))) {
                         repaint();
                     }
                 }

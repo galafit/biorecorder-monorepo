@@ -1,4 +1,4 @@
-package biosignal.application.filter;
+package biosignal.filter;
 
 import java.util.Arrays;
 

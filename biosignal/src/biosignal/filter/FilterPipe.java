@@ -1,4 +1,4 @@
-package biosignal.application.filter;
+package biosignal.filter;
 
 import biosignal.application.XYData;
 import com.biorecorder.datalyb.list.IntArrayList;

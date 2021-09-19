@@ -40,8 +40,9 @@ public class EdfProvider {
        // recordingStarTimeMs = header.getRecordingStartTimeMs();
         // setFullReadInterval
         readStartMs = 0;
-        readEndMs = 10000; //header.getDurationOfDataRecordMs() *
-               // header.getNumberOfDataRecords();
+        readEndMs = header.getDurationOfDataRecordMs() *
+               header.getNumberOfDataRecords();
+        //readEndMs = 10000;
     }
 
      public void setFullReadInterval(){

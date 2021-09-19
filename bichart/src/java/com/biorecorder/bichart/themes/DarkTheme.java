@@ -32,7 +32,7 @@ public class DarkTheme {
     private static final BColor AXIS_COLOR = new BColor(100, 86, 60);
     private static final BColor GRID_COLOR = new BColor(70, 65, 45);
     private static final BColor CROSSHAIR_COLOR = BColor.WHITE_OBSCURE;
-    private static final BColor SCROLL_COLOR = BColor.CYAN;
+    private static final BColor SCROLL_COLOR = BColor.WHITE;
 
 
     public static ChartConfig getChartConfig() {

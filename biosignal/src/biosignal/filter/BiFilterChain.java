@@ -1,4 +1,4 @@
-package biosignal.application.filter;
+package biosignal.filter;
 
 public class BiFilterChain implements BiFilter {
     private BiFilter[] filters;

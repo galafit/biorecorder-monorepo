@@ -1,6 +1,6 @@
 package biosignal.application;
 
-import biosignal.application.filter.*;
+import biosignal.filter.*;
 
 import java.util.ArrayList;
 import java.util.List;

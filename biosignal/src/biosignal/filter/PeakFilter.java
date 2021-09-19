@@ -1,4 +1,4 @@
-package biosignal.application.filter;
+package biosignal.filter;
 
 public class PeakFilter implements Filter{
     private int peak = 40000;

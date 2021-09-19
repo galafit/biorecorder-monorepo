@@ -38,6 +38,11 @@ public class Scroll {
         model.setViewportCenterValue(centerValue);
     }
 
+    public double scrollViewportRatio() {
+        return model.getViewportExtent() / (model.getEnd() - model.getStart());
+    }
+
+
     public double scrollTrackToViewRatio(Range scrollbarTrack) {
         return scrollbarTrack.length() / (model.getEnd() - model.getStart());
     }
@@ -92,7 +97,7 @@ public class Scroll {
     }
 
     public void draw(BCanvas canvas, Range scrollTrack, BRectangle area) {
-        int border = 6;
+        int border = 1;
         int scrollWidthMin = 2;
         int scrollTop = area.y;
         int scrollHeight = area.height;

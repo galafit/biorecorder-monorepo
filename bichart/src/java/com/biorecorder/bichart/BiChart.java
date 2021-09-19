@@ -674,17 +674,9 @@ public class BiChart {
 
     }
 
-    boolean translateScrollsViewport(double dx) {
+    boolean translateScrollsViewport(XAxisPosition xPosition, double dx) {
         isChanged = false;
-        double dx1 = dx;
-        Scale xScale = navigator.getXScale(navDefaultXPosition);
-        Range scrollTrack = new Range(xScale.getStart(), xScale.getEnd());
-        for (XAxisPosition xPosition : axisToScrolls.keySet()) {
-            double d = dx * axisToScrolls.get(xPosition).scrollTrackToViewRatio(scrollTrack);
-            if(Math.abs(dx1) > Math.abs(d)) {
-                dx1 = d;
-            }
-        }
+        double dx1 = dx * axisToScrolls.get(xPosition).scrollViewportRatio();
         translateScrolls(dx1);
         return isChanged;
     }
@@ -705,14 +697,6 @@ public class BiChart {
         Scroll scroll = axisToScrolls.get(xAxisPosition);
         if (scroll != null) {
             scroll.zoomViewport(zoomFactor);
-        }
-        return isChanged;
-    }
-
-    boolean zoomScrollExtent(double zoomFactor) {
-        isChanged = false;
-        for (XAxisPosition xPosition : axisToScrolls.keySet()) {
-            axisToScrolls.get(xPosition).zoomViewport(zoomFactor);
         }
         return isChanged;
     }

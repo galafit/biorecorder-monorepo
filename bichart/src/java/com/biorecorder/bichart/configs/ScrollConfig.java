@@ -20,7 +20,7 @@ public class ScrollConfig {
     }
 
     public BColor getColor() {
-         return new BColor(color.getRed(), color.getBlue(), color.getGreen(), 60);
+         return new BColor(color.getRed(), color.getBlue(), color.getGreen(), 250);
      }
 
     public void setColor(BColor color) {

@@ -1,4 +1,4 @@
-package biosignal.application.filter;
+package biosignal.filter;
 
 public class QRSFilter implements Filter {
 //    private static final int PEAK_VALUE = 100;

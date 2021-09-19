@@ -41,9 +41,32 @@ public class InteractiveBiChart implements Interactive {
         }
     }
 
+    private List<XAxisPosition> getChartXPositions(int x, int y) {
+        List<XAxisPosition> xPositions;
+        int selection =biChart.getChartSelectedTrace();
+        int stack;
+        xPositions = new ArrayList();
+        if (selection >= 0) {
+            xPositions.add(biChart.getChartTraceXPosition(selection));
+        } else {
+            stack = biChart.getChartStackContaining(x, y);
+            if(stack >= 0) {
+                xPositions = biChart.getChartXPositionsUsedByStack(stack);
+            }
+        }
+        return xPositions;
+    }
+
+
     @Override
     public boolean translateX(int x, int y, int dx) {
-       return biChart.translateScrollsViewport(dx);
+        if(biChart.chartContain(x, y)) {
+            List<XAxisPosition> xPositions = getChartXPositions(x, y);
+            if(xPositions.size() > 0) {
+                return biChart.translateScrollsViewport(xPositions.get(0), dx);
+            }
+        }
+        return false;
     }
 
     @Override
@@ -71,20 +94,13 @@ public class InteractiveBiChart implements Interactive {
         if (scaleFactor == 0) {
             return false;
         }
-        List<XAxisPosition> xPositions;
-        int selection =biChart.getChartSelectedTrace();
-        int stack;
-        xPositions = new ArrayList();
-        if (selection >= 0) {
-            xPositions.add(biChart.getChartTraceXPosition(selection));
-        } else {
-            stack = biChart.getChartStackContaining(x, y);
-            if(stack >= 0) {
-                xPositions = biChart.getChartXPositionsUsedByStack(stack);
+        if(biChart.chartContain(x, y)) {
+            boolean isChanged = false;
+            List<XAxisPosition> xPositions = getChartXPositions(x, y);
+            for (XAxisPosition xPosition : xPositions) {
+                isChanged = biChart.zoomScrollExtent(xPosition, scaleFactor) || isChanged;
             }
-        }
-        for (XAxisPosition xPosition : xPositions) {
-           biChart.zoomScrollExtent(xPosition, scaleFactor);
+            return isChanged;
         }
         return false;
     }
