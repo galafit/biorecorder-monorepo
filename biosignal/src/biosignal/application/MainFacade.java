@@ -1,6 +1,8 @@
 package biosignal.application;
 
 import biosignal.filter.*;
+import biosignal.filter.XYData;
+import biosignal.filter.pipe.FilterPipe;
 
 public class MainFacade implements Facade {
     private EdfProvider provider;
@@ -12,25 +14,38 @@ public class MainFacade implements Facade {
     }
 
     private static DataStore createDataStore(EdfProvider provider) {
-        DataStore ds = new DataStore(provider);
+        DataStore dataStore = new DataStore();
+        long startTime = provider.getRecordingStartTimeMs();
+
+        int ecgSignal = 0;
+        double ecgSampleRate = provider.signalSampleRate(ecgSignal);
+        double ecgSampleStepMs = 1000 / ecgSampleRate;
         int stepMs = 10;
-        int signal = 0;
-        double signalSampleRate = provider.signalSampleRate(signal);
-        ds.addDataChannel(signal);
-        ds.addDataChannel(signal, new DerivateFilter(signalSampleRate, stepMs),
-                new PeakFilter());
-        ds.addDataChannel(signal, new DerivateFilter(signalSampleRate, stepMs),
-                new PeakFilter(), new QRSFilter(signalSampleRate));
 
-        FilterChain fc = new FilterChain(new DerivateFilter(signalSampleRate, stepMs),
-                new PeakFilter(), new QRSFilter(signalSampleRate));
-        ds.addDataChannel(signal,fc ,
-                new RhythmBiFilter());
+        FilterPipe ecgFilterPipe = new FilterPipe(startTime, ecgSampleStepMs);
+        provider.addListener(ecgSignal, ecgFilterPipe);
 
-        signal = 1;
-        ds.addDataChannel(signal);
-        return ds;
+        XYData ecg = ecgFilterPipe.accumulateData();
+        dataStore.addDataChannel("ecg", ecg);
 
+        XYData ecgDeriv = ecgFilterPipe.then(new DerivateFilter(ecgSampleRate, stepMs)).
+                then(new PeakFilter()).accumulateData();
+        dataStore.addDataChannel("ecg derivate", ecgDeriv);
+
+        XYData ecgQRS = ecgFilterPipe.then(new QRSFilter(ecgSampleRate)).accumulateData();
+        dataStore.addDataChannel("ecg QRS", ecgQRS);
+
+        XYData ecgRhythm = ecgFilterPipe.then(new RhythmBiFilter()).accumulateData();
+        dataStore.addDataChannel("ecg Rhythm", ecgRhythm);
+
+        /*int accSignal = 1;
+        double accSampleRate = provider.signalSampleRate(accSignal);
+        double accSampleStepMs = 1000 / accSampleRate;
+        FilterPipe accFilterPipe = new FilterPipe(startTime, ecgSampleStepMs);
+        provider.addListener(accSignal, accFilterPipe);
+        XYData acc = accFilterPipe.accumulateData();
+        dataStore.addDataChannel("accelerometer", acc);*/
+        return dataStore;
     }
 
     @Override

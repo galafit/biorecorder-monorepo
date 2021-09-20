@@ -1,6 +1,6 @@
 package biosignal.gui;
 
-import biosignal.application.XYData;
+import biosignal.filter.XYData;
 import com.biorecorder.bichart.*;
 import com.biorecorder.bichart.axis.XAxisPosition;
 import com.biorecorder.bichart.graphics.Range;

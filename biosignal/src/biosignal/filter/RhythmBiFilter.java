@@ -24,6 +24,6 @@ public class RhythmBiFilter extends BaseBiFilter {
                 }
             }
         }
-        return setNoResult();
+        return false;
     }
 }

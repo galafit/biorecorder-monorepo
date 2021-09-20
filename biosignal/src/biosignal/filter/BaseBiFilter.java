@@ -10,10 +10,6 @@ public class BaseBiFilter implements BiFilter {
         return true;
     }
 
-    boolean setNoResult() {
-        return false;
-    }
-
     @Override
     public boolean apply(double x, int y) {
         return setResult(x, y);

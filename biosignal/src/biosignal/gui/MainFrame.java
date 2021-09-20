@@ -1,7 +1,7 @@
 package biosignal.gui;
 
 import biosignal.application.Facade;
-import biosignal.application.XYData;
+import biosignal.filter.XYData;
 import com.biorecorder.bichart.GroupingApproximation;
 import com.biorecorder.bichart.traces.LineTraceConfig;
 import com.biorecorder.bichart.traces.LineTracePainter;
@@ -54,17 +54,16 @@ public class MainFrame extends JFrame {
     private static  BiChartPanel createChartPanel(Facade facade){
         boolean isTimeXAxis = false; // XAxis: false - index; true - time
         BiChartPanel chartPanel = new BiChartPanel(isTimeXAxis);
-        for (int i = 0; i < facade.getCanalsCount() - 2; i++) {
+        for (int i = 0; i < facade.getCanalsCount() - 1; i++) {
             XYData xyData = facade.getData(i);
             xyData.setGroupingApproximationY(GroupingApproximation.HIGH);
             if(i > 0) {
                 chartPanel.addChartStack();
-                xyData.setGroupingApproximationY(GroupingApproximation.HIGH);
             }
             LineTraceConfig lineConfig = new LineTraceConfig();
             lineConfig.setLineWidth(1);
             lineConfig.setMarkSize(3);
-            chartPanel.addChartTrace("trace"+i, xyData, new LineTracePainter(lineConfig));
+            chartPanel.addChartTrace(xyData.getName(), xyData, new LineTracePainter(lineConfig));
         }
 
 
@@ -75,9 +74,9 @@ public class MainFrame extends JFrame {
         lineConfig.setLineWidth(1);
         lineConfig.setMarkSize(3);
         chartPanel.addChartStack();
-        chartPanel.addChartTrace("rhythm", xyData, new LineTracePainter(lineConfig), true, false);
+        chartPanel.addChartTrace(xyData.getName(), xyData, new LineTracePainter(lineConfig), true, false);
 
-        chartPanel.addNavigatorTrace("rhythm", xyData, new VerticalLinePainter());
+        chartPanel.addNavigatorTrace(xyData.getName(), xyData, new VerticalLinePainter());
         return chartPanel;
     }
 

@@ -1,4 +1,4 @@
-package biosignal.application;
+package biosignal.filter;
 
 import com.biorecorder.bichart.GroupingApproximation;
 import com.biorecorder.datalyb.series.DoubleSeries;
@@ -11,6 +11,7 @@ public class XYData {
     double step;
     private final DoubleSeries xValues;
     private final IntSeries yValues;
+    private String name;
 
     public XYData(double startValue, double step, IntSeries yValues) {
        isRegular = true;
@@ -43,6 +44,14 @@ public class XYData {
 
     public void setGroupingApproximationY(GroupingApproximation yGroupingApproximation) {
         this.yGroupingApproximation = yGroupingApproximation;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public boolean isRegular() {

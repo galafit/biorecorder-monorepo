@@ -1,5 +1,7 @@
 package biosignal.application;
 
+import biosignal.filter.XYData;
+
 public interface Facade {
     void read();
 
