@@ -50,7 +50,7 @@ class Tooltip {
         canvas.setTextStyle(config.getTextStyle());
         BDimension tooltipDimension  = getTextSize(canvas, items);
         int tooltipAreaX = crossPoint.getX() - tooltipDimension.width / 2;
-        int tooltipAreaY = 0;
+        int tooltipAreaY = area.y;
         if (tooltipAreaX + tooltipDimension.width > area.x + area.width){
             tooltipAreaX = area.x + area.width - tooltipDimension.width;
         }
