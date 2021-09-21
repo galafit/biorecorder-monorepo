@@ -52,31 +52,36 @@ public class MainFrame extends JFrame {
     }
 
     private static  BiChartPanel createChartPanel(Facade facade){
-        boolean isTimeXAxis = false; // XAxis: false - index; true - time
+        boolean isTimeXAxis = facade.isDateTime(); // XAxis: false - index; true - time
         BiChartPanel chartPanel = new BiChartPanel(isTimeXAxis);
-        for (int i = 0; i < facade.getCanalsCount() - 1; i++) {
-            XYData xyData = facade.getData(i);
-            xyData.setGroupingApproximationY(GroupingApproximation.HIGH);
-            if(i > 0) {
+        int[] chartDataChannels = facade.getShowDataChannels();
+        int[] navDataChannels = facade.getNavigateDataChannels();
+
+        double dataStep = 0;
+        boolean isYOpposite = false;
+        boolean isXOpposite;
+        for (int i = 0; i < chartDataChannels.length; i++) {
+            XYData xyData = facade.getData(chartDataChannels[i]);
+            if(i == 0) {
+                dataStep = xyData.getStep();
+            } else {
                 chartPanel.addChartStack();
             }
+            isXOpposite = (dataStep == xyData.getStep())? false : true;
             LineTraceConfig lineConfig = new LineTraceConfig();
             lineConfig.setLineWidth(1);
             lineConfig.setMarkSize(3);
-            chartPanel.addChartTrace(xyData.getName(), xyData, new LineTracePainter(lineConfig));
+            chartPanel.addChartTrace(xyData.getName(), xyData, new LineTracePainter(lineConfig), isXOpposite, isYOpposite);
         }
 
+        for (int i = 0; i < navDataChannels.length; i++) {
+            XYData xyData = facade.getData(navDataChannels[i]);
+            if(i > 0) {
+                chartPanel.addNavigatorStack();
+            }
+            chartPanel.addNavigatorTrace(xyData.getName(), xyData, new VerticalLinePainter());
+        }
 
-        XYData xyData = facade.getData(3);
-        xyData.setGroupingApproximationY(GroupingApproximation.HIGH);
-
-        LineTraceConfig lineConfig = new LineTraceConfig();
-        lineConfig.setLineWidth(1);
-        lineConfig.setMarkSize(3);
-        chartPanel.addChartStack();
-        chartPanel.addChartTrace(xyData.getName(), xyData, new LineTracePainter(lineConfig), true, false);
-
-        chartPanel.addNavigatorTrace(xyData.getName(), xyData, new VerticalLinePainter());
         return chartPanel;
     }
 

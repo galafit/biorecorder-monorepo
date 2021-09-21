@@ -73,20 +73,23 @@ public class EdfProvider {
 
     public void read() {
         for (int i = 0; i < dataListeners.length; i++) {
-            long startPos = timeMsToPosition(i, readStartMs);
-            long endPos = timeMsToPosition(i, readEndMs);
-            int n = (int) (endPos - startPos);
-            int[] data = new int[n];
-            try {
-                edfReader.setSamplePosition(i, startPos);
-                edfReader.readSamples(i, n, data);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
             List<DataListener> signalListeners = dataListeners[i];
-            for (int j = 0; j < signalListeners.size(); j++) {
-                DataListener l = signalListeners.get(j);
-                l.receiveData(data);
+            if(signalListeners.size() > 0) {
+                long startPos = timeMsToPosition(i, readStartMs);
+                long endPos = timeMsToPosition(i, readEndMs);
+                int n = (int) (endPos - startPos);
+                int[] data = new int[n];
+                try {
+                    edfReader.setSamplePosition(i, startPos);
+                    edfReader.readSamples(i, n, data);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                for (int j = 0; j < signalListeners.size(); j++) {
+                    DataListener l = signalListeners.get(j);
+                    l.receiveData(data);
+                }
             }
         }
     }

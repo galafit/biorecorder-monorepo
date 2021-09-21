@@ -4,7 +4,9 @@ import com.biorecorder.bichart.configs.BiChartConfig;
 import com.biorecorder.bichart.axis.XAxisPosition;
 import com.biorecorder.bichart.axis.YAxisPosition;
 import com.biorecorder.bichart.graphics.*;
+import com.biorecorder.bichart.scales.LinearScale;
 import com.biorecorder.bichart.scales.Scale;
+import com.biorecorder.bichart.scales.TimeScale;
 import com.biorecorder.bichart.scroll.Scroll;
 import com.biorecorder.bichart.scroll.ScrollListener;
 import com.biorecorder.bichart.traces.TracePainter;
@@ -37,7 +39,8 @@ public class BiChart {
     private boolean isChanged = false;
     private boolean isScrollsConfigured = false;
 
-    public BiChart(BiChartConfig config, Scale xScale) {
+    public BiChart(BiChartConfig config, boolean isDateTime) {
+        Scale xScale = isDateTime ? new TimeScale() :new LinearScale();
         this.config = new BiChartConfig(config);
         chart = new Chart(config.getChartConfig(), xScale, XAxisPosition.TOP, YAxisPosition.RIGHT);
         navigator = new Chart(config.getNavigatorConfig(), xScale, navDefaultXPosition , YAxisPosition.RIGHT);

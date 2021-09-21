@@ -3,49 +3,33 @@ package biosignal.application;
 import biosignal.filter.*;
 import biosignal.filter.XYData;
 import biosignal.filter.pipe.FilterPipe;
+import com.biorecorder.bichart.GroupingApproximation;
 
 public class MainFacade implements Facade {
     private EdfProvider provider;
     private DataStore dataStore;
 
+
+
     public MainFacade(EdfProvider provider) {
         this.provider = provider;
-        dataStore = createDataStore(provider);
+        dataStore = Config.configDataStore(provider);
     }
 
-    private static DataStore createDataStore(EdfProvider provider) {
-        DataStore dataStore = new DataStore();
-        long startTime = provider.getRecordingStartTimeMs();
 
-        int ecgSignal = 0;
-        double ecgSampleRate = provider.signalSampleRate(ecgSignal);
-        double ecgSampleStepMs = 1000 / ecgSampleRate;
-        int stepMs = 10;
+    @Override
+    public int[] getShowDataChannels() {
+        return dataStore.getShowDataChannels();
+    }
 
-        FilterPipe ecgFilterPipe = new FilterPipe(startTime, ecgSampleStepMs);
-        provider.addListener(ecgSignal, ecgFilterPipe);
+    @Override
+    public int[] getNavigateDataChannels() {
+        return dataStore.getNavigateDataChannels();
+    }
 
-        XYData ecg = ecgFilterPipe.accumulateData();
-        dataStore.addDataChannel("ecg", ecg);
-
-        XYData ecgDeriv = ecgFilterPipe.then(new DerivateFilter(ecgSampleRate, stepMs)).
-                then(new PeakFilter()).accumulateData();
-        dataStore.addDataChannel("ecg derivate", ecgDeriv);
-
-        XYData ecgQRS = ecgFilterPipe.then(new QRSFilter(ecgSampleRate)).accumulateData();
-        dataStore.addDataChannel("ecg QRS", ecgQRS);
-
-        XYData ecgRhythm = ecgFilterPipe.then(new RhythmBiFilter()).accumulateData();
-        dataStore.addDataChannel("ecg Rhythm", ecgRhythm);
-
-        /*int accSignal = 1;
-        double accSampleRate = provider.signalSampleRate(accSignal);
-        double accSampleStepMs = 1000 / accSampleRate;
-        FilterPipe accFilterPipe = new FilterPipe(startTime, ecgSampleStepMs);
-        provider.addListener(accSignal, accFilterPipe);
-        XYData acc = accFilterPipe.accumulateData();
-        dataStore.addDataChannel("accelerometer", acc);*/
-        return dataStore;
+    @Override
+    public boolean isDateTime() {
+        return dataStore.isDateTime();
     }
 
     @Override
@@ -66,28 +50,23 @@ public class MainFacade implements Facade {
     @Override
     public void setReadInterval(int signal, long startPos, long samplesToRead) {
         provider.setReadInterval(signal, startPos, samplesToRead);
-        dataStore = createDataStore(provider);
+        dataStore = Config.configDataStore(provider);
     }
 
     @Override
     public void setReadTimeInterval(long readStartMs, long readIntervalMs) {
         provider.setReadTimeInterval(readStartMs, readIntervalMs);
-        dataStore = createDataStore(provider);
+        dataStore = Config.configDataStore(provider);
     }
 
     @Override
     public void setFullReadInterval() {
         provider.setFullReadInterval();
-        dataStore = createDataStore(provider);
+        dataStore = Config.configDataStore(provider);
     }
 
     @Override
     public String copyReadIntervalToFile() {
         return provider.copyReadIntervalToFile();
-    }
-
-    @Override
-    public int getCanalsCount() {
-        return dataStore.dataChannelCount();
     }
 }

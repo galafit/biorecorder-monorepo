@@ -21,7 +21,7 @@ public class SmartBiChart extends BiChart {
     private List<Boolean> navTraceNeedUpdateDataFlags = new ArrayList<>();
 
     public SmartBiChart(ProcessingConfig processingConfig, BiChartConfig chartConfig, boolean isDateTime) {
-        super(chartConfig, new LinearScale());
+        super(chartConfig, isDateTime);
         dataProcessor = new DataProcessor(processingConfig, isDateTime);
         for (XAxisPosition xPosition : XAxisPosition.values()) {
             ScrollListener l = new ScrollListener() {

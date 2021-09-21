@@ -43,7 +43,7 @@ public class BiChartTest extends JFrame{
         XYSeries xySeries2 = new XYSeries(-10, 2, yData.toArray());
 
 
-        chart = new BiChart(DarkTheme.getNavigableChartConfig(), new LinearScale());
+        chart = new BiChart(DarkTheme.getNavigableChartConfig(), false);
 
         chart.addChartTrace("trace1", xySeries1, new LineTracePainter());
         chart.addChartStack();

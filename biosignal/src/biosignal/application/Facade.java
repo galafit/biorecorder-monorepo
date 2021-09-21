@@ -9,6 +9,12 @@ public interface Facade {
 
     XYData getData(int channel);
 
+    int[] getShowDataChannels();
+
+    int[] getNavigateDataChannels();
+
+    boolean isDateTime();
+
    void setFullReadInterval();
 
     void setReadInterval(int signal, long startPos, long samplesToRead);
@@ -17,6 +23,4 @@ public interface Facade {
 
     // return the name of new file
     String copyReadIntervalToFile();
-
-    int getCanalsCount();
 }
