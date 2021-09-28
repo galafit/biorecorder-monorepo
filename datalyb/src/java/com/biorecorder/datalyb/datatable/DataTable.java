@@ -7,24 +7,32 @@ public class DataTable {
     private String name;
     private List<Column> columns = new ArrayList<>();
 
-    public DataTable() {
-        this("DataTable");
-    }
-
     public DataTable(String name) {
         this.name = name;
     }
+    public DataTable(String name, Column... columns) {
+        this.name = name;
+        for (Column col : columns) {
+            this.columns.add(col);
+        }
+    }
 
-    public String name() {
+    public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public void removeColumns() {
         columns.clear();
     }
 
-    public void addColumn(Column column) {
-        columns.add(column);
+    public void addColumns(Column... columns) {
+        for (Column col : columns) {
+            this.columns.add(col);
+        }
     }
 
     public void addColumn(int position, Column col) {

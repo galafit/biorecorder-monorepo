@@ -1,9 +1,6 @@
 package biosignal.application;
 
-import biosignal.filter.*;
 import biosignal.filter.XYData;
-import biosignal.filter.pipe.FilterPipe;
-import com.biorecorder.bichart.GroupingApproximation;
 
 public class MainFacade implements Facade {
     private EdfProvider provider;
@@ -16,15 +13,19 @@ public class MainFacade implements Facade {
         dataStore = Config.configDataStore(provider);
     }
 
-
     @Override
-    public int[] getShowDataChannels() {
-        return dataStore.getShowDataChannels();
+    public int[] getChartDataChannels1() {
+        return dataStore.getChartDataChannels1();
     }
 
     @Override
-    public int[] getNavigateDataChannels() {
-        return dataStore.getNavigateDataChannels();
+    public int[] getChartDataChannels2() {
+        return dataStore.getChartDataChannels2();
+    }
+
+    @Override
+    public int[] getNavigatorDataChannels() {
+        return dataStore.getNavigatorDataChannels();
     }
 
     @Override

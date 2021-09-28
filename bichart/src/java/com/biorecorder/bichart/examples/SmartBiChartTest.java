@@ -25,7 +25,7 @@ public class SmartBiChartTest extends JFrame{
 
 
         XYSeries xySeries1 = new XYSeries(data, data);
-        XYSeries xySeries2 = new XYSeries(0, 2, data);
+        XYSeries xySeries2 = new XYSeries(0, 5, data);
 
         SmartBiChart smartBiChart = new SmartBiChart(false);
         smartBiChart.addChartTrace("No Regular", xySeries1, new LineTracePainter());

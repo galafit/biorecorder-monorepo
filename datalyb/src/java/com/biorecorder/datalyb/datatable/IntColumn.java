@@ -38,36 +38,6 @@ public class IntColumn implements Column {
     }
 
     @Override
-    public Column emptyCopy() {
-        return new IntColumn(name);
-    }
-
-    @Override
-    public String name() {
-        return name;
-    }
-
-    @Override
-    public BaseType type() {
-        return type;
-    }
-
-    @Override
-    public int size() {
-        return data.size();
-    }
-
-    @Override
-    public double value(int index) {
-        return data.get(index);
-    }
-
-    @Override
-    public String label(int index) {
-        return Integer.toString(data.get(index));
-    }
-
-    @Override
     public void append(Column col) throws IllegalArgumentException {
         if(col.type() == type) {
             IntColumn ic = (IntColumn) col;
@@ -106,6 +76,36 @@ public class IntColumn implements Column {
             String errMsg = "Column of different type can not be append: "+ type + " and " + col.type();
             throw new IllegalArgumentException(errMsg);
         }
+    }
+
+    @Override
+    public Column emptyCopy() {
+        return new IntColumn(name);
+    }
+
+    @Override
+    public String name() {
+        return name;
+    }
+
+    @Override
+    public BaseType type() {
+        return type;
+    }
+
+    @Override
+    public int size() {
+        return data.size();
+    }
+
+    @Override
+    public double value(int index) {
+        return data.get(index);
+    }
+
+    @Override
+    public String label(int index) {
+        return Integer.toString(data.get(index));
     }
 
     @Override

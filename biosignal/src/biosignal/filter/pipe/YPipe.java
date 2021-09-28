@@ -3,8 +3,8 @@ package biosignal.filter.pipe;
 import biosignal.filter.Filter;
 import biosignal.filter.FilterChain;
 import biosignal.filter.XYData;
-import com.biorecorder.datalyb.list.IntArrayList;
-import com.biorecorder.datalyb.series.IntSeries;
+import com.biorecorder.datalyb.datatable.IntColumn;
+import com.biorecorder.datalyb.datatable.RegularColumn;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +48,7 @@ public class YPipe implements YReceiver, Pipe {
     public XYData enableDataAccumulation() {
         YSink dataSink = new YSink(startValue, step);
         yReceivers.add(dataSink);
-        return dataSink.getXYValues();
+        return dataSink.getXYData();
     }
 
     public void put(int[] values) {
@@ -70,32 +70,22 @@ public class YPipe implements YReceiver, Pipe {
     }
 
     static class YSink implements YReceiver {
-        private double startValue;
-        private double step;
-        private IntArrayList data = new IntArrayList();
+        RegularColumn xData;
+        IntColumn yData = new IntColumn("y");
+
 
         public YSink(double startValue, double step) {
-            this.startValue = startValue;
-            this.step = step;
+            xData = new RegularColumn("x", startValue, step, 0);
         }
 
-        public XYData getXYValues() {
-            return new XYData(startValue, step, new IntSeries() {
-                @Override
-                public int size() {
-                    return data.size();
-                }
-
-                @Override
-                public int get(int index) {
-                    return data.get(index);
-                }
-            });
+        public XYData getXYData() {
+           return new XYData("XYData", xData, yData);
         }
 
         @Override
         public void put(int value) {
-            data.add(value);
+            xData.append();
+            yData.append(value);
         }
     }
 }

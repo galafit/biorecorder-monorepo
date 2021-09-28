@@ -1,96 +1,49 @@
 package biosignal.filter;
 
 import com.biorecorder.bichart.GroupingApproximation;
-import com.biorecorder.datalyb.series.DoubleSeries;
-import com.biorecorder.datalyb.series.IntSeries;
+import com.biorecorder.datalyb.datatable.*;
 
 public class XYData {
-    private GroupingApproximation yGroupingApproximation = GroupingApproximation.AVERAGE;
-    private boolean isRegular;
-    double startValue;
-    double step;
-    private final DoubleSeries xValues;
-    private final IntSeries yValues;
-    private String name;
+    DataTable dataTable;
+    private GroupingApproximation yGroupingApproximation;
 
-    public XYData(double startValue, double step, IntSeries yValues) {
-       isRegular = true;
-       this.startValue = startValue;
-       this.step = step;
-       this.yValues = yValues;
-       xValues = new DoubleSeries() {
-           @Override
-           public int size() {
-               return yValues.size();
-           }
-
-           @Override
-           public double get(int index) {
-               return yValues.get(index);
-           }
-       };
+    public XYData(String name, Column xColumn, Column yColumn) {
+        dataTable = new DataTable(name, xColumn, yColumn);
     }
 
-    public XYData(DoubleSeries xValues, IntSeries yValues) {
-        isRegular = false;
-        this.xValues = xValues;
-        this.yValues = yValues;
-
-    }
-
-    public GroupingApproximation getGroupingApproximationY() {
-        return yGroupingApproximation;
-    }
-
-    public void setGroupingApproximationY(GroupingApproximation yGroupingApproximation) {
-        this.yGroupingApproximation = yGroupingApproximation;
-    }
-
-    public String getName() {
-        return name;
+    public XYData(Column xColumn, Column yColumn) {
+        this("XYData", xColumn, yColumn);
     }
 
     public void setName(String name) {
-        this.name = name;
+        dataTable.setName(name);
     }
 
-    public boolean isRegular() {
-        return isRegular;
+    public String getName() {
+        return dataTable.getName();
     }
 
-    public double getStartValue() {
-        if(isRegular) {
-            return startValue;
-        } else {
-           return xValues.get(0);
-        }
+    public GroupingApproximation getYGroupingApproximation() {
+        return yGroupingApproximation;
     }
 
-    public double getStep() {
-        if(isRegular) {
-            return step;
-        } else {
-            return xValues.get(1) - xValues.get(0);
-        }
+    public void setYGroupingApproximation(GroupingApproximation yGroupingApproximation) {
+        this.yGroupingApproximation = yGroupingApproximation;
     }
 
     public double getX(int index) {
-        return xValues.get(index);
+        return dataTable.value(index, 0);
     }
 
     public double getY(int index) {
-        return yValues.get(index);
-    }
-
-    public DoubleSeries getXValues() {
-        return xValues;
-    }
-
-    public IntSeries getYValues() {
-        return yValues;
+        return dataTable.value(index, 1);
     }
 
     public int size() {
-        return yValues.size();
+        return dataTable.rowCount();
+    }
+
+    public DataTable getDataTable() {
+        return dataTable;
     }
 }

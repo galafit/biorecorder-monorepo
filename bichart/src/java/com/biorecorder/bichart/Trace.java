@@ -71,14 +71,19 @@ public class Trace {
     }
 
     private int nearest(double xValue) {
+        if(data.rowCount() == 0) {
+            return -1;
+        }
         // "lazy" sorting solo when "nearest" is called
         if (sortedIndices == null) {
             sortedIndices = data.sortedIndices();
         }
         int nearest = data.bisect(xValue, sortedIndices);
-
         if (nearest >= data.rowCount()) {
             nearest = data.rowCount() - 1;
+        }
+        if (nearest < 0) {
+            nearest = 0;
         }
 
         int nearest_prev = nearest;

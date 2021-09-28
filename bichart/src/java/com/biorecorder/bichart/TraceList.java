@@ -218,10 +218,12 @@ class TraceList {
             for (int i = 0; i < traces.size(); i++) {
                 Trace trace = traces.get(i);
                 int nearest = trace.nearest(x, y);
-                int distance = trace.distanceSqw(nearest, x, y);
-                if (minDistance >= distance) {
-                    minDistance = distance;
-                    nearestTracePoint = new TracePoint(i, nearest);
+                if(nearest >= 0) {
+                    int distance = trace.distanceSqw(nearest, x, y);
+                    if (minDistance >= distance) {
+                        minDistance = distance;
+                        nearestTracePoint = new TracePoint(i, nearest);
+                    }
                 }
             }
             return nearestTracePoint;

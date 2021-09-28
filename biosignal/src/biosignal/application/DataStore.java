@@ -8,9 +8,10 @@ import java.util.List;
 
 public class DataStore {
     private List<XYData> dataList = new ArrayList();
-    private int[] showDataChannels;
-    private int[] navigateDataChannels;
-    private boolean isDateTime = false;
+    private int[] chartDataChannels1;
+    private int[] chartDataChannels2;
+    private int[] navigatorDataChannels;
+    private boolean isDateTime;
 
     public DataStore(boolean isDateTime) {
         this.isDateTime = isDateTime;
@@ -20,25 +21,33 @@ public class DataStore {
         return isDateTime;
     }
 
-    public int[] getShowDataChannels() {
-        return showDataChannels;
+    public int[] getChartDataChannels1() {
+        return chartDataChannels1;
     }
 
-    public int[] getNavigateDataChannels() {
-        return navigateDataChannels;
+    public void setChartDataChannels1(int[] chartDataChannels1) {
+        this.chartDataChannels1 = chartDataChannels1;
     }
 
-    public void setShowDataChannels(int[] showDataChannels) {
-        this.showDataChannels = showDataChannels;
+    public int[] getChartDataChannels2() {
+        return chartDataChannels2;
     }
 
-    public void setNavigateDataChannels(int[] navigateDataChannels) {
-        this.navigateDataChannels = navigateDataChannels;
+    public void setChartDataChannels2(int[] chartDataChannels2) {
+        this.chartDataChannels2 = chartDataChannels2;
+    }
+
+    public int[] getNavigatorDataChannels() {
+        return navigatorDataChannels;
+    }
+
+    public void setNavigatorDataChannels(int[] navigatorDataChannels) {
+        this.navigatorDataChannels = navigatorDataChannels;
     }
 
     public void addDataChannel(String name, XYData xyData, GroupingApproximation groupingApproximation) {
         xyData.setName(name);
-        xyData.setGroupingApproximationY(groupingApproximation);
+        xyData.setYGroupingApproximation(groupingApproximation);
         dataList.add(xyData);
     }
 

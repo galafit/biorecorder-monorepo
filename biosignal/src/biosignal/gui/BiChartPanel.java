@@ -63,16 +63,9 @@ public class BiChartPanel extends JPanel {
     }
 
     private XYSeries convertData(XYData xyData) {
-        DataTable dt = new DataTable();
-        IntSeries yData = xyData.getYValues();
-        if(xyData.isRegular()) {
-            dt.addColumn(new RegularColumn("x", xyData.getStartValue(), xyData.getStep(), yData.size()));
-        } else {
-            dt.addColumn(new DoubleColumn("x", xyData.getXValues()));
-        }
-        dt.addColumn(new IntColumn("y", yData));
+        DataTable dt = xyData.getDataTable();
         XYSeries xySeries = new XYSeries(dt);
-        xySeries.setGroupingApproximationY(xyData.getGroupingApproximationY());
+        xySeries.setGroupingApproximationY(xyData.getYGroupingApproximation());
         return xySeries;
     }
 

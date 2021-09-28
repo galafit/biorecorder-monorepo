@@ -2,7 +2,6 @@ package biosignal.gui;
 
 import biosignal.application.Facade;
 import biosignal.filter.XYData;
-import com.biorecorder.bichart.GroupingApproximation;
 import com.biorecorder.bichart.traces.LineTraceConfig;
 import com.biorecorder.bichart.traces.LineTracePainter;
 import com.biorecorder.bichart.traces.VerticalLinePainter;
@@ -54,20 +53,28 @@ public class MainFrame extends JFrame {
     private static  BiChartPanel createChartPanel(Facade facade){
         boolean isTimeXAxis = facade.isDateTime(); // XAxis: false - index; true - time
         BiChartPanel chartPanel = new BiChartPanel(isTimeXAxis);
-        int[] chartDataChannels = facade.getShowDataChannels();
-        int[] navDataChannels = facade.getNavigateDataChannels();
+        int[] chartDataChannels1 = facade.getChartDataChannels1();
+        int[] chartDataChannels2 = facade.getChartDataChannels2();
+        int[] navDataChannels = facade.getNavigatorDataChannels();
 
-        double dataStep = 0;
         boolean isYOpposite = false;
         boolean isXOpposite;
-        for (int i = 0; i < chartDataChannels.length; i++) {
-            XYData xyData = facade.getData(chartDataChannels[i]);
-            if(i == 0) {
-                dataStep = xyData.getStep();
-            } else {
+        for (int i = 0; i < chartDataChannels1.length; i++) {
+            isXOpposite = false;
+            XYData xyData = facade.getData(chartDataChannels1[i]);
+            if(i > 0) {
                 chartPanel.addChartStack();
             }
-            isXOpposite = (dataStep == xyData.getStep())? false : true;
+            LineTraceConfig lineConfig = new LineTraceConfig();
+            lineConfig.setLineWidth(1);
+            lineConfig.setMarkSize(3);
+            chartPanel.addChartTrace(xyData.getName(), xyData, new LineTracePainter(lineConfig), isXOpposite, isYOpposite);
+        }
+
+        for (int i = 0; i < chartDataChannels2.length; i++) {
+            isXOpposite = true;
+            XYData xyData = facade.getData(chartDataChannels2[i]);
+            chartPanel.addChartStack();
             LineTraceConfig lineConfig = new LineTraceConfig();
             lineConfig.setLineWidth(1);
             lineConfig.setMarkSize(3);

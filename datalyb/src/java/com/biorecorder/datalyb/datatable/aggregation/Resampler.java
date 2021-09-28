@@ -82,7 +82,7 @@ public class Resampler {
     }
 
     public DataTable resampleAndAppend(DataTable tableToResample) {
-        resultantTable = new DataTable(tableToResample.name());
+        resultantTable = new DataTable(tableToResample.getName());
         IntSeries groups = binning.group(tableToResample.getColumn(0));
         for (int i = 0; i < tableToResample.columnCount(); i++) {
            Aggregation[] aggregations = columnsToAgg.get(i);
@@ -95,9 +95,9 @@ public class Resampler {
                 Column col = tableToResample.getColumn(i);
                 if(binning.isEqualPoints() && col instanceof RegularColumn) {
                     RegularColumn rc = (RegularColumn) col;
-                    resultantTable.addColumn(aggregations[j].aggregate(rc, binning.pointsInGroup()));
+                    resultantTable.addColumns(aggregations[j].aggregate(rc, binning.pointsInGroup()));
                 } else {
-                    resultantTable.addColumn(aggregations[j].aggregate(col, groups));
+                    resultantTable.addColumns(aggregations[j].aggregate(col, groups));
                 }
             }
         }
@@ -213,8 +213,8 @@ public class Resampler {
         int[] xData = {2, 4, 5, 9, 12, 33, 34, 35, 40};
         int[] yData = {1, 2, 3, 4, 5, 6, 7, 8, 9};
 
-        dt.addColumn(new IntColumn("x", xData));
-        dt.addColumn(new IntColumn("y", yData));
+        dt.addColumns(new IntColumn("x", xData));
+        dt.addColumns(new IntColumn("y", yData));
 
         System.out.println("DataTable size + " + dt.rowCount() + " expected: " + xData.length);
         System.out.println("DataTable max + " + dt.minMax(0)[1] + " expected: " + xData[xData.length - 1]);
@@ -269,9 +269,9 @@ public class Resampler {
             data[i] = i;
         }
 
-        DataTable dataTable = new DataTable();
-        dataTable.addColumn(new IntColumn("x", data));
-        dataTable.addColumn(new IntColumn("y", data));
+        DataTable dataTable = new DataTable("XYData");
+        dataTable.addColumns(new IntColumn("x", data));
+        dataTable.addColumns(new IntColumn("y", data));
         Resampler aggPoints1 = Resampler.createEqualPointsResampler(5);
         aggPoints1.setColumnAggregations(0, new Min());
         aggPoints1.setColumnAggregations(1, new Max());
@@ -305,8 +305,8 @@ public class Resampler {
         aggInterval2.setColumnAggregations(0, new Min());
         aggInterval2.setColumnAggregations(1, new Max());
 
-        DataTable resTab1 = new DataTable();
-        DataTable resTab2 = new DataTable();
+        DataTable resTab1 = new DataTable("ResTable1");
+        DataTable resTab2 = new DataTable("ResTable2");
 
 
         size = 13;
@@ -315,10 +315,10 @@ public class Resampler {
             for (int j = 0; j < size; j++) {
                 data1[j] = i * size + j;
             }
-            DataTable dataTable1 = new DataTable();
-            dataTable1.addColumn(new RegularColumn("",size * i, 1, size));
+            DataTable dataTable1 = new DataTable("ResTable");
+            dataTable1.addColumns(new RegularColumn("",size * i, 1, size));
             //dataTable1.addColumn(new DoubleColumn("x", data1));
-            dataTable1.addColumn(new DoubleColumn("y", data1));
+            dataTable1.addColumns(new DoubleColumn("y", data1));
             resTab1 = aggPoints2.resampleAndAppend(dataTable1);
             resTab2 = aggInterval2.resampleAndAppend(dataTable1);
         }

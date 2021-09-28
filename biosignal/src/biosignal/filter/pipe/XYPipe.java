@@ -3,8 +3,8 @@ package biosignal.filter.pipe;
 import biosignal.filter.BiFilter;
 import biosignal.filter.BiFilterChain;
 import biosignal.filter.XYData;
-import com.biorecorder.datalyb.list.DoubleArrayList;
-import com.biorecorder.datalyb.list.IntArrayList;
+import com.biorecorder.datalyb.datatable.DoubleColumn;
+import com.biorecorder.datalyb.datatable.IntColumn;
 import com.biorecorder.datalyb.series.DoubleSeries;
 import com.biorecorder.datalyb.series.IntSeries;
 
@@ -37,7 +37,7 @@ public class XYPipe implements XYReceiver, Pipe {
     public XYData enableDataAccumulation() {
         DataSink dataSink = new DataSink();
         XYReceivers.add(dataSink);
-        return dataSink.getXYValues();
+        return dataSink.getXYData();
     }
 
     @Override
@@ -52,40 +52,17 @@ public class XYPipe implements XYReceiver, Pipe {
     }
 
     static class DataSink implements XYReceiver {
-        private DoubleArrayList xData = new DoubleArrayList();
-        private IntArrayList yData = new IntArrayList();
+        private DoubleColumn xData = new DoubleColumn("x");
+        private IntColumn yData = new IntColumn("y");
 
-        public XYData getXYValues() {
-            IntSeries ySeq = new IntSeries() {
-                @Override
-                public int size() {
-                    return yData.size();
-                }
-
-                @Override
-                public int get(int index) {
-                    return yData.get(index);
-                }
-            };
-
-            DoubleSeries xSeq = new DoubleSeries() {
-                @Override
-                public int size() {
-                    return xData.size();
-                }
-
-                @Override
-                public double get(int index) {
-                    return xData.get(index);
-                }
-            };
-            return new XYData(xSeq, ySeq);
+        public XYData getXYData() {
+            return new XYData("XYData", xData, yData);
         }
 
         @Override
         public void put(double x, int y) {
-            yData.add(y);
-            xData.add(x);
+            yData.append(y);
+            xData.append(x);
         }
     }
 

@@ -9,9 +9,11 @@ public interface Facade {
 
     XYData getData(int channel);
 
-    int[] getShowDataChannels();
+    int[] getChartDataChannels1();
 
-    int[] getNavigateDataChannels();
+    int[] getChartDataChannels2();
+
+    int[] getNavigatorDataChannels();
 
     boolean isDateTime();
 

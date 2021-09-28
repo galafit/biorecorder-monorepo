@@ -7,7 +7,7 @@ import com.biorecorder.datalyb.datatable.IntColumn;
 import com.biorecorder.datalyb.datatable.RegularColumn;
 
 public class XYSeries implements ChartData {
-    DataTable dataTable = new DataTable();
+    DataTable dataTable = new DataTable("XYData");
     GroupingApproximation groupingApproximationX = GroupingApproximation.OPEN;
     GroupingApproximation groupingApproximationY = GroupingApproximation.AVERAGE;
 
@@ -16,18 +16,18 @@ public class XYSeries implements ChartData {
     }
 
     public XYSeries(int[] xData, int[] yData) {
-        dataTable.addColumn(new IntColumn("x", xData));
-        dataTable.addColumn(new IntColumn("y", yData));
+        dataTable.addColumns(new IntColumn("x", xData));
+        dataTable.addColumns(new IntColumn("y", yData));
     }
 
     public XYSeries(int[] yData) {
-        dataTable.addColumn(new RegularColumn("x",0, 1, yData.length));
-        dataTable.addColumn(new IntColumn("y", yData));
+        dataTable.addColumns(new RegularColumn("x",0, 1, yData.length));
+        dataTable.addColumns(new IntColumn("y", yData));
     }
 
     public XYSeries(double startValue, double step, int[] yData) {
-        dataTable.addColumn(new RegularColumn("x",startValue, step, yData.length));
-        dataTable.addColumn(new IntColumn("y", yData));
+        dataTable.addColumns(new RegularColumn("x",startValue, step, yData.length));
+        dataTable.addColumns(new IntColumn("y", yData));
     }
 
     public DataTable getDataTable() {
@@ -35,9 +35,9 @@ public class XYSeries implements ChartData {
     }
 
     public XYSeries getEmptyCopy() {
-        DataTable emptyData = new DataTable();
+        DataTable emptyData = new DataTable(dataTable.getName());
         for (int i = 0; i < dataTable.columnCount(); i++) {
-            emptyData.addColumn(dataTable.getColumn(i).emptyCopy());
+            emptyData.addColumns(dataTable.getColumn(i).emptyCopy());
         }
         XYSeries copy = new XYSeries(emptyData);
         copy.groupingApproximationX = groupingApproximationX;

@@ -28,6 +28,48 @@ public class DoubleColumn implements Column {
         this(name, new DoubleArrayWrapper(new DoubleArrayList()));
     }
 
+    public void append(double value) throws UnsupportedOperationException {
+        data.add(value);
+    }
+
+    @Override
+    public void append(Column col) throws IllegalArgumentException {
+        if(col.type() == type) {
+            DoubleColumn dc = (DoubleColumn) col;
+            try {
+                data.add(dc.data.toArray());
+                return;
+            } catch (UnsupportedOperationException ex) {
+                // do nothing
+            }
+        }
+        try{
+            for (int i = 0; i < col.size(); i++) {
+                data.add(col.value(i));
+            }
+        } catch (UnsupportedOperationException ex1) {
+            DoubleSeries dataJoined = new DoubleSeries() {
+                int size1 = size();
+                int size2 = col.size();
+                int size =  size1 + size2;
+                @Override
+                public int size() {
+                    return size;
+                }
+
+                @Override
+                public double get(int index) {
+                    if(index < size1) {
+                        return data.get(index);
+                    } else {
+                        return col.value(index - size1);
+                    }
+                }
+            };
+            data = new BaseDoubleEditableSeries(dataJoined);
+        }
+    }
+
     @Override
     public Column emptyCopy() {
         return new DoubleColumn(name);
@@ -56,50 +98,6 @@ public class DoubleColumn implements Column {
     @Override
     public String label(int index) {
         return Double.toString(data.get(index));
-    }
-
-    public void append(double value) throws UnsupportedOperationException {
-        data.add(value);
-    }
-
-    @Override
-    public void append(Column col) throws IllegalArgumentException {
-        if(col.type() == type) {
-            DoubleColumn dc = (DoubleColumn) col;
-            try {
-                data.add(dc.data.toArray());
-            } catch (UnsupportedOperationException ex) {
-                try{
-                    for (int i = 0; i < dc.size(); i++) {
-                        data.add(dc.value(i));
-                    }
-                } catch (UnsupportedOperationException ex1) {
-                    DoubleSeries dataJoined = new DoubleSeries() {
-                        DoubleSeries data1 = data;
-                        DoubleSeries data2 = dc.data;
-                        int size1 = data1.size();
-                        int size2 = data2.size();
-                        int size =  size1 + size2;
-                        @Override
-                        public int size() {
-                            return size;
-                        }
-
-                        @Override
-                        public double get(int index) {
-                            if(index < size1) {
-                                return data1.get(index);
-                            } else {
-                                return data2.get(index - size1);
-                            }
-                        }
-                    };
-                    data = new BaseDoubleEditableSeries(dataJoined);
-                }
-            }
-        }
-        String errMsg = "Column of different type can not be append: "+ type + " and " + col.type();
-        throw new IllegalArgumentException(errMsg);
     }
 
     @Override

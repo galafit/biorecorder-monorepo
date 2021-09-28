@@ -110,8 +110,10 @@ public class DataProcessor {
             if(indexTill > data.rowCount()) {
                 indexTill = data.rowCount();
             }
-            data = data.view(indexFrom, indexTill - indexFrom);
+            data = data.view(indexFrom, indexTill - indexFrom + 1);
         }
+
+
         if(config.isDataGroupingEnabled() && pointsPerGroup > 1) {
             if(isDateTime) {
                 data = new GroupedData(data, config.getGroupingType(), new TimeInterval[0], xLength, markSize).getData(xLength, markSize);
@@ -119,6 +121,7 @@ public class DataProcessor {
                 data = new GroupedData(data, config.getGroupingType(), new double[0], xLength, markSize).getData(xLength, markSize);
             }
         }
+
         return data;
     }
 
