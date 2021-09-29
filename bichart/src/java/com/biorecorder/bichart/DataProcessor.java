@@ -89,10 +89,10 @@ public class DataProcessor {
         Range dataXRange = GroupedData.dataRange(data);
         int pointsPerGroup = 1;
         if(config.isDataCropEnabled() && dataXRange != null &&
-                !xMinMax.contain(dataXRange) && data.rowCount() > minPointsForCrop) {
+                !xMinMax.contain(dataXRange) && data.size() > minPointsForCrop) {
             int indexFrom = data.bisectLeft(xMinMax.getMin());
             int indexTill = data.bisectRight(xMinMax.getMax());
-            if(indexFrom == indexTill || indexFrom >= data.rowCount() || indexTill < 0) {
+            if(indexFrom == indexTill || indexFrom >= data.size() || indexTill < 0) {
                 return data.getEmptyCopy();
             }
             if(config.isDataGroupingEnabled()) {
@@ -107,13 +107,11 @@ public class DataProcessor {
             if(indexFrom < 0) {
                 indexFrom = 0;
             }
-            if(indexTill > data.rowCount()) {
-                indexTill = data.rowCount();
+            if(indexTill > data.size()) {
+                indexTill = data.size();
             }
             data = data.view(indexFrom, indexTill - indexFrom + 1);
         }
-
-
         if(config.isDataGroupingEnabled() && pointsPerGroup > 1) {
             if(isDateTime) {
                 data = new GroupedData(data, config.getGroupingType(), new TimeInterval[0], xLength, markSize).getData(xLength, markSize);

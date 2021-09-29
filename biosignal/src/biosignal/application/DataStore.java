@@ -8,6 +8,7 @@ import java.util.List;
 
 public class DataStore {
     private List<XYData> dataList = new ArrayList();
+    private List<GroupingApproximation> dataGroupingApproximations = new ArrayList();
     private int[] chartDataChannels1;
     private int[] chartDataChannels2;
     private int[] navigatorDataChannels;
@@ -47,12 +48,16 @@ public class DataStore {
 
     public void addDataChannel(String name, XYData xyData, GroupingApproximation groupingApproximation) {
         xyData.setName(name);
-        xyData.setYGroupingApproximation(groupingApproximation);
         dataList.add(xyData);
+        dataGroupingApproximations.add(groupingApproximation);
     }
 
     public XYData getData(int channel) {
         return dataList.get(channel);
+    }
+
+    public GroupingApproximation getDataGroupingApproximation(int channel) {
+        return dataGroupingApproximations.get(channel);
     }
 
     public int dataChannelCount() {

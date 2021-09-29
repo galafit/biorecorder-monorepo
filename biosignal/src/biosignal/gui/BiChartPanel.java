@@ -6,10 +6,6 @@ import com.biorecorder.bichart.axis.XAxisPosition;
 import com.biorecorder.bichart.graphics.Range;
 import com.biorecorder.bichart.traces.TracePainter;
 import com.biorecorder.datalyb.datatable.DataTable;
-import com.biorecorder.datalyb.datatable.DoubleColumn;
-import com.biorecorder.datalyb.datatable.IntColumn;
-import com.biorecorder.datalyb.datatable.RegularColumn;
-import com.biorecorder.datalyb.series.IntSeries;
 
 import javax.swing.*;
 import java.awt.*;
@@ -29,24 +25,16 @@ public class BiChartPanel extends JPanel {
         biChart.addChartStack();
     }
 
-    public void addChartTrace(String name, XYData data, TracePainter tracePainter) {
-        biChart.addChartTrace(name, convertData(data), tracePainter);
-    }
-
-    public void addChartTrace(String name, XYData data, TracePainter tracePainter, boolean isXOpposite,  boolean isYOpposite) {
-        biChart.addChartTrace(name, convertData(data), tracePainter, isXOpposite, isYOpposite);
+    public void addChartTrace(String name, XYData data, GroupingApproximation groupingApproximation, TracePainter tracePainter, boolean isXOpposite,  boolean isYOpposite) {
+        biChart.addChartTrace(name, convertData(data, groupingApproximation), tracePainter, isXOpposite, isYOpposite);
     }
 
     public void addNavigatorStack() {
         biChart.addNavigatorStack();
     }
 
-    public void addNavigatorTrace(String name, XYData data, TracePainter tracePainter) {
-        biChart.addNavigatorTrace(name, convertData(data), tracePainter);
-    }
-
-    public void setChartTraceData(int traceNumber, XYData data) {
-        biChart.setChartTraceData(traceNumber, convertData(data));
+    public void addNavigatorTrace(String name, XYData data, GroupingApproximation groupingApproximation,TracePainter tracePainter) {
+        biChart.addNavigatorTrace(name, convertData(data, groupingApproximation), tracePainter);
     }
 
     public double[] getChartXRange() {
@@ -58,14 +46,11 @@ public class BiChartPanel extends JPanel {
         return range;
     }
 
-    public void setNavigatorTraceData(int traceNumber, XYData data) {
-        biChart.setNavigatorTraceData(traceNumber, convertData(data));
-    }
 
-    private XYSeries convertData(XYData xyData) {
+    private XYSeries convertData(XYData xyData, GroupingApproximation groupingApproximation) {
         DataTable dt = xyData.getDataTable();
         XYSeries xySeries = new XYSeries(dt);
-        xySeries.setGroupingApproximationY(xyData.getYGroupingApproximation());
+        xySeries.setGroupingApproximationY(groupingApproximation);
         return xySeries;
     }
 

@@ -1,6 +1,7 @@
 package biosignal.application;
 
 import biosignal.filter.XYData;
+import com.biorecorder.bichart.GroupingApproximation;
 
 public interface Facade {
     void read();
@@ -8,6 +9,8 @@ public interface Facade {
     void finish();
 
     XYData getData(int channel);
+
+    GroupingApproximation getDataGroupingApproximation(int channel);
 
     int[] getChartDataChannels1();
 

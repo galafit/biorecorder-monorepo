@@ -20,7 +20,7 @@ public class XYViewer {
     }
 
     public int size() {
-        return data.rowCount();
+        return data.size();
     }
 
     public double getX(int index) {

@@ -3,6 +3,7 @@ package biosignal.application;
 import biosignal.filter.*;
 import biosignal.filter.pipe.FilterPipe;
 import com.biorecorder.bichart.GroupingApproximation;
+import biosignal.filter.XYData;
 
 public class Config {
     private static final boolean IS_DATE_TIME = false; // true - time; false - indexes

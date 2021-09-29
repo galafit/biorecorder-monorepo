@@ -5,8 +5,6 @@ import biosignal.filter.BiFilterChain;
 import biosignal.filter.XYData;
 import com.biorecorder.datalyb.datatable.DoubleColumn;
 import com.biorecorder.datalyb.datatable.IntColumn;
-import com.biorecorder.datalyb.series.DoubleSeries;
-import com.biorecorder.datalyb.series.IntSeries;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -94,12 +94,14 @@ public class SmartBiChart extends BiChart {
         double xLength = navigator.getXScale(navDefaultXPosition).getLength();
         XYSeries data = dataProcessor.getProcessedChartData(traceNumber, minMax, xLength, getChartTraceMarkSize(traceNumber));
         chart.setTraceData(traceNumber, data);
+        chartTraceNeedUpdateDataFlags.set(traceNumber, false);
     }
 
     private void setNavigatorTraceData(int traceNumber) {
         double xLength = navigator.getXScale(navDefaultXPosition).getLength();
         XYSeries data = dataProcessor.getProcessedNavigatorData(traceNumber, xLength, getNavigatorTraceMarkSize(traceNumber));
         navigator.setTraceData(traceNumber, data);
+        navTraceNeedUpdateDataFlags.set(traceNumber, false);
     }
 
     private void configure() {

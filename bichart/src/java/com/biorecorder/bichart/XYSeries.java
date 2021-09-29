@@ -20,14 +20,13 @@ public class XYSeries implements ChartData {
         dataTable.addColumns(new IntColumn("y", yData));
     }
 
-    public XYSeries(int[] yData) {
-        dataTable.addColumns(new RegularColumn("x",0, 1, yData.length));
-        dataTable.addColumns(new IntColumn("y", yData));
-    }
-
     public XYSeries(double startValue, double step, int[] yData) {
         dataTable.addColumns(new RegularColumn("x",startValue, step, yData.length));
         dataTable.addColumns(new IntColumn("y", yData));
+    }
+
+    public XYSeries(int[] yData) {
+        this(0, 1, yData);
     }
 
     public DataTable getDataTable() {
@@ -43,10 +42,6 @@ public class XYSeries implements ChartData {
         copy.groupingApproximationX = groupingApproximationX;
         copy.groupingApproximationY = groupingApproximationY;
         return copy;
-    }
-
-    public void appendData(XYSeries dataToAppend) {
-        dataTable.append(dataToAppend.dataTable);
     }
 
     public GroupingApproximation getGroupingApproximationX() {
@@ -65,8 +60,35 @@ public class XYSeries implements ChartData {
         this.groupingApproximationY = groupingApproximationY;
     }
 
+    public double getX(int index) {
+        return dataTable.value(index, 0);
+    }
+
+    public double getY(int index) {
+        return dataTable.value(index, 1);
+    }
+
+    public int bisectLeft(double value) {
+        return dataTable.bisectLeft(0, value);
+    }
+
+    public int bisectRight(double value) {
+        return dataTable.bisectRight(0, value);
+    }
+
+    public void appendData(XYSeries dataToAppend) {
+        dataTable.append(dataToAppend.dataTable);
+    }
+
+    public XYSeries view(int from, int length) {
+        XYSeries view = new XYSeries(dataTable.view(from, length));
+        view.groupingApproximationX = groupingApproximationX;
+        view.groupingApproximationY = groupingApproximationY;
+        return view;
+    }
+
     @Override
-    public int rowCount() {
+    public int size() {
         return dataTable.rowCount();
     }
 
@@ -106,45 +128,16 @@ public class XYSeries implements ChartData {
         }
         return null;
     }
-
-    public double xValue(int index) {
-        return value(index, 0);
-    }
-
-    public double yValue(int index) {
-        return value(index, 1);
-    }
-
-    public int size() {
-        return rowCount();
-    }
-
-    public Range xMinMax() {
-        return columnMinMax(0);
+    @Override
+    public int[] sortedIndices(int columnIndex) {
+        return dataTable.sortedIndices(columnIndex);
     }
 
     @Override
-    public int[] sortedIndices() {
-        return dataTable.sortedIndices(0);
+    public int bisect(int columnIndex, double value, int[] sorter) {
+        return dataTable.bisect(columnIndex, value, sorter);
     }
 
-    @Override
-    public int bisect(double value, int[] sorter) {
-        return dataTable.bisect(0, value, sorter);
-    }
 
-    public int bisectLeft(double value) {
-        return dataTable.bisectLeft(0, value);
-    }
 
-    public int bisectRight(double value) {
-        return dataTable.bisectRight(0, value);
-    }
-
-    public XYSeries view(int from, int length) {
-        XYSeries view = new XYSeries(dataTable.view(from, length));
-        view.groupingApproximationX = groupingApproximationX;
-        view.groupingApproximationY = groupingApproximationY;
-        return view;
-    }
 }

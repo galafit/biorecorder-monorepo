@@ -111,8 +111,8 @@ public class DataTable {
      * without modifying the order of the underlying data.
      * (like JTable sortedIndices in java)
      */
-    public DataTable sort(int sortColumn) {
-        return view(sortedIndices(sortColumn));
+    public DataTable sort(int sortColumnNumber) {
+        return view(sortedIndices(sortColumnNumber));
     }
 
     /**
@@ -123,9 +123,9 @@ public class DataTable {
      *
      * @return array of sorted rows (indices) for the given column.
      */
-    public int[] sortedIndices(int sortColumn) {
+    public int[] sortedIndices(int sortColumnNumber) {
         boolean isParallel = false;
-        return columns.get(sortColumn).sort(isParallel);
+        return columns.get(sortColumnNumber).sort(isParallel);
     }
 
     public DataTable view(int[] rowOrder) {

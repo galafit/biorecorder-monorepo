@@ -1,8 +1,5 @@
 package com.biorecorder.bichart;
 
-import com.biorecorder.bichart.GroupingApproximation;
-import com.biorecorder.bichart.XYSeries;
-import com.biorecorder.bichart.GroupingType;
 import com.biorecorder.bichart.graphics.Range;
 import com.biorecorder.datalyb.datatable.aggregation.Resampler;
 import com.biorecorder.datalyb.time.TimeInterval;
@@ -80,7 +77,7 @@ class GroupedData {
             for (int i = 0; i < dataList.size(); i++) {
                 XYSeries data = dataList.get(i).getData();
                 int dataPoints = (int) (xLength / markSize) + 1;
-                if (data.rowCount() <= dataPoints) {
+                if (data.size() <= dataPoints) {
                     return dataList.get(i).getData();
                 }
             }
@@ -98,7 +95,7 @@ class GroupedData {
         //double dataStep = dataRange(data).length() / (data.rowCount() - 1);
         //return (int)Math.round(interval / dataStep);
         double groups = dataRange(data).length() / interval;
-        int pointsPerGroup = (int)Math.round(data.rowCount() / groups);
+        int pointsPerGroup = (int)Math.round(data.size() / groups);
         return pointsPerGroup;
     }
 
@@ -113,7 +110,7 @@ class GroupedData {
     // suppose that data is ordered
     static Range dataRange(XYSeries data) {
         if(data != null && data.size() > 0) {
-            return new Range(data.xValue(0), data.xValue(data.rowCount() - 1));
+            return new Range(data.getX(0), data.getX(data.size() - 1));
         }
         return null;
     }

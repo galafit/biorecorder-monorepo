@@ -27,8 +27,8 @@ public class BiChart {
     private BiChartConfig config;
     private int width = 250;
     private int height = 100;
-    private List<ChartData> chartDataList = new ArrayList<>();
-    private List<ChartData> navigatorDataList = new ArrayList<>();
+    private List<XYSeries> chartDataList = new ArrayList<>();
+    private List<XYSeries> navigatorDataList = new ArrayList<>();
     private Map<XAxisPosition, Scroll> axisToScrolls = new HashMap<>(2);
     Map<XAxisPosition, List<ScrollListener>> axisToScrollListeners = new HashMap<>(2);
 
@@ -108,8 +108,8 @@ public class BiChart {
         isValid = true;
     }
 
-    private Range dataBestRange(ChartData data, int markSize, Scale xScale, double xLength, double min) {
-        int dataSize = data.rowCount();
+    private Range dataBestRange(XYSeries data, int markSize, Scale xScale, double xLength, double min) {
+        int dataSize = data.size();
         Range dataRange = dataMinMax(data);
         if (xLength > 0 && dataSize > 1 && dataRange != null && dataRange.length() > 0) {
             xScale.setStartEnd(1, dataSize * markSize);
@@ -130,11 +130,11 @@ public class BiChart {
         double xLength =  xScale.getLength();
         Range xMinMax = null;
         for (int i = 0; i < navigatorDataList.size(); i++) {
-            ChartData data = navigatorDataList.get(i);
+            XYSeries data = navigatorDataList.get(i);
             xMinMax = Range.join(xMinMax, dataMinMax(data));
         }
         for (int i = 0; i < chartDataList.size(); i++) {
-            ChartData data = chartDataList.get(i);
+            XYSeries data = chartDataList.get(i);
             xMinMax = Range.join(xMinMax, dataMinMax(data));
         }
         if (xMinMax != null) {
@@ -525,9 +525,9 @@ public class BiChart {
      * Protected method for careful use  mostly to interact through GUI                          *
      * ==============================================================
      */
-    static Range dataMinMax(ChartData data) {
-        if(data.rowCount() > 0) {
-            return new Range(data.value(0, 0), data.value(data.rowCount() - 1, 0));
+    static Range dataMinMax(XYSeries data) {
+        if(data.size() > 0) {
+            return new Range(data.getX(0), data.getX(data.size() - 1));
         }
         return null;
     }

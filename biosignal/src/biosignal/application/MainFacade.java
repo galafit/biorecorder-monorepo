@@ -1,6 +1,7 @@
 package biosignal.application;
 
 import biosignal.filter.XYData;
+import com.biorecorder.bichart.GroupingApproximation;
 
 public class MainFacade implements Facade {
     private EdfProvider provider;
@@ -36,6 +37,11 @@ public class MainFacade implements Facade {
     @Override
     public XYData getData(int channel) {
         return dataStore.getData(channel);
+    }
+
+    @Override
+    public GroupingApproximation getDataGroupingApproximation(int channel) {
+        return dataStore.getDataGroupingApproximation(channel);
     }
 
     @Override

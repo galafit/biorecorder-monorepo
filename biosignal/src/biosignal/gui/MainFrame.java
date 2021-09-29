@@ -2,6 +2,7 @@ package biosignal.gui;
 
 import biosignal.application.Facade;
 import biosignal.filter.XYData;
+import com.biorecorder.bichart.GroupingApproximation;
 import com.biorecorder.bichart.traces.LineTraceConfig;
 import com.biorecorder.bichart.traces.LineTracePainter;
 import com.biorecorder.bichart.traces.VerticalLinePainter;
@@ -61,32 +62,39 @@ public class MainFrame extends JFrame {
         boolean isXOpposite;
         for (int i = 0; i < chartDataChannels1.length; i++) {
             isXOpposite = false;
-            XYData xyData = facade.getData(chartDataChannels1[i]);
+            int channel = chartDataChannels1[i];
+            XYData xyData = facade.getData(channel);
+            GroupingApproximation grApprox = facade.getDataGroupingApproximation(channel);
+
             if(i > 0) {
                 chartPanel.addChartStack();
             }
             LineTraceConfig lineConfig = new LineTraceConfig();
             lineConfig.setLineWidth(1);
             lineConfig.setMarkSize(3);
-            chartPanel.addChartTrace(xyData.getName(), xyData, new LineTracePainter(lineConfig), isXOpposite, isYOpposite);
+            chartPanel.addChartTrace(xyData.getName(), xyData, grApprox, new LineTracePainter(lineConfig), isXOpposite, isYOpposite);
         }
 
         for (int i = 0; i < chartDataChannels2.length; i++) {
             isXOpposite = true;
-            XYData xyData = facade.getData(chartDataChannels2[i]);
+            int channel = chartDataChannels2[i];
+            XYData xyData = facade.getData(channel);
+            GroupingApproximation grApprox = facade.getDataGroupingApproximation(channel);
             chartPanel.addChartStack();
             LineTraceConfig lineConfig = new LineTraceConfig();
             lineConfig.setLineWidth(1);
             lineConfig.setMarkSize(3);
-            chartPanel.addChartTrace(xyData.getName(), xyData, new LineTracePainter(lineConfig), isXOpposite, isYOpposite);
+            chartPanel.addChartTrace(xyData.getName(), xyData, grApprox, new LineTracePainter(lineConfig), isXOpposite, isYOpposite);
         }
 
         for (int i = 0; i < navDataChannels.length; i++) {
-            XYData xyData = facade.getData(navDataChannels[i]);
+            int channel = navDataChannels[i];
+            XYData xyData = facade.getData(channel);
+            GroupingApproximation grApprox = facade.getDataGroupingApproximation(channel);
             if(i > 0) {
                 chartPanel.addNavigatorStack();
             }
-            chartPanel.addNavigatorTrace(xyData.getName(), xyData, new VerticalLinePainter());
+            chartPanel.addNavigatorTrace(xyData.getName(), xyData, grApprox, new VerticalLinePainter());
         }
 
         return chartPanel;

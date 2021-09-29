@@ -1,11 +1,9 @@
 package biosignal.filter;
 
-import com.biorecorder.bichart.GroupingApproximation;
 import com.biorecorder.datalyb.datatable.*;
 
 public class XYData {
     DataTable dataTable;
-    private GroupingApproximation yGroupingApproximation;
 
     public XYData(String name, Column xColumn, Column yColumn) {
         dataTable = new DataTable(name, xColumn, yColumn);
@@ -21,14 +19,6 @@ public class XYData {
 
     public String getName() {
         return dataTable.getName();
-    }
-
-    public GroupingApproximation getYGroupingApproximation() {
-        return yGroupingApproximation;
-    }
-
-    public void setYGroupingApproximation(GroupingApproximation yGroupingApproximation) {
-        this.yGroupingApproximation = yGroupingApproximation;
     }
 
     public double getX(int index) {

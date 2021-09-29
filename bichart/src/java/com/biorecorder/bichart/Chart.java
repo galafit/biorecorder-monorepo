@@ -48,7 +48,7 @@ public class Chart {
     private boolean isValid = false;
 
     public Chart(ChartConfig config, Scale xScale) {
-       this(config,xScale, XAxisPosition.BOTTOM, YAxisPosition.LEFT);
+        this(config, xScale, XAxisPosition.BOTTOM, YAxisPosition.LEFT);
     }
 
     public Chart(ChartConfig config, Scale xScale, XAxisPosition defaultXPosition, YAxisPosition defaultYPosition) {
@@ -181,7 +181,7 @@ public class Chart {
             return new StringSeries() {
                 @Override
                 public int size() {
-                    return data.rowCount();
+                    return data.size();
                 }
 
                 @Override
@@ -195,7 +195,7 @@ public class Chart {
 
     public XAxisPosition getOppositeXPosition(XAxisPosition xAxisPosition) {
         for (XAxisPosition position : XAxisPosition.values()) {
-            if(position != xAxisPosition) {
+            if (position != xAxisPosition) {
                 return position;
             }
         }
@@ -204,7 +204,7 @@ public class Chart {
 
     public YAxisPosition getOppositeYPosition(YAxisPosition yAxisPosition) {
         for (YAxisPosition position : YAxisPosition.values()) {
-            if(position != yAxisPosition) {
+            if (position != yAxisPosition) {
                 return position;
             }
         }
@@ -216,7 +216,7 @@ public class Chart {
      * ==================================================
      */
     public void setSpacing(Insets spacing) {
-        if(spacing == null) {
+        if (spacing == null) {
             this.spacing = new Insets(0);
         }
         this.spacing = spacing;
@@ -247,7 +247,7 @@ public class Chart {
     }
 
     public void setBounds(int x, int y, int width, int height) throws IllegalArgumentException {
-        if(width == 0 || height == 0) {
+        if (width == 0 || height == 0) {
             String errMsg = "Width and height must be > 0";
             throw new IllegalArgumentException(errMsg);
         }
@@ -261,13 +261,13 @@ public class Chart {
 
     public void invalidate() {
         isValid = false;
-        if(isLegendAttachedToStacks) {
+        if (isLegendAttachedToStacks) {
             legend = null;
         }
     }
 
     public void revalidate(RenderContext renderContext) {
-        if(isValid) {
+        if (isValid) {
             return;
         }
         int top = spacing.top();
@@ -278,7 +278,8 @@ public class Chart {
         if (title != null) {
             title.setWidth(width1);
             title.moveTo(x + left, y + top);
-            top += title.getPrefferedSize(renderContext).height;;
+            top += title.getPrefferedSize(renderContext).height;
+            ;
         }
 
         if (isLegendEnabled) {
@@ -303,7 +304,7 @@ public class Chart {
             BRectangle graphArea = graphArea(margin);
             setXStartEnd(graphArea.x, graphArea.width);
             setYStartEnd(graphArea.y, graphArea.height);
-        }else {
+        } else {
             margin = new Insets(top, right, bottom, left);
             BRectangle graphArea = graphArea(margin);
             setXStartEnd(graphArea.x, graphArea.width);
@@ -377,7 +378,8 @@ public class Chart {
             } else if (!isBottomAxesUsed) {
                 topAxis.drawGrid(canvas, stackArea);
             } else { // both axis used use primary axis
-                 xAxisList.get(xPositionToIndex(defaultXPosition)).drawGrid(canvas, stackArea);;
+                xAxisList.get(xPositionToIndex(defaultXPosition)).drawGrid(canvas, stackArea);
+                ;
             }
         }
         // draw Y axes grids
@@ -451,8 +453,8 @@ public class Chart {
     /**
      * @param stack number of the stack to delete
      * @throws IllegalArgumentException if stack number > total number of stacks in the chart
-     * @throws IllegalStateException if stack axis are used by some trace traces and
-     *                                therefor can not be deleted
+     * @throws IllegalStateException    if stack axis are used by some trace traces and
+     *                                  therefor can not be deleted
      */
     public void removeStack(int stack) throws IllegalArgumentException, IllegalStateException {
         checkStackNumber(stack);
@@ -476,36 +478,38 @@ public class Chart {
         addTrace(name, data, tracePainter, stack);
     }
 
+
     /**
      * Add trace to the stack with the given number
      * @param stack number of the stack to add trace
      * @throws IllegalArgumentException if stack number > total number of stacks in the chart
      */
-    public void addTrace(String name,ChartData data, TracePainter tracePainter, int stack) throws IllegalArgumentException{
+    public void addTrace(String name, ChartData data, TracePainter tracePainter, int stack) throws IllegalArgumentException {
         addTrace(name, data, tracePainter, stack, false, false);
     }
 
-    public void addTrace(String name, ChartData data, TracePainter tracePainter, boolean isXOpposite,  boolean isYOpposite) {
+    public void addTrace(String name, ChartData data, TracePainter tracePainter, boolean isXOpposite, boolean isYOpposite) {
         int stack = Math.max(0, yAxisList.size() / 2 - 1);
         addTrace(name, data, tracePainter, stack, isXOpposite, isYOpposite);
     }
 
     /**
      * Add trace to the stack with the given number
+     *
      * @param stack number of the stack to add trace
      * @throws IllegalArgumentException if stack number > total number of stacks in the chart
      */
-    public void addTrace(String name, ChartData data, TracePainter tracePainter, int stack, boolean isXOpposite,  boolean isYOpposite) throws IllegalArgumentException {
+    public void addTrace(String name, ChartData data, TracePainter tracePainter, int stack, boolean isXOpposite, boolean isYOpposite) throws IllegalArgumentException {
         if (yAxisList.size() == 0) {
             addStack(); // add stack if there is no stack
         }
         checkStackNumber(stack);
         XAxisPosition xPosition = defaultXPosition;
         YAxisPosition yPosition = defaultYPosition;
-        if(isXOpposite) {
+        if (isXOpposite) {
             xPosition = getOppositeXPosition(defaultXPosition);
         }
-        if(isYOpposite) {
+        if (isYOpposite) {
             yPosition = getOppositeYPosition(defaultYPosition);
         }
 
@@ -542,7 +546,7 @@ public class Chart {
 
     public void setXPrefixAndSuffix(XAxisPosition xPosition, @Nullable String prefix, @Nullable String suffix) {
         xAxisList.get(xPositionToIndex(xPosition)).setTickLabelPrefixAndSuffix(prefix, suffix);
-        if(!isMarginFixed) {
+        if (!isMarginFixed) {
             invalidate();
         }
     }
@@ -550,22 +554,22 @@ public class Chart {
     public void setYPrefixAndSuffix(int stack, YAxisPosition yPosition, @Nullable String prefix, @Nullable String suffix) throws IllegalArgumentException {
         checkStackNumber(stack);
         yAxisList.get(yPositionToIndex(stack, yPosition)).setTickLabelPrefixAndSuffix(prefix, suffix);
-        if(!isMarginFixed) {
+        if (!isMarginFixed) {
             invalidate();
         }
     }
 
     public void setXTitle(XAxisPosition xPosition, @Nullable String title) {
         xAxisList.get(xPositionToIndex(xPosition)).setTitle(title);
-        if(!isMarginFixed) {
+        if (!isMarginFixed) {
             invalidate();
         }
     }
 
-    public void setYTitle(int stack, YAxisPosition yPosition, @Nullable String title) throws IllegalArgumentException{
+    public void setYTitle(int stack, YAxisPosition yPosition, @Nullable String title) throws IllegalArgumentException {
         checkStackNumber(stack);
         yAxisList.get(yPositionToIndex(stack, yPosition)).setTitle(title);
-        if(!isMarginFixed) {
+        if (!isMarginFixed) {
             invalidate();
         }
     }
@@ -632,7 +636,7 @@ public class Chart {
      */
 
     List<Integer> getTraces(XAxisPosition xAxisPosition) {
-        return  traceList.getTraces(xAxisPosition);
+        return traceList.getTraces(xAxisPosition);
     }
 
     List<XAxisPosition> getXPositionsUsedByStack(int stack) {
@@ -640,9 +644,9 @@ public class Chart {
         AxisWrapper y2 = yAxisList.get(2 * stack + 1);
         List<XAxisPosition> xPositions = new ArrayList<>(1);
         for (int i = 0; i < xAxisList.size(); i++) {
-           if(traceList.isXAxisUsedByStack(xAxisList.get(i), y1, y2)){
-               xPositions.add(xIndexToPosition(i));
-           }
+            if (traceList.isXAxisUsedByStack(xAxisList.get(i), y1, y2)) {
+                xPositions.add(xIndexToPosition(i));
+            }
         }
         return xPositions;
     }
@@ -651,13 +655,13 @@ public class Chart {
         int yIndex1 = 2 * stack;
         int yIndex2 = 2 * stack + 1;
         List<YAxisPosition> yPositions = new ArrayList<>(1);
-        if(traceList.isYAxisUsed(yAxisList.get(yIndex1))) {
+        if (traceList.isYAxisUsed(yAxisList.get(yIndex1))) {
             yPositions.add(yIndexToPosition(yIndex1));
         }
-        if(traceList.isYAxisUsed(yAxisList.get(yIndex2))) {
+        if (traceList.isYAxisUsed(yAxisList.get(yIndex2))) {
             yPositions.add(yIndexToPosition(yIndex2));
         }
-       return yPositions;
+        return yPositions;
     }
 
 
@@ -672,8 +676,8 @@ public class Chart {
     int getTraceStack(int traceNumber) {
         AxisWrapper yAxis = traceList.getTraceY(traceNumber);
         for (int i = 0; i < yAxisList.size(); i++) {
-            if(yAxisList.get(i) == yAxis) {
-                return i/2;
+            if (yAxisList.get(i) == yAxis) {
+                return i / 2;
             }
         }
         return -1;
@@ -702,7 +706,7 @@ public class Chart {
         // find point stack
         int stackCount = yAxisList.size() / 2;
         for (int i = 0; i < stackCount; i++) {
-            if(yAxisList.get(2 * i).contain(x, y)) {
+            if (yAxisList.get(2 * i).contain(x, y)) {
                 return i;
             }
         }
@@ -748,7 +752,7 @@ public class Chart {
     }
 
     public boolean translateY(int stack, YAxisPosition yPosition, int translation) {
-        if(translation == 0) {
+        if (translation == 0) {
             return false;
         }
         AxisWrapper axis = yAxisList.get(yPositionToIndex(stack, yPosition));
@@ -757,7 +761,7 @@ public class Chart {
     }
 
     public boolean translateX(XAxisPosition xPosition, int translation) {
-        if(translation == 0) {
+        if (translation == 0) {
             return false;
         }
         AxisWrapper axis = xAxisList.get(xPositionToIndex(xPosition));
@@ -766,7 +770,7 @@ public class Chart {
     }
 
     public boolean zoomY(int stack, YAxisPosition yPosition, double zoomFactor) {
-        if(zoomFactor == 0 || zoomFactor == 1) {
+        if (zoomFactor == 0 || zoomFactor == 1) {
             return false;
         }
         AxisWrapper axis = yAxisList.get(yPositionToIndex(stack, yPosition));
@@ -775,7 +779,7 @@ public class Chart {
     }
 
     boolean zoomX(XAxisPosition xPosition, double zoomFactor) {
-        if(zoomFactor == 0 || zoomFactor == 1) {
+        if (zoomFactor == 0 || zoomFactor == 1) {
             return false;
         }
         AxisWrapper axis = xAxisList.get(xPositionToIndex(xPosition));

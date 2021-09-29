@@ -16,7 +16,6 @@ public class ChartPanel extends JPanel {
     private int pastY;
     private int pressedX;
     private int pressedY;
-    private boolean isScrollMoving;
 
     public ChartPanel(Chart chart) {
         interactive = new InteractiveChart(chart);

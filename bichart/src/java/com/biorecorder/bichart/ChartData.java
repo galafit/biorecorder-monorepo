@@ -8,7 +8,7 @@ import com.biorecorder.bichart.graphics.Range;
  * in fact is simply a collection of columns
  */
 public interface ChartData {
-    int rowCount();
+    int size();
 
     int columnCount();
 
@@ -22,9 +22,8 @@ public interface ChartData {
 
     Range columnMinMax(int columnIndex);
 
-    int bisect( double value, int[] sorter);
+    int bisect(int columnNumber, double value, int[] sorter);
 
-    int[] sortedIndices();
-
+    int[] sortedIndices(int columnNumber);
 }
 
