@@ -75,10 +75,10 @@ public class Scroll {
         moveViewport(viewportDx);
     }
 
-    public void zoomViewport(double zoomFactor, int anchorPoint) {
+    public void zoomViewport(double zoomFactor, int anchorPoint, Range scrollTrack) {
         double position = model.getViewportPosition();
         double zoomedViewport = model.getViewportExtent() * zoomFactor;
-        double zoomedPosition = position - (1 - 1/zoomFactor) * anchorPoint;
+        double zoomedPosition = position - (1 - 1/zoomFactor) * anchorPoint * model.getViewportExtent()/scrollTrack.length();
         model.setRangeProperties(zoomedPosition, zoomedViewport, model.getStart(), model.getEnd());
     }
 

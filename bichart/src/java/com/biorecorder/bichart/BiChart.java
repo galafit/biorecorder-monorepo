@@ -698,9 +698,10 @@ public class BiChart {
     boolean zoomScrollExtent(XAxisPosition xAxisPosition, double zoomFactor, int anchorPoint) {
         isChanged = false;
         Scroll scroll = axisToScrolls.get(xAxisPosition);
-        Scale xScale = chart.getXScale(xAxisPosition);
         if (scroll != null) {
-            scroll.zoomViewport(zoomFactor, anchorPoint - (int)xScale.getStart());
+            Scale xScale = navigator.getXScale(navDefaultXPosition);
+            Range scrollTrack = new Range(xScale.getStart(), xScale.getEnd());
+            scroll.zoomViewport(zoomFactor, anchorPoint, scrollTrack);
         }
         return isChanged;
     }
