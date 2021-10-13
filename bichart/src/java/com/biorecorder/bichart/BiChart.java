@@ -695,25 +695,26 @@ public class BiChart {
     }
 
 
-    boolean zoomScrollExtent(XAxisPosition xAxisPosition, double zoomFactor) {
+    boolean zoomScrollExtent(XAxisPosition xAxisPosition, double zoomFactor, int anchorPoint) {
         isChanged = false;
         Scroll scroll = axisToScrolls.get(xAxisPosition);
+        Scale xScale = chart.getXScale(xAxisPosition);
         if (scroll != null) {
-            scroll.zoomViewport(zoomFactor);
+            scroll.zoomViewport(zoomFactor, anchorPoint - (int)xScale.getStart());
         }
         return isChanged;
     }
 
-    boolean zoomChartY(int stack, YAxisPosition yPosition, double zoomFactor) {
-        return chart.zoomY(stack, yPosition, zoomFactor);
+    boolean zoomChartY(int stack, YAxisPosition yPosition, double zoomFactor, int anchorPoint) {
+        return chart.zoomY(stack, yPosition, zoomFactor, anchorPoint);
     }
 
     boolean translateChartY(int stack, YAxisPosition yPosition, int dy) {
         return chart.translateY(stack, yPosition, dy);
     }
 
-    boolean zoomNavigatorY(int stack, YAxisPosition yPosition, double zoomFactor) {
-        return navigator.zoomY(stack, yPosition, zoomFactor);
+    boolean zoomNavigatorY(int stack, YAxisPosition yPosition, double zoomFactor, int anchorPoint) {
+        return navigator.zoomY(stack, yPosition, zoomFactor, anchorPoint);
     }
 
     boolean translateNavigatorY(int stack, YAxisPosition yPosition, int dy) {

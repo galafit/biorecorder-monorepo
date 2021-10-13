@@ -90,7 +90,7 @@ public class InteractiveBiChart implements Interactive {
     }
 
     @Override
-    public boolean scaleX(int x, int y, double scaleFactor) {
+    public boolean scaleX(int x, int y, double scaleFactor, int anchorPoint) {
         if (scaleFactor == 0) {
             return false;
         }
@@ -98,7 +98,7 @@ public class InteractiveBiChart implements Interactive {
             boolean isChanged = false;
             List<XAxisPosition> xPositions = getChartXPositions(x, y);
             for (XAxisPosition xPosition : xPositions) {
-                isChanged = biChart.zoomScrollExtent(xPosition, scaleFactor) || isChanged;
+                isChanged = biChart.zoomScrollExtent(xPosition, scaleFactor, anchorPoint) || isChanged;
             }
             return isChanged;
         }
@@ -106,7 +106,7 @@ public class InteractiveBiChart implements Interactive {
     }
 
     @Override
-    public boolean scaleY(int x, int y, double scaleFactor) {
+    public boolean scaleY(int x, int y, double scaleFactor, int anchorPoint) {
         if (scaleFactor == 0) {
             return false;
         }
@@ -115,11 +115,11 @@ public class InteractiveBiChart implements Interactive {
         boolean isChanged = false;
         if(yAxisInfo.isChart) {
             for (YAxisPosition yPosition : yAxisInfo.getYPositions()) {
-                isChanged = biChart.zoomChartY(stack, yPosition, scaleFactor) || isChanged;
+                isChanged = biChart.zoomChartY(stack, yPosition, scaleFactor, anchorPoint) || isChanged;
             }
         } else {
             for (YAxisPosition yPosition : yAxisInfo.getYPositions()) {
-                isChanged = biChart.zoomNavigatorY(stack, yPosition, scaleFactor) || isChanged;
+                isChanged = biChart.zoomNavigatorY(stack, yPosition, scaleFactor, anchorPoint) || isChanged;
             }
         }
         return isChanged;

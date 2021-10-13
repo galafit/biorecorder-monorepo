@@ -73,7 +73,6 @@ public class YPipe implements YReceiver, Pipe {
         RegularColumn xData;
         IntColumn yData = new IntColumn("y");
 
-
         public YSink(double startValue, double step) {
             xData = new RegularColumn("x", startValue, step, 0);
         }

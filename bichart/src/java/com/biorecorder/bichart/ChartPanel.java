@@ -106,12 +106,12 @@ public class ChartPanel extends JPanel {
                         || e.isControlDown()
                         //    || e.isShiftDown() // JAVA BUG on MAC!!!!
                         || e.isMetaDown()) { // scaleY
-                    if(interactive.scaleY(e.getX(), e.getY(), distanceToScaleFactor(d))) {
+                    if(interactive.scaleY(e.getX(), e.getY(), distanceToScaleFactor(d), e.getY())) {
                         repaint();
                     }
 
                 } else { // scale X
-                    if (interactive.scaleX(e.getX(), e.getY(), distanceToScaleFactor(d))) {
+                    if (interactive.scaleX(e.getX(), e.getY(), distanceToScaleFactor(d), e.getX())) {
                         repaint();
                     }
                 }

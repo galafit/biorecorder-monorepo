@@ -92,7 +92,7 @@ public class ScrollModel {
         viewportExtent = normalizeExtent(newExtent);
         viewportPosition = normalizeValue(newPosition, viewportExtent);
         // in our case change of start and end no important for listeners
-        if(oldExtent != viewportExtent || oldPosition != viewportPosition) {
+        if(oldPosition != viewportPosition || oldExtent != viewportExtent ) {
             fireListeners();
         }
     }

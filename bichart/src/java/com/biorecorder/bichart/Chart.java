@@ -769,21 +769,21 @@ public class Chart {
         return true;
     }
 
-    public boolean zoomY(int stack, YAxisPosition yPosition, double zoomFactor) {
+    public boolean zoomY(int stack, YAxisPosition yPosition, double zoomFactor, int anchorPoint) {
         if (zoomFactor == 0 || zoomFactor == 1) {
             return false;
         }
         AxisWrapper axis = yAxisList.get(yPositionToIndex(stack, yPosition));
-        setAxisMinMax(axis, axis.zoomedMinMax(zoomFactor), false);
+        setAxisMinMax(axis, axis.zoomedMinMax(zoomFactor, anchorPoint), false);
         return true;
     }
 
-    boolean zoomX(XAxisPosition xPosition, double zoomFactor) {
+    boolean zoomX(XAxisPosition xPosition, double zoomFactor, int anchorPoint) {
         if (zoomFactor == 0 || zoomFactor == 1) {
             return false;
         }
         AxisWrapper axis = xAxisList.get(xPositionToIndex(xPosition));
-        setAxisMinMax(axis, axis.zoomedMinMax(zoomFactor), false);
+        setAxisMinMax(axis, axis.zoomedMinMax(zoomFactor, anchorPoint), false);
         return true;
     }
 

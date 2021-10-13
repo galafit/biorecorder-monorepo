@@ -5,8 +5,8 @@ import com.biorecorder.bichart.graphics.BCanvas;
 public interface Interactive {
     boolean translateX(int x, int y, int dx);
     boolean translateY(int x, int y, int dy);
-    boolean scaleX(int x, int y, double scaleFactor);
-    boolean scaleY(int x, int y, double scaleFactor);
+    boolean scaleX(int x, int y, double scaleFactor, int anchorPoint);
+    boolean scaleY(int x, int y, double scaleFactor, int anchorPoint);
     boolean switchTraceSelection(int x, int y);
     boolean setScrollPosition(int x, int y);
     boolean translateScroll(int dx);

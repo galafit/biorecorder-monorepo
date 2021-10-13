@@ -71,20 +71,23 @@ class AxisWrapper {
     }
 
 
-    public Range zoomedMinMax(double zoomFactor) {
+    /**
+     * @param anchorPoint point that do not change during zooming
+     */
+    public Range zoomedMinMax(double zoomFactor, int anchorPoint) {
         if (zoomFactor <= 0) {
             String errMsg = "Zoom factor = " + zoomFactor + "  Expected > 0";
             throw new IllegalArgumentException(errMsg);
         }
-        Scale zoomedScale = axis.getScale().copy();
-
+        Scale zoomedScale = axis.getScale();
         double start = getStart();
         double end = getEnd();
-        double zoomedLength = (end - start) * zoomFactor;
-        double zoomedEnd = start + zoomedLength;
-        zoomedScale.setStartEnd(start, zoomedEnd);
+        double zoomedEnd = anchorPoint + (end - anchorPoint) * zoomFactor;
+        double zoomedStart = anchorPoint - (anchorPoint - start) * zoomFactor;
+        zoomedScale.setStartEnd(zoomedStart, zoomedEnd);
+        double minNew = zoomedScale.invert(start);
         double maxNew = zoomedScale.invert(end);
-        return new Range(axis.getMin(), maxNew);
+        return new Range(minNew, maxNew);
     }
 
     public Range translatedMinMax(int translation) {

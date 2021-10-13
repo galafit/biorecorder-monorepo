@@ -75,8 +75,11 @@ public class Scroll {
         moveViewport(viewportDx);
     }
 
-    public void zoomViewport(double zoomFactor) {
-       model.setViewportExtent(zoomFactor * model.getViewportExtent());
+    public void zoomViewport(double zoomFactor, int anchorPoint) {
+        double position = model.getViewportPosition();
+        double zoomedViewport = model.getViewportExtent() * zoomFactor;
+        double zoomedPosition = position - (1 - 1/zoomFactor) * anchorPoint;
+        model.setRangeProperties(zoomedPosition, zoomedViewport, model.getStart(), model.getEnd());
     }
 
     public boolean scrollbarContain(int x, Range scrollTrack) {

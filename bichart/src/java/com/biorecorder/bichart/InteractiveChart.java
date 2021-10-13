@@ -72,19 +72,19 @@ public class InteractiveChart implements Interactive {
     }
 
     @Override
-    public boolean scaleX(int x, int y, double scaleFactor) {
+    public boolean scaleX(int x, int y, double scaleFactor, int anchorPoint) {
         if (scaleFactor == 0) {
             return false;
         }
         List<XAxisPosition> xPositions = getXPositions(x, y);
         for (XAxisPosition xPosition : xPositions) {
-            chart.zoomX(xPosition, scaleFactor);
+            chart.zoomX(xPosition, scaleFactor, anchorPoint);
         }
         return true;
     }
 
     @Override
-    public boolean scaleY(int x, int y, double scaleFactor) {
+    public boolean scaleY(int x, int y, double scaleFactor, int anchorPoint) {
         if(scaleFactor == 0) {
             return false;
         }
@@ -93,7 +93,7 @@ public class InteractiveChart implements Interactive {
         int stack = yAxisInfo.getStack();
         if(stack >= 0) {
             for (YAxisPosition yPosition : yPositions) {
-                chart.zoomY(stack, yPosition, scaleFactor);
+                chart.zoomY(stack, yPosition, scaleFactor, anchorPoint);
             }
             return true;
         }
