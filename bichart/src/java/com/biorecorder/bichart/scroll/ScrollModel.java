@@ -7,62 +7,34 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ScrollModel {
-    private Scale scale; // view scale
     private double start = 0; // view start
     private double end = 100; // view end (start-end are limits where move viewport)
     private double viewportPosition = 0; // viewportPosition
     private double viewportExtent = 10; // viewportWidth
 
-    private List<ScrollListener> eventListeners = new ArrayList<ScrollListener>();
+    private List<ChangeListener> listeners = new ArrayList<ChangeListener>();
 
-    public ScrollModel(Scale scale) {
-        this.scale = scale;
-    }
 
-    public void addListener(ScrollListener listener) {
-        eventListeners.add(listener);
+    public void addListener(ChangeListener listener) {
+        listeners.add(listener);
     }
 
     private void fireListeners() {
-        for (ScrollListener listener : eventListeners) {
-            listener.onScrollChanged(scale.invert(viewportPosition), scale.invert(viewportPosition + viewportExtent));
+        for (ChangeListener l : listeners) {
+            l.stateChanged();
         }
-    }
-
-    public Range getViewportMinMax() {
-        return new Range(scale.invert(viewportPosition), scale.invert(viewportPosition + viewportExtent));
-    }
-
-    public void setMinMax(double min, double max) {
-        setStartEnd(scale.scale(min), scale.scale(max));
-    }
-
-    public void setViewportMinMax(double min, double max) {
-        double newPosition = scale.scale(min);
-        double newExtent = scale.scale(max) - newPosition;
-        setRangeProperties(newPosition, newExtent, start, end);
-    }
-
-    public void setViewportMin(double min) {
-        double newPosition = scale.scale(min);
-        setRangeProperties(newPosition, viewportExtent, start, end);
-    }
-
-    public void setViewportCenterValue(double centerValue) {
-        double newPosition = scale.scale(centerValue) - viewportExtent/2;
-        setRangeProperties(newPosition, viewportExtent, start, end);
     }
 
     public double getViewportPosition() {
         return viewportPosition;
     }
 
-    public void setViewportPosition(double newPosition) {
-        setRangeProperties(newPosition, viewportExtent, start, end);
-    }
-
     public double getViewportExtent() {
         return viewportExtent;
+    }
+
+    public void setViewportPosition(double newPosition) {
+        setRangeProperties(newPosition, viewportExtent, start, end);
     }
 
     public void setViewportExtent(double newExtent){

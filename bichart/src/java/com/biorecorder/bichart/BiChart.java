@@ -220,8 +220,6 @@ public class BiChart {
         Scroll scroll = new Scroll(config.getScrollConfig(), chartScale);
         scroll.setMinMax(navigatorRange.getMin(), navigatorRange.getMax());
         scroll.setViewportMinMax(chartRange.getMin(), chartRange.getMax());
-        Range scrollRange = scroll.getViewportMinMax();
-        chart.setXMinMax(xAxisPosition, scrollRange.getMin(), scrollRange.getMax());
         List<ScrollListener> scrollListeners = axisToScrollListeners.get(xAxisPosition);
         scroll.addListener(new ScrollListener() {
             @Override
@@ -701,7 +699,7 @@ public class BiChart {
         if (scroll != null) {
             Scale xScale = navigator.getXScale(navDefaultXPosition);
             Range scrollTrack = new Range(xScale.getStart(), xScale.getEnd());
-            scroll.zoomViewport(zoomFactor, anchorPoint, scrollTrack);
+            scroll.zoom(zoomFactor, anchorPoint);
         }
         return isChanged;
     }
