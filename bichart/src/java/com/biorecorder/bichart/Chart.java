@@ -421,6 +421,18 @@ public class Chart {
         tooltip.draw(canvas, new BRectangle(x, y, width, height));
     }
 
+    void drawRect(BCanvas canvas, XAxisPosition xAxisPosition, double startValue, double endValue, BColor color, int borderWidth) {
+        BRectangle graphArea = graphArea(margin);
+        AxisWrapper axis = xAxisList.get(xPositionToIndex(xAxisPosition));
+        canvas.setColor(color);
+        canvas.setStroke(borderWidth, DashStyle.SOLID);
+        int start = (int) axis.scale(startValue) - borderWidth;
+        int end = (int) axis.scale(endValue) + borderWidth;
+        int width = end - start;
+        int height = graphArea.height - 2 * borderWidth;
+        canvas.drawRect(start, graphArea.y + borderWidth, width, height);
+    }
+
     public int stackCount() {
         return yAxisList.size() / 2;
     }

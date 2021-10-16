@@ -14,7 +14,6 @@ public class Scroll {
     private ScrollModel model;
     private List<ScrollListener> listeners = new ArrayList<ScrollListener>();
 
-
     public Scroll(ScrollConfig config, Scale scale) {
         this.model = new ScrollModel();
         this.config = config;
@@ -61,16 +60,6 @@ public class Scroll {
         model.setStartEnd(scale.scale(min), scale.scale(max));
     }
 
-    public void setViewportMinMax(double min, double max) {
-        double viewportStart = scale.scale(min);
-        double viewportEnd = scale.scale(max);
-        model.setRangeProperties(viewportStart, viewportEnd - viewportStart, model.getStart(), model.getEnd() );
-    }
-
-    public void setViewportMin(double min) {
-        model.setViewportPosition(scale.scale(min));
-    }
-
     public double getMin() {
         return scale.invert(model.getStart());
     }
@@ -102,18 +91,8 @@ public class Scroll {
         model.setViewportPosition(newPosition);
     }
 
-    public void setScrollbarCenter(double position, Range scrollTrack) {
-        double viewportPosition = scrollTrackToViewPosition(position, scrollTrack) - model.getViewportExtent() / 2;
-        model.setViewportPosition(viewportPosition);
-    }
-
     public void moveViewport(double dx) {
         model.setViewportPosition(model.getViewportPosition() + dx);
-    }
-
-    public void moveScrollbar(double dx, Range scrollTrack) {
-        double viewportDx = dx / scrollTrackToViewRatio(scrollTrack);
-        moveViewport(viewportDx);
     }
 
     public void zoom(double zoomFactor, int anchorPoint) {
@@ -137,11 +116,14 @@ public class Scroll {
         fireListeners();
     }
 
-    public boolean scrollbarContain(int x, Range scrollTrack) {
-        return getTouchRange(scrollTrack).contain(x);
+    public boolean viewportContainValue(double value) {
+        if(value < getViewportMin() - config.getTouchRadius() || value > getViewportMax() + config.getTouchRadius()) {
+            return false;
+        }
+        return true;
     }
 
-    public double scrollViewportRatio() {
+    public double viewportRatio() {
         return model.getViewportExtent() / (model.getEnd() - model.getStart());
     }
 
@@ -149,53 +131,16 @@ public class Scroll {
         return scrollbarTrack.length() / (model.getEnd() - model.getStart());
     }
 
-    private double viewToScrollTrackPosition(double viewPosition, Range scrollTrack) {
-        double trackToViewRatio = scrollTrackToViewRatio(scrollTrack);
-        return  scrollTrack.getMin() + trackToViewRatio * (viewPosition - model.getStart());
-    }
-
-    private double scrollTrackToViewPosition(double scrollTrackPosition, Range scrollTrack) {
+    private double scrollTrackToViewPosition_(double scrollTrackPosition, Range scrollTrack) {
         double trackToViewRatio = scrollTrackToViewRatio(scrollTrack);
         return model.getStart() + (scrollTrackPosition - scrollTrack.getMin()) / trackToViewRatio;
     }
 
-    private Range getTouchRange(Range scrollTrack) {
-        int touchRadius = config.getTouchRadius();
-        double scrollStart = viewToScrollTrackPosition(model.getViewportPosition(), scrollTrack);
-        double scrollEnd = viewToScrollTrackPosition(model.getViewportPosition() + model.getViewportExtent(), scrollTrack);
-        double scrollWidth = scrollEnd - scrollStart;
-        double delta = touchRadius - scrollWidth/2;
-        if(delta > 0) {
-            scrollStart = scrollStart - delta;
-            scrollWidth = 2 * touchRadius;
-        }
-        return new Range(scrollStart, scrollStart + scrollWidth);
+    public BColor getColor() {
+        return config.getColor();
     }
 
-    public void draw(BCanvas canvas, Range scrollTrack, BRectangle area) {
-        int border = 1;
-        int scrollWidthMin = 2;
-        int scrollTop = area.y;
-        int scrollHeight = area.height;
-        int scrollBottom = scrollTop + scrollHeight;
-
-        double start = viewToScrollTrackPosition(model.getViewportPosition(), scrollTrack);
-        double end = viewToScrollTrackPosition(model.getViewportPosition() + model.getViewportExtent(), scrollTrack);
-        //   System.out.println("viewport "+ model.getViewportExtent() +"  " + (end - start));
-
-        int scrollStart = (int)Math.round(viewToScrollTrackPosition(model.getViewportPosition(), scrollTrack));
-        int scrollEnd = (int)Math.round(viewToScrollTrackPosition(model.getViewportPosition() + model.getViewportExtent(), scrollTrack));
-        int scrollWidth = scrollEnd - scrollStart;
-        if(scrollWidth < scrollWidthMin) {
-            scrollWidth = scrollWidthMin;
-            scrollStart = scrollStart - scrollWidth/2;
-            scrollEnd = scrollEnd + scrollWidth/2;
-        }
-
-        canvas.setColor(config.getColor());
-        canvas.fillRect(scrollStart - border, scrollTop, border, scrollHeight);
-        canvas.fillRect(scrollEnd, scrollTop, border, scrollHeight);
-        canvas.fillRect(scrollStart, scrollTop, scrollWidth, border);
-        canvas.fillRect(scrollStart, scrollBottom - border, scrollWidth, border);
+    public int getBorder() {
+        return config.getBorder();
     }
 }

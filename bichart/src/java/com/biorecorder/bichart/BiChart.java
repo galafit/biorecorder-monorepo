@@ -239,11 +239,10 @@ public class BiChart {
         chart.draw(canvas);
         canvas.save();
         navigator.draw(canvas);
-        Range scrollTrack = new Range(spacing.left(), width - spacing.right());
         for (XAxisPosition xPosition : XAxisPosition.values()) {
             Scroll scroll = axisToScrolls.get(xPosition);
             if (scroll != null) {
-                scroll.draw(canvas, scrollTrack, navigator.getBounds());
+                navigator.drawRect(canvas, navDefaultXPosition, scroll.getViewportMin(), scroll.getViewportMax(), scroll.getColor(), scroll.getBorder());
             }
         }
     }
@@ -257,12 +256,6 @@ public class BiChart {
             }
         }
     }
-
-    public void setChartXMinMax(XAxisPosition xAxisPosition, double min, double max) {
-        axisToScrolls.put(xAxisPosition, null);
-        chart.setXMinMax(xAxisPosition, min, max);
-    }
-
 
     public int getChartTraceMarkSize(int traceNumber) {
         return chart.getTraceMarkSize(traceNumber);
@@ -601,9 +594,9 @@ public class BiChart {
         if (!navigator.getBounds().contain(x, y)) {
             return false;
         }
+        double xValue = navigator.positionToValue(navDefaultXPosition, x);
         for (XAxisPosition xPosition : axisToScrolls.keySet()) {
-            Range scrollTrack = new Range(spacing.left(), width - spacing.right());
-            if (axisToScrolls.get(xPosition).scrollbarContain(x, scrollTrack)) {
+            if (axisToScrolls.get(xPosition).viewportContainValue(xValue)) {
                 return true;
             }
         }
@@ -613,9 +606,9 @@ public class BiChart {
 
     boolean setScrollsPosition(double x) {
         isChanged = false;
-        Range scrollTrack = new Range(spacing.left(), width - spacing.right());
+        double xValue = navigator.positionToValue(navDefaultXPosition, x);
         for (XAxisPosition xPosition : axisToScrolls.keySet()) {
-            axisToScrolls.get(xPosition).setScrollbarCenter(x, scrollTrack);
+            axisToScrolls.get(xPosition).setViewportCenterValue(xValue);
         }
         return isChanged;
     }
@@ -623,8 +616,8 @@ public class BiChart {
     boolean translateScrolls(double dx) {
         isChanged = false;
         for (XAxisPosition xPosition : axisToScrolls.keySet()) {
-            Range scrollTrack = new Range(spacing.left(), width - spacing.right());
-            axisToScrolls.get(xPosition).moveScrollbar(dx, scrollTrack);
+            Scroll scroll = axisToScrolls.get(xPosition);
+            scroll.moveViewport(dx / scroll.viewportRatio());
         }
         return isChanged;
 
@@ -632,7 +625,7 @@ public class BiChart {
 
     boolean translateScrollsViewport(XAxisPosition xPosition, double dx) {
         isChanged = false;
-        double dx1 = dx * axisToScrolls.get(xPosition).scrollViewportRatio();
+        double dx1 = dx * axisToScrolls.get(xPosition).viewportRatio();
         translateScrolls(dx1);
         return isChanged;
     }
