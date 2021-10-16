@@ -622,8 +622,16 @@ public class Chart {
         return new Range(xAxis.getMin(), xAxis.getMax());
     }*/
 
-    Scale getXScale(XAxisPosition xPosition) {
+    /*Scale getXScale(XAxisPosition xPosition) {
         return xAxisList.get(xPositionToIndex(xPosition)).getScale();
+    }*/
+
+    double valueToPosition(XAxisPosition xPosition, double value) {
+        return xAxisList.get(xPositionToIndex(xPosition)).scale(value);
+    }
+
+    double positionToValue(XAxisPosition xPosition, double position) {
+        return xAxisList.get(xPositionToIndex(xPosition)).invert(position);
     }
 
     boolean isValid() {

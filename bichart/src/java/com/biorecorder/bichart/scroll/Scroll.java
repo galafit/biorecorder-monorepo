@@ -37,6 +37,18 @@ public class Scroll {
         }
     }
 
+    public double getStart() {
+       return model.getStart();
+    }
+
+    public double getEnd() {
+        return model.getEnd();
+    }
+
+    public double getViewportExtent() {
+        return model.getViewportExtent();
+    }
+
     public void setStartEnd(double start, double end) {
         model.setStartEnd(start, end);
     }
@@ -59,17 +71,34 @@ public class Scroll {
         model.setViewportPosition(scale.scale(min));
     }
 
-
     public double getMin() {
-        return scale.scale(model.getStart());
+        return scale.invert(model.getStart());
     }
 
     public double getMax() {
-        return scale.scale(model.getEnd());
+        return scale.invert(model.getEnd());
+    }
+
+    public double getViewportMin() {
+        return scale.invert(model.getViewportPosition());
+    }
+
+    public double getViewportMax() {
+        return scale.invert(model.getViewportPosition() + model.getViewportExtent());
+    }
+
+
+    public double getViewportCenterValue() {
+        return scale.invert(model.getViewportPosition() + model.getViewportExtent()/2);
     }
 
     public void setViewportCenterValue(double centerValue) {
         double newPosition = scale.scale(centerValue) - model.getViewportPosition()/2;
+        model.setViewportPosition(newPosition);
+    }
+
+    public void setViewportCenter(double position) {
+        double newPosition = position - model.getViewportPosition()/2;
         model.setViewportPosition(newPosition);
     }
 
@@ -96,7 +125,15 @@ public class Scroll {
         double end = start + (model.getEnd() - model.getStart()) * zoomFactor;
         double position = start + (model.getViewportPosition() - start) * zoomFactor;
         position += (zoomFactor - 1) * anchorPoint;
+        // to prevent double listeners firing
+        model.removeListeners();
         model.setRangeProperties(position, model.getViewportExtent(), start, end);
+        model.addListener(new ChangeListener() {
+            @Override
+            public void stateChanged() {
+                fireListeners();
+            }
+        });
         fireListeners();
     }
 

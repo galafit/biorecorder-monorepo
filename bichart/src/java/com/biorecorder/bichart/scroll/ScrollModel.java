@@ -19,6 +19,10 @@ public class ScrollModel {
         listeners.add(listener);
     }
 
+    public void removeListeners() {
+        listeners.clear();
+    }
+
     private void fireListeners() {
         for (ChangeListener l : listeners) {
             l.stateChanged();
