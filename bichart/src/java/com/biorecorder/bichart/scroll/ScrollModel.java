@@ -1,8 +1,5 @@
 package com.biorecorder.bichart.scroll;
 
-import com.biorecorder.bichart.graphics.Range;
-import com.biorecorder.bichart.scales.Scale;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,15 +54,18 @@ public class ScrollModel {
         return end;
     }
 
+    /**
+     * our model change limits (end) if extent is too big
+     */
     public void setRangeProperties(double newPosition, double newExtent, double newStart, double newEnd) {
         double oldExtent = viewportExtent;
         double oldPosition = viewportPosition;
         end = newEnd;
         start = newStart;
-        if(start > end) {
-            end = start;
+        viewportExtent = newExtent;
+        if(end < start + viewportExtent) {
+            end = start + viewportExtent;
         }
-        viewportExtent = normalizeExtent(newExtent);
         viewportPosition = normalizeValue(newPosition, viewportExtent);
         // in our case change of start and end no important for listeners
         if(oldPosition != viewportPosition || oldExtent != viewportExtent ) {
@@ -73,7 +73,7 @@ public class ScrollModel {
         }
     }
 
-    private double normalizeExtent(double extent) {
+  /*  private double normalizeExtent(double extent) {
         if(extent < 0) {
             return 0;
         }
@@ -82,7 +82,7 @@ public class ScrollModel {
             return maxExtent;
         }
         return extent;
-    }
+    }*/
 
     private double normalizeValue(double value, double extent) {
         if (value < start) {

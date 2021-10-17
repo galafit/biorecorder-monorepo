@@ -31,7 +31,7 @@ public class BiChartTest extends JFrame{
         yData = new IntArrayList();
         xData = new IntArrayList();
 
-       for (int i = 0; i <= 100; i++) {
+       for (int i = 0; i < 100; i++) {
             yData.add(i);
             xData.add(i);
             labels.add("l_"+i);

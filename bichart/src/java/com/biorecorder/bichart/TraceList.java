@@ -80,6 +80,7 @@ class TraceList {
         List<Integer> traceNumbers = xPositionToTraceNumbers.get(xAxisPosition);
         if(traceNumbers == null) {
             traceNumbers = new ArrayList<>(0);
+            xPositionToTraceNumbers.put(xAxisPosition, traceNumbers);
         }
         return traceNumbers;
     }

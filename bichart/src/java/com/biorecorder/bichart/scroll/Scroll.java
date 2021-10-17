@@ -18,6 +18,11 @@ public class Scroll {
         this.model = new ScrollModel();
         this.config = config;
         this.scale = scale;
+        double start = scale.getStart();
+        double end = scale.getEnd();
+        double position = start;
+        double extent = end - start;
+        model.setRangeProperties(position, extent, start, end);
         model.addListener(new ChangeListener() {
             @Override
             public void stateChanged() {
@@ -82,12 +87,12 @@ public class Scroll {
     }
 
     public void setViewportCenterValue(double centerValue) {
-        double newPosition = scale.scale(centerValue) - model.getViewportPosition()/2;
+        double newPosition = scale.scale(centerValue) - model.getViewportExtent()/2;
         model.setViewportPosition(newPosition);
     }
 
     public void setViewportCenter(double position) {
-        double newPosition = position - model.getViewportPosition()/2;
+        double newPosition = position - model.getViewportExtent()/2;
         model.setViewportPosition(newPosition);
     }
 
