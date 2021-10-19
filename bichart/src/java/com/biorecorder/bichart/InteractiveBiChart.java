@@ -10,25 +10,35 @@ import java.util.List;
 
 public class InteractiveBiChart implements Interactive {
     private final BiChart biChart;
+    private boolean chartContain;
+    private boolean scrollContain;
+    private List<YAxisPosition> yPositions = new ArrayList<>(2);
+    private List<XAxisPosition> xPositions = new ArrayList<>(2);;
+    private int stack;
+    private boolean released = true;
 
     public InteractiveBiChart(BiChart biChart) {
         this.biChart = biChart;
     }
 
-    private YAxisInfo getYPositions(int x, int y) {
-        List<YAxisPosition> yPositions = new ArrayList<>(1);
-        int stack;
+    private void getPositions(int x, int y) {
+        xPositions.clear();
+        yPositions.clear();
+        scrollContain = false;
         if(biChart.chartContain(x, y)) {
+            chartContain = true;
             int selection =biChart.getChartSelectedTrace();
             if (selection >= 0) {
                 yPositions.add(biChart.getChartTraceYPosition(selection));
+                xPositions.add(biChart.getChartTraceXPosition(selection));
                 stack = biChart.getChartTraceStack(selection);
             } else {
                 stack = biChart.getChartStackContaining(x, y);
+                xPositions = biChart.getChartXPositionsUsedByStack(stack);
                 yPositions = biChart.getChartYPositionsUsedByStack(stack);
             }
-            return new YAxisInfo(true, stack, yPositions);
         } else {
+            chartContain = false;
             int selection =biChart.getNavigatorSelectedTrace();
             if (selection >= 0) {
                 yPositions.add(biChart.getNavigatorTraceYPosition(selection));
@@ -36,34 +46,28 @@ public class InteractiveBiChart implements Interactive {
             } else {
                 stack = biChart.getNavigatorStackContaining(x, y);
                 yPositions = biChart.getNavigatorYPositionsUsedByStack(stack);
-            }
-            return new YAxisInfo(false, stack, yPositions);
-        }
-    }
-
-    private List<XAxisPosition> getChartXPositions(int x, int y) {
-        List<XAxisPosition> xPositions;
-        int selection =biChart.getChartSelectedTrace();
-        int stack;
-        xPositions = new ArrayList();
-        if (selection >= 0) {
-            xPositions.add(biChart.getChartTraceXPosition(selection));
-        } else {
-            stack = biChart.getChartStackContaining(x, y);
-            if(stack >= 0) {
-                xPositions = biChart.getChartXPositionsUsedByStack(stack);
+                XAxisPosition xPosition = biChart.scrollContain(x, y);
+                if(xPosition != null) {
+                    xPositions.add(xPosition);
+                    scrollContain = true;
+                }
             }
         }
-        return xPositions;
+        released = false;
     }
 
 
     @Override
     public boolean translateX(int x, int y, int dx) {
-        if(biChart.chartContain(x, y)) {
-            List<XAxisPosition> xPositions = getChartXPositions(x, y);
-            if(xPositions.size() > 0) {
-                return biChart.translateScrollsViewport(xPositions.get(0), dx);
+        if(released) {
+            getPositions(x, y);
+        }
+        if(xPositions.size() > 0) {
+            if(chartContain) {
+                return biChart.translateChartX(xPositions.get(0), dx);
+            }
+            if(scrollContain) {
+                return biChart.translateScrolls(xPositions.get(0), -dx);
             }
         }
         return false;
@@ -74,15 +78,16 @@ public class InteractiveBiChart implements Interactive {
         if (dy == 0) {
             return false;
         }
-        YAxisInfo yAxisInfo = getYPositions(x, y);
-        int stack = yAxisInfo.getStack();
+        if(released) {
+            getPositions(x, y);
+        }
         boolean isChanged = false;
-        if(yAxisInfo.isChart) {
-            for (YAxisPosition yPosition : yAxisInfo.getYPositions()) {
+        if(chartContain) {
+            for (YAxisPosition yPosition : yPositions) {
                 isChanged = biChart.translateChartY(stack, yPosition, dy) || isChanged;
             }
         } else {
-            for (YAxisPosition yPosition : yAxisInfo.getYPositions()) {
+            for (YAxisPosition yPosition : yPositions) {
                 isChanged = biChart.translateNavigatorY(stack, yPosition, dy) || isChanged;
             }
         }
@@ -90,15 +95,17 @@ public class InteractiveBiChart implements Interactive {
     }
 
     @Override
-    public boolean scaleX(int x, int y, double scaleFactor, int anchorPoint) {
+    public boolean scaleX(int x, int y, double scaleFactor) {
         if (scaleFactor == 0) {
             return false;
         }
-        if(biChart.chartContain(x, y)) {
+        if(released) {
+            getPositions(x, y);
+        }
+        if(chartContain) {
             boolean isChanged = false;
-            List<XAxisPosition> xPositions = getChartXPositions(x, y);
             for (XAxisPosition xPosition : xPositions) {
-                isChanged = biChart.zoomScrollExtent(xPosition, scaleFactor, anchorPoint) || isChanged;
+                isChanged = biChart.zoomChartX(xPosition, scaleFactor, x) || isChanged;
             }
             return isChanged;
         }
@@ -106,20 +113,21 @@ public class InteractiveBiChart implements Interactive {
     }
 
     @Override
-    public boolean scaleY(int x, int y, double scaleFactor, int anchorPoint) {
+    public boolean scaleY(int x, int y, double scaleFactor) {
         if (scaleFactor == 0) {
             return false;
         }
-        YAxisInfo yAxisInfo = getYPositions(x, y);
-        int stack = yAxisInfo.getStack();
+        if(released) {
+            getPositions(x, y);
+        }
         boolean isChanged = false;
-        if(yAxisInfo.isChart) {
-            for (YAxisPosition yPosition : yAxisInfo.getYPositions()) {
-                isChanged = biChart.zoomChartY(stack, yPosition, scaleFactor, anchorPoint) || isChanged;
+        if(chartContain) {
+            for (YAxisPosition yPosition : yPositions) {
+                isChanged = biChart.zoomChartY(stack, yPosition, scaleFactor, y) || isChanged;
             }
         } else {
-            for (YAxisPosition yPosition : yAxisInfo.getYPositions()) {
-                isChanged = biChart.zoomNavigatorY(stack, yPosition, scaleFactor, anchorPoint) || isChanged;
+            for (YAxisPosition yPosition : yPositions) {
+                isChanged = biChart.zoomNavigatorY(stack, yPosition, scaleFactor, y) || isChanged;
             }
         }
         return isChanged;
@@ -157,14 +165,9 @@ public class InteractiveBiChart implements Interactive {
     }
 
     @Override
-    public boolean scrollContain(int x, int y) {
-        return biChart.scrollContain(x, y);
-    }
-
-    @Override
-    public boolean setScrollPosition(int x, int y) {
+    public boolean centerX(int x, int y) {
         if(biChart.navigatorContain(x, y)) {
-            return biChart.setScrollsPosition(x);
+            return biChart.positionScrolls(x);
         } else {
             List<XAxisPosition> xPositions;
             int selection =biChart.getChartSelectedTrace();
@@ -179,16 +182,17 @@ public class InteractiveBiChart implements Interactive {
                 }
             }
             if(xPositions.size() > 0) {
-                return biChart.setScrollsViewport(xPositions.get(0), x);
+                return biChart.positionChartX(xPositions.get(0), x);
             }
         }
         return false;
     }
 
     @Override
-    public boolean translateScroll(int dx) {
-        return biChart.translateScrolls(-dx);
+    public void release() {
+        released = true;
     }
+
 
     @Override
     public boolean autoScaleX() {
@@ -220,7 +224,6 @@ public class InteractiveBiChart implements Interactive {
                 return biChart.hoverOff();
             }
         }
-
     }
 
     @Override
@@ -242,28 +245,5 @@ public class InteractiveBiChart implements Interactive {
     public void draw(BCanvas canvas) {
         biChart.draw(canvas);
     }
-
-    private static class YAxisInfo {
-        private boolean isChart;
-        private List<YAxisPosition> yPositions;
-        private int stack;
-
-        public YAxisInfo(boolean isChart, int stack, List<YAxisPosition> yPositions) {
-            this.isChart = isChart;
-            this.yPositions = yPositions;
-            this.stack = stack;
-        }
-
-        public List<YAxisPosition> getYPositions() {
-            return yPositions;
-        }
-
-        public int getStack() {
-            return stack;
-        }
-
-        public boolean isChart() {
-            return isChart;
-        }
-    }
 }
+

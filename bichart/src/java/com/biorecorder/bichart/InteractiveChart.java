@@ -10,36 +10,39 @@ import java.util.List;
 
 public class InteractiveChart implements Interactive {
     private final Chart chart;
+    private List<YAxisPosition> yPositions = new ArrayList<>(2);
+    private List<XAxisPosition> xPositions = new ArrayList<>(2);;
+    private int stack;
+    private boolean released = true;
 
     public InteractiveChart(Chart chart) {
         this.chart = chart;
     }
 
-    private YAxisInfo getYPositions(int x, int y) {
-        List<YAxisPosition> yPositions = new ArrayList<>(1);
-        int stack;
+    private void getPositions(int x, int y) {
+        xPositions.clear();
+        yPositions.clear();
         int selection = chart.getSelectedTrace();
         if (selection >= 0) {
             yPositions.add(chart.getTraceYPosition(selection));
             stack = chart.getTraceStack(selection);
+            xPositions.add(chart.getTraceXPosition(selection));
         } else {
             stack = chart.getStackContaining(x, y);
             yPositions = chart.getYPositionsUsedByStack(stack);
-        }
-        return new YAxisInfo(stack, yPositions);
-    }
-
-    private List<XAxisPosition> getXPositions(int x, int y) {
-        List<XAxisPosition> xPositions;
-        int selection =chart.getSelectedTrace();
-        if (selection >= 0) {
-            xPositions = new ArrayList();
-            xPositions.add(chart.getTraceXPosition(selection));
-        } else {
-            int stack = chart.getStackContaining(x, y);
             xPositions = chart.getXPositionsUsedByStack(stack);
         }
-        return xPositions;
+        released = false;
+    }
+
+    @Override
+    public boolean centerX(int x, int y) {
+        return false;
+    }
+
+    @Override
+    public void release() {
+        released = true;
     }
 
     @Override
@@ -47,7 +50,9 @@ public class InteractiveChart implements Interactive {
         if (dx == 0) {
             return false;
         }
-        List<XAxisPosition> xPositions = getXPositions(x, y);
+        if(released) {
+            getPositions(x, y);
+        }
         for (XAxisPosition xPosition : xPositions) {
             chart.translateX(xPosition, dx);
         }
@@ -59,9 +64,9 @@ public class InteractiveChart implements Interactive {
         if (dy == 0) {
             return false;
         }
-        YAxisInfo yAxisInfo = getYPositions(x, y);
-        List<YAxisPosition> yPositions = yAxisInfo.getYPositions();
-        int stack = yAxisInfo.getStack();
+        if(released) {
+            getPositions(x, y);
+        }
         if(stack >= 0) {
             for (YAxisPosition yPosition : yPositions) {
                 chart.translateY(stack, yPosition, dy);
@@ -72,28 +77,30 @@ public class InteractiveChart implements Interactive {
     }
 
     @Override
-    public boolean scaleX(int x, int y, double scaleFactor, int anchorPoint) {
+    public boolean scaleX(int x, int y, double scaleFactor) {
         if (scaleFactor == 0) {
             return false;
         }
-        List<XAxisPosition> xPositions = getXPositions(x, y);
+        if(released) {
+            getPositions(x, y);
+        }
         for (XAxisPosition xPosition : xPositions) {
-            chart.zoomX(xPosition, scaleFactor, anchorPoint);
+            chart.zoomX(xPosition, scaleFactor, x);
         }
         return true;
     }
 
     @Override
-    public boolean scaleY(int x, int y, double scaleFactor, int anchorPoint) {
+    public boolean scaleY(int x, int y, double scaleFactor) {
         if(scaleFactor == 0) {
             return false;
         }
-        YAxisInfo yAxisInfo = getYPositions(x, y);
-        List<YAxisPosition> yPositions = yAxisInfo.getYPositions();
-        int stack = yAxisInfo.getStack();
+        if(released) {
+            getPositions(x, y);
+        }
         if(stack >= 0) {
             for (YAxisPosition yPosition : yPositions) {
-                chart.zoomY(stack, yPosition, scaleFactor, anchorPoint);
+                chart.zoomY(stack, yPosition, scaleFactor, y);
             }
             return true;
         }
@@ -114,21 +121,6 @@ public class InteractiveChart implements Interactive {
             }
             return true;
         }
-    }
-
-    @Override
-    public boolean setScrollPosition(int x, int y) {
-        return false;
-    }
-
-    @Override
-    public boolean scrollContain(int x, int y) {
-        return false;
-    }
-
-    @Override
-    public boolean translateScroll(int dx) {
-        return false;
     }
 
     @Override
@@ -184,23 +176,5 @@ public class InteractiveChart implements Interactive {
     @Override
     public void draw(BCanvas canvas) {
         chart.draw(canvas);
-    }
-
-    private static class YAxisInfo {
-        private List<YAxisPosition> yPositions;
-        private int stack;
-
-        public YAxisInfo(int stack, List<YAxisPosition> yPositions) {
-            this.yPositions = yPositions;
-            this.stack = stack;
-        }
-
-        public List<YAxisPosition> getYPositions() {
-            return yPositions;
-        }
-
-        public int getStack() {
-            return stack;
-        }
     }
 }

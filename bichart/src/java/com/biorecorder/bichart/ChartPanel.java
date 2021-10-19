@@ -32,7 +32,7 @@ public class ChartPanel extends JPanel {
             @Override
             public void mouseDragged(MouseEvent e) {
                 if (SwingUtilities.isRightMouseButton(e)) {
-                    if(interactive.hoverOn(e.getX(), e.getY())) {
+                    if (interactive.hoverOn(e.getX(), e.getY())) {
                         repaint();
                     }
                 } else {
@@ -40,18 +40,15 @@ public class ChartPanel extends JPanel {
                     int dx = pastX - e.getX();
                     pastX = e.getX();
                     pastY = e.getY();
-
                     if (e.isAltDown() // zoom Y
                             || e.isControlDown()
                             // || e.isShiftDown()
                             || e.isMetaDown()) {
-                        if(interactive.translateY(pressedX, pressedY, dy)) {
+                        if (interactive.translateY(pressedX, pressedY, dy)) {
                             repaint();
                         }
                     } else {
-                        if(interactive.scrollContain(pastX, pastY) && interactive.translateScroll(dx)) {
-                            repaint();
-                        } else if(interactive.translateX(pressedX, pressedY, dx)) {
+                        if (interactive.translateX(pressedX, pressedY, dx)) {
                             repaint();
                         }
                     }
@@ -66,10 +63,10 @@ public class ChartPanel extends JPanel {
                     interactive.autoScaleX();
                     interactive.autoScaleY();
                     repaint();
-                } else  {
-                    if(interactive.switchTraceSelection(e.getX(), e.getY())) {
+                } else {
+                    if (interactive.switchTraceSelection(e.getX(), e.getY())) {
                         repaint();
-                    } else if(interactive.setScrollPosition(e.getX(), e.getY())) {
+                    } else if (interactive.centerX(e.getX(), e.getY())) {
                         repaint();
                     }
                 }
@@ -78,7 +75,7 @@ public class ChartPanel extends JPanel {
             @Override
             public void mousePressed(MouseEvent e) {
                 if (SwingUtilities.isRightMouseButton(e)) {
-                    if(interactive.hoverOn(e.getX(), e.getY())) {
+                    if (interactive.hoverOn(e.getX(), e.getY())) {
                         repaint();
                     }
                 } else {
@@ -91,7 +88,8 @@ public class ChartPanel extends JPanel {
 
             @Override
             public void mouseReleased(MouseEvent e) {
-                if(interactive.hoverOff()) {
+                interactive.release();
+                if (interactive.hoverOff()) {
                     repaint();
                 }
             }
@@ -102,16 +100,17 @@ public class ChartPanel extends JPanel {
             public void mouseWheelMoved(MouseWheelEvent e) {
                 e.consume(); // avoid the event to be triggered twice
                 int d = e.getUnitsToScroll(); //e.getWheelRotation() * scrollPointsPerRotation;
+                interactive.release();
                 if (e.isAltDown()
                         || e.isControlDown()
                         //    || e.isShiftDown() // JAVA BUG on MAC!!!!
                         || e.isMetaDown()) { // scaleY
-                    if(interactive.scaleY(e.getX(), e.getY(), distanceToScaleFactor(d), e.getY())) {
+                    if (interactive.scaleY(e.getX(), e.getY(), distanceToScaleFactor(d))) {
                         repaint();
                     }
 
                 } else { // scale X
-                    if (interactive.scaleX(e.getX(), e.getY(), distanceToScaleFactor(d), e.getX())) {
+                    if (interactive.scaleX(e.getX(), e.getY(), distanceToScaleFactor(d))) {
                         repaint();
                     }
                 }
@@ -149,9 +148,9 @@ public class ChartPanel extends JPanel {
                     dx = -1;
 
                 }
-                if (interactive.translateScroll(dx)) {
+              /*  if (interactive.translateScrolls(dx)) {
                     repaint();
-                }
+                }*/
             }
         };
     }

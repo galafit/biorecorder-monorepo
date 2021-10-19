@@ -1,9 +1,8 @@
 package com.biorecorder.bichart.examples;
 
-import com.biorecorder.bichart.ChartPanel;
 import com.biorecorder.bichart.BiChart;
+import com.biorecorder.bichart.ChartPanel;
 import com.biorecorder.bichart.XYSeries;
-import com.biorecorder.bichart.scales.LinearScale;
 import com.biorecorder.bichart.themes.DarkTheme;
 import com.biorecorder.bichart.traces.LineTracePainter;
 import com.biorecorder.datalyb.list.IntArrayList;
