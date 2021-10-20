@@ -1,6 +1,5 @@
 package com.biorecorder.bichart;
 
-import com.biorecorder.bichart.configs.TooltipConfig;
 import com.biorecorder.bichart.graphics.TextMetric;
 import com.biorecorder.bichart.graphics.*;
 

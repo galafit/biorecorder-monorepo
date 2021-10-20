@@ -15,8 +15,6 @@ import java.util.*;
  * Created by galafit on 27/9/18.
  */
 public class BiChartTest extends JFrame{
-    IntArrayList yData;
-    IntArrayList xData;
     java.util.List<String> labels = new ArrayList();
     ChartPanel chartPanel;
     BiChart chart;
@@ -27,19 +25,20 @@ public class BiChartTest extends JFrame{
 
         setTitle("Test chart");
 
-        yData = new IntArrayList();
-        xData = new IntArrayList();
+        int[] data = new int[100];
+        int[] data1 = new int[11];
 
-       for (int i = 0; i < 100; i++) {
-            yData.add(i);
-            xData.add(i);
-            labels.add("l_"+i);
+        for (int i = 0; i < data.length; i++) {
+            data[i] = i;
+        }
+
+        for (int i = 0; i < data1.length; i++) {
+            data1[i] = i;
         }
 
 
-        XYSeries xySeries = new XYSeries(xData.toArray(), yData.toArray());
-        XYSeries xySeries1 = new XYSeries(0, 1, yData.toArray());
-        XYSeries xySeries2 = new XYSeries(-10, 2, yData.toArray());
+        XYSeries xySeries1 = new XYSeries(0, 1, data);
+        XYSeries xySeries2 = new XYSeries(0, 10, data1);
 
 
         chart = new BiChart(DarkTheme.getNavigableChartConfig(), false);
@@ -48,9 +47,9 @@ public class BiChartTest extends JFrame{
         chart.addChartStack();
         chart.addChartTrace("trace2", xySeries2, new LineTracePainter(), true, true);
 
-        chart.addNavigatorTrace("trace1", xySeries1, new LineTracePainter());
-        chart.addNavigatorStack();
-        chart.addNavigatorTrace("trace2", xySeries2, new LineTracePainter(), true);
+        //chart.addNavigatorTrace("trace1", xySeries1, new LineTracePainter());
+        //chart.addNavigatorStack();
+        chart.addNavigatorTrace("trace2", xySeries2, new LineTracePainter());
 
 
         chartPanel = new ChartPanel(chart);

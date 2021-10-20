@@ -3,7 +3,6 @@ package biosignal.gui;
 import biosignal.filter.XYData;
 import com.biorecorder.bichart.*;
 import com.biorecorder.bichart.axis.XAxisPosition;
-import com.biorecorder.bichart.graphics.Range;
 import com.biorecorder.bichart.traces.TracePainter;
 import com.biorecorder.datalyb.datatable.DataTable;
 
@@ -38,11 +37,13 @@ public class BiChartPanel extends JPanel {
     }
 
     public double[] getChartXRange() {
-        Range r = null;
+        double min = Double.MAX_VALUE;
+        double max = Double.MIN_VALUE;
         for (XAxisPosition xPosition : XAxisPosition.values()) {
-            r = Range.join(r, biChart.geChartXMinMax(xPosition));
+            min = Math.min(min, biChart.geChartXMin(xPosition));
+            max = Math.max(max, biChart.geChartXMax(xPosition));
         }
-        double[] range = {r.getMin(), r.getMax()};
+        double[] range = {min, max};
         return range;
     }
 

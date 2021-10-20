@@ -1,7 +1,7 @@
 package com.biorecorder.bichart.traces;
 
 import com.biorecorder.bichart.ChartData;
-import com.biorecorder.bichart.graphics.Range;
+import com.biorecorder.bichart.Range;
 
 /**
  * Created by galafit on 2/11/17.

@@ -1,7 +1,5 @@
 package com.biorecorder.bichart;
 
-import com.biorecorder.bichart.configs.ProcessingConfig;
-import com.biorecorder.bichart.graphics.Range;
 import com.biorecorder.datalyb.time.TimeInterval;
 
 import java.util.ArrayList;
@@ -84,14 +82,14 @@ public class DataProcessor {
         return groupedData.getData(xLength, markSize);
     }
 
-    public XYSeries getProcessedChartData(int traceNumber, Range xMinMax, double xLength, int markSize) {
+    public XYSeries getProcessedChartData(int traceNumber, double min, double max, double xLength, int markSize) {
         XYSeries data = chartRowData.get(traceNumber);
         Range dataXRange = GroupedData.dataRange(data);
         int pointsPerGroup = 1;
-        if(config.isDataCropEnabled() && dataXRange != null &&
-                !xMinMax.contain(dataXRange) && data.size() > minPointsForCrop) {
-            int indexFrom = data.bisectLeft(xMinMax.getMin());
-            int indexTill = data.bisectRight(xMinMax.getMax());
+        if(config.isDataCropEnabled() && dataXRange != null && (dataXRange.getMin() < min
+                || dataXRange.getMax() > max) && data.size() > minPointsForCrop) {
+            int indexFrom = data.bisectLeft(min);
+            int indexTill = data.bisectRight(max);
             if(indexFrom == indexTill || indexFrom >= data.size() || indexTill < 0) {
                 return data.getEmptyCopy();
             }
@@ -110,7 +108,7 @@ public class DataProcessor {
             if(indexTill > data.size()) {
                 indexTill = data.size();
             }
-            data = data.view(indexFrom, indexTill - indexFrom + 1);
+            data = data.view(indexFrom, indexTill - indexFrom);
         }
         if(config.isDataGroupingEnabled() && pointsPerGroup > 1) {
             if(isDateTime) {

@@ -1,6 +1,5 @@
 package com.biorecorder.bichart;
 
-import com.biorecorder.bichart.graphics.Range;
 import com.biorecorder.datalyb.datatable.aggregation.Resampler;
 import com.biorecorder.datalyb.time.TimeInterval;
 

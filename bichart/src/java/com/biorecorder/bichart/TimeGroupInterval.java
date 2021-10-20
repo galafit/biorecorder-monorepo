@@ -1,4 +1,4 @@
-package com.biorecorder.bichart.configs;
+package com.biorecorder.bichart;
 
 import com.biorecorder.datalyb.time.TimeInterval;
 

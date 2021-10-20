@@ -1,8 +1,6 @@
 package com.biorecorder.bichart;
 
 
-import com.biorecorder.bichart.graphics.Range;
-
 /**
  * Simplified analogue of data table which
  * in fact is simply a collection of columns

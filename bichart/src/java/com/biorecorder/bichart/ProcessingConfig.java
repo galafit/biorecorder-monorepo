@@ -1,6 +1,5 @@
-package com.biorecorder.bichart.configs;
+package com.biorecorder.bichart;
 
-import com.biorecorder.bichart.GroupingType;
 import com.biorecorder.datalyb.time.TimeInterval;
 
 import java.util.Arrays;

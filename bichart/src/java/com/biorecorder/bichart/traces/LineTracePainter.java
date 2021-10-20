@@ -2,6 +2,7 @@ package com.biorecorder.bichart.traces;
 
 
 import com.biorecorder.bichart.ChartData;
+import com.biorecorder.bichart.Range;
 import com.biorecorder.bichart.graphics.*;
 import com.biorecorder.bichart.scales.Scale;
 
@@ -102,7 +103,6 @@ public class LineTracePainter implements TracePainter {
             y = (int) yScale.scale(xyData.getY(i));
             path.lineTo(x, y);
             canvas.fillOval(x - markSize / 2,y - markSize / 2, markSize, markSize);
-
         }
         if(traceConfig.getLineWidth() > 0) {
             canvas.setColor(lineColor);

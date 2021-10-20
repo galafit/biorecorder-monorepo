@@ -1,6 +1,5 @@
 package com.biorecorder.bichart;
 
-import com.biorecorder.bichart.graphics.Range;
 import com.biorecorder.datalyb.datatable.BaseType;
 import com.biorecorder.datalyb.datatable.DataTable;
 import com.biorecorder.datalyb.datatable.IntColumn;

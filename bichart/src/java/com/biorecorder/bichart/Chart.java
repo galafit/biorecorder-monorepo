@@ -1,6 +1,5 @@
 package com.biorecorder.bichart;
 
-import com.biorecorder.bichart.configs.ChartConfig;
 import com.biorecorder.bichart.axis.*;
 import com.biorecorder.bichart.graphics.*;
 import com.biorecorder.bichart.scales.CategoryScale;
@@ -160,12 +159,6 @@ public class Chart {
             return XAxisPosition.BOTTOM;
         }
         return XAxisPosition.TOP;
-    }
-
-    private void setAxisMinMax(AxisWrapper axis, Range minMax, boolean isAutoscale) {
-        if (minMax != null) {
-            setAxisMinMax(axis, minMax.getMin(), minMax.getMax(), isAutoscale);
-        }
     }
 
     private void setAxisMinMax(AxisWrapper axis, double min, double max, boolean isAutoscale) {
@@ -590,15 +583,12 @@ public class Chart {
         setAxisMinMax(xAxisList.get(xPositionToIndex(xPosition)), min, max, false);
     }
 
-    public void setYMinMax(int stack, YAxisPosition yPosition, double min, double max) throws IllegalArgumentException {
-        checkStackNumber(stack);
-        setAxisMinMax(yAxisList.get(yPositionToIndex(stack, yPosition)), min, max, false);
-    }
-
     public void autoScaleX(XAxisPosition xPosition) {
         AxisWrapper xAxis = xAxisList.get(xPositionToIndex(xPosition));
         Range xMinMax = traceList.getTracesXMinMax(xAxis);
-        setAxisMinMax(xAxis, xMinMax, true);
+        if(xMinMax != null) {
+            setAxisMinMax(xAxis, xMinMax.getMin(), xMinMax.getMax(), true);
+        }
     }
 
     /**
@@ -608,14 +598,18 @@ public class Chart {
         Range xMinMax;
         for (AxisWrapper xAxis : xAxisList) {
             xMinMax = traceList.getTracesXMinMax(xAxis);
-            setAxisMinMax(xAxis, xMinMax, true);
+            if(xMinMax != null) {
+                setAxisMinMax(xAxis, xMinMax.getMin(), xMinMax.getMax(), true);
+            }
         }
     }
 
     public void autoScaleY(int stack, YAxisPosition yPosition) {
         AxisWrapper yAxis = yAxisList.get(yPositionToIndex(stack, yPosition));
         Range yMinMax = traceList.getTracesYMinMax(yAxis);
-        setAxisMinMax(yAxis, yMinMax, true);
+        if(yMinMax != null) {
+            setAxisMinMax(yAxis, yMinMax.getMin(), yMinMax.getMax(), true);
+        }
     }
 
     /**
@@ -625,7 +619,9 @@ public class Chart {
         Range yMinMax;
         for (AxisWrapper yAxis : yAxisList) {
             yMinMax = traceList.getTracesYMinMax(yAxis);
-            setAxisMinMax(yAxis, yMinMax, true);
+            if(yMinMax != null) {
+                setAxisMinMax(yAxis, yMinMax.getMin(), yMinMax.getMax(), true);
+            }
         }
     }
 
@@ -707,8 +703,12 @@ public class Chart {
         return traceList.getMarkSize(traceNumber);
     }
 
-    Range getXMinMax(XAxisPosition xPosition) {
-        return xAxisList.get(xPositionToIndex(xPosition)).getMinMax();
+    double getXMin(XAxisPosition xPosition) {
+        return xAxisList.get(xPositionToIndex(xPosition)).getMin();
+    }
+
+    double getXMax(XAxisPosition xPosition) {
+        return xAxisList.get(xPositionToIndex(xPosition)).getMax();
     }
 
     int getStacksSumWeight() {
@@ -776,7 +776,8 @@ public class Chart {
             return false;
         }
         AxisWrapper axis = yAxisList.get(yPositionToIndex(stack, yPosition));
-        setAxisMinMax(axis, axis.translatedMinMax(translation), false);
+        Range minMax = axis.translatedMinMax(translation);
+        setAxisMinMax(axis,minMax.getMin(), minMax.getMax() , false);
         return true;
     }
 
@@ -785,7 +786,8 @@ public class Chart {
             return false;
         }
         AxisWrapper axis = xAxisList.get(xPositionToIndex(xPosition));
-        setAxisMinMax(axis, axis.translatedMinMax(translation), false);
+        Range minMax = axis.translatedMinMax(translation);
+        setAxisMinMax(axis,minMax.getMin(), minMax.getMax() , false);
         return true;
     }
 
@@ -794,7 +796,8 @@ public class Chart {
             return false;
         }
         AxisWrapper axis = yAxisList.get(yPositionToIndex(stack, yPosition));
-        setAxisMinMax(axis, axis.zoomedMinMax(zoomFactor, anchorPoint), false);
+        Range minMax = axis.zoomedMinMax(zoomFactor, anchorPoint);
+        setAxisMinMax(axis,minMax.getMin(), minMax.getMax() , false);
         return true;
     }
 
@@ -803,7 +806,8 @@ public class Chart {
             return false;
         }
         AxisWrapper axis = xAxisList.get(xPositionToIndex(xPosition));
-        setAxisMinMax(axis, axis.zoomedMinMax(zoomFactor, anchorPoint), false);
+        Range minMax = axis.zoomedMinMax(zoomFactor, anchorPoint);
+        setAxisMinMax(axis,minMax.getMin(), minMax.getMax() , false);
         return true;
     }
 

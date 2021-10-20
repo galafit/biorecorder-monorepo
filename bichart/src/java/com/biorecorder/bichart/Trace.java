@@ -14,10 +14,7 @@ public class Trace {
     private final AxisWrapper yAxis;
     private String name;
     private BColor color;
-
     private int[] sortedIndices;
-    private Range xMinMax;
-    private Range yMinMax;
 
     public Trace(String name, ChartData data, TracePainter tracePainter, XAxisPosition xAxisPosition, YAxisPosition yAxisPosition, AxisWrapper xAxis, AxisWrapper yAxis, BColor traceColor) {
         this.data = data;
@@ -28,8 +25,6 @@ public class Trace {
         this.color = traceColor;
         this.xAxisPosition = xAxisPosition;
         this.yAxisPosition = yAxisPosition;
-        xMinMax = data.columnMinMax(0);
-        yMinMax = tracePainter.yMinMax(data);
     }
 
     public String getName() {
@@ -50,8 +45,6 @@ public class Trace {
 
     public void setData(ChartData data) {
         this.data = data;
-        xMinMax = data.columnMinMax(0);
-        yMinMax = tracePainter.yMinMax(data);
     }
 
     public AxisWrapper getXAxis() {
@@ -115,11 +108,11 @@ public class Trace {
     }
 
     public Range yMinMax() {
-        return yMinMax;
+        return tracePainter.yMinMax(data);
     }
 
     public Range xMinMax() {
-        return xMinMax;
+        return data.columnMinMax(0);
     }
 
     public String[] getTooltipInfo(int dataIndex) {

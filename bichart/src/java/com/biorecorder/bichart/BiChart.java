@@ -1,6 +1,5 @@
 package com.biorecorder.bichart;
 
-import com.biorecorder.bichart.configs.BiChartConfig;
 import com.biorecorder.bichart.axis.XAxisPosition;
 import com.biorecorder.bichart.axis.YAxisPosition;
 import com.biorecorder.bichart.graphics.*;
@@ -53,10 +52,6 @@ public class BiChart {
     private static Scale createScale(boolean isDateTime) {
         Scale scale = isDateTime ? new TimeScale() : new LinearScale();
         return scale;
-    }
-
-    public List<Integer> getChartTraces(XAxisPosition xAxisPosition) {
-        return chart.getTraces(xAxisPosition);
     }
 
     public void addScrollListener(XAxisPosition xAxisPosition, ScrollListener scrollListener) {
@@ -222,7 +217,7 @@ public class BiChart {
         for (XAxisPosition xPosition : axisToScrolls.keySet()) {
             Scroll scroll = axisToScrolls.get(xPosition);
             Range scrollRange = new Range(scroll.getMin(), scroll.getMax());
-            Range.join(xMinMax, scrollRange);
+            xMinMax = Range.join(xMinMax, scrollRange);
         }
         if (xMinMax != null) {
             navigator.setXMinMax(navDefaultXPosition, xMinMax.getMin(), xMinMax.getMax());
@@ -243,8 +238,12 @@ public class BiChart {
         autoScaleNavigatorX();
     }
 
-    public Range geChartXMinMax(XAxisPosition xPosition) {
-        return chart.getXMinMax(xPosition);
+    public double geChartXMin(XAxisPosition xPosition) {
+        return chart.getXMin(xPosition);
+    }
+
+    public double geChartXMax(XAxisPosition xPosition) {
+        return chart.getXMax(xPosition);
     }
 
     /**
@@ -291,11 +290,6 @@ public class BiChart {
     public int getNavigatorTraceMarkSize(int traceNumber) {
         return navigator.getTraceMarkSize(traceNumber);
     }
-
-    public XAxisPosition getChartTraceXAxisPosition(int traceNumber) {
-        return chart.getTraceXPosition(traceNumber);
-    }
-
 
     public void setSize(int width, int height) throws IllegalArgumentException {
         if (width == 0 || height == 0) {
@@ -384,23 +378,6 @@ public class BiChart {
         navigator.setYPrefixAndSuffix(stack, yPosition, prefix, suffix);
     }
 
-    public void setChartTraceColor(int trace, BColor color) {
-        chart.setTraceColor(trace, color);
-    }
-
-    public void setChartTraceName(int trace, String name) {
-        chart.setTraceName(trace, name);
-    }
-
-
-    public void setChartYMinMax(int stack, YAxisPosition yPosition, double min, double max) {
-        chart.setYMinMax(stack, yPosition, min, max);
-    }
-
-    public int chartStackCount() {
-        return chart.stackCount();
-    }
-
     public void setChartTraceData(int traceNumber, XYSeries data) {
         chart.setTraceData(traceNumber, data);
         chartDataList.set(traceNumber, data);
@@ -412,10 +389,6 @@ public class BiChart {
 
     public BRectangle getBounds() {
         return new BRectangle(0, 0, width, height);
-    }
-
-    public int navigatorStackCount() {
-        return navigator.stackCount();
     }
 
     public void addNavigatorStack() {
@@ -460,14 +433,6 @@ public class BiChart {
         navigatorDataList.set(traceNumber, data);
     }
 
-    public void setNavigatorTraceColor(int trace, BColor color) {
-        navigator.setTraceColor(trace, color);
-    }
-
-    public void setNavigatorTraceName(int trace, String name) {
-        navigator.setTraceName(trace, name);
-    }
-
     public void setNavigatorXTitle(XAxisPosition xPosition, String title) {
         navigator.setXTitle(xPosition, title);
     }
@@ -482,10 +447,6 @@ public class BiChart {
 
     public void setNavigatorYPrefixAndSuffix(int stack, YAxisPosition yPosition, @Nullable String prefix, @Nullable String suffix) {
         navigator.setYPrefixAndSuffix(stack, yPosition, prefix, suffix);
-    }
-
-    public void setNavigatorYMinMax(int stack, YAxisPosition yPosition, double min, double max) {
-        navigator.setYMinMax(stack, yPosition, min, max);
     }
 
     public void autoScaleNavigatorY(int stack, YAxisPosition yPosition) {
@@ -531,10 +492,6 @@ public class BiChart {
 
     int getChartTraceStack(int traceNumber) {
         return chart.getTraceStack(traceNumber);
-    }
-
-    XAxisPosition getNavigatorTraceXPosition(int traceNumber) {
-        return navigator.getTraceXPosition(traceNumber);
     }
 
     YAxisPosition getNavigatorTraceYPosition(int traceNumber) {

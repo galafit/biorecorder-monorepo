@@ -1,6 +1,5 @@
 package com.biorecorder.bichart;
 
-import com.biorecorder.bichart.configs.LegendConfig;
 import com.biorecorder.bichart.graphics.*;
 
 

@@ -1,8 +1,6 @@
-package com.biorecorder.bichart.configs;
+package com.biorecorder.bichart;
 
 import com.biorecorder.bichart.axis.AxisConfig;
-import com.biorecorder.bichart.axis.XAxisPosition;
-import com.biorecorder.bichart.axis.YAxisPosition;
 import com.biorecorder.bichart.graphics.BColor;
 
 /**

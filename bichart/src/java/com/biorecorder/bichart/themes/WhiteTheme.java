@@ -1,10 +1,10 @@
 package com.biorecorder.bichart.themes;
 
-import com.biorecorder.bichart.configs.ChartConfig;
-import com.biorecorder.bichart.configs.BiChartConfig;
+import com.biorecorder.bichart.ChartConfig;
+import com.biorecorder.bichart.BiChartConfig;
 import com.biorecorder.bichart.axis.AxisConfig;
 import com.biorecorder.bichart.graphics.BColor;
-import com.biorecorder.bichart.configs.ScrollConfig;
+import com.biorecorder.bichart.ScrollConfig;
 
 /**
  * Created by galafit on 24/2/19.

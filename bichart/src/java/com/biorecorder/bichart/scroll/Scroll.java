@@ -1,7 +1,7 @@
 package com.biorecorder.bichart.scroll;
 
 
-import com.biorecorder.bichart.configs.ScrollConfig;
+import com.biorecorder.bichart.ScrollConfig;
 import com.biorecorder.bichart.graphics.*;
 import com.biorecorder.bichart.scales.Scale;
 
@@ -130,15 +130,6 @@ public class Scroll {
 
     public double viewportRatio() {
         return model.getViewportExtent() / (model.getEnd() - model.getStart());
-    }
-
-    public double scrollTrackToViewRatio(Range scrollbarTrack) {
-        return scrollbarTrack.length() / (model.getEnd() - model.getStart());
-    }
-
-    private double scrollTrackToViewPosition_(double scrollTrackPosition, Range scrollTrack) {
-        double trackToViewRatio = scrollTrackToViewRatio(scrollTrack);
-        return model.getStart() + (scrollTrackPosition - scrollTrack.getMin()) / trackToViewRatio;
     }
 
     public BColor getColor() {

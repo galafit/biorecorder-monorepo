@@ -4,6 +4,8 @@ import com.biorecorder.bichart.ChartPanel;
 import com.biorecorder.bichart.SmartBiChart;
 import com.biorecorder.bichart.XYSeries;
 import com.biorecorder.bichart.traces.LineTracePainter;
+import com.biorecorder.bichart.traces.VerticalLinePainter;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -12,7 +14,7 @@ public class SmartBiChartTest extends JFrame{
         int width = 400;
         int height = 500;
 
-        int[] data = new int[1000];
+        int[] data = new int[100];
         int[] data1 = new int[10];
 
         for (int i = 0; i < data.length; i++) {
@@ -25,12 +27,12 @@ public class SmartBiChartTest extends JFrame{
 
 
         XYSeries xySeries1 = new XYSeries(data, data);
-        XYSeries xySeries2 = new XYSeries(0, 5, data);
+        XYSeries xySeries2 = new XYSeries(0, 10, data1);
 
         SmartBiChart smartBiChart = new SmartBiChart(false);
         smartBiChart.addChartTrace("No Regular", xySeries1, new LineTracePainter());
         smartBiChart.addChartStack();
-        smartBiChart.addChartTrace("Regular", xySeries2, new LineTracePainter(), false, false);
+        smartBiChart.addChartTrace("Regular", xySeries2, new LineTracePainter(), true, false);
 
       //  chartPanel.addNavigatorTrace("zero", new XYData(new int[0]), new LineTracePainter() );
        // chartPanel.addNavigatorTrace("No Regular", xyData1, new LineTracePainter() );

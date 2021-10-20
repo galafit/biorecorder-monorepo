@@ -1,12 +1,7 @@
 package com.biorecorder.bichart;
 
 import com.biorecorder.bichart.axis.XAxisPosition;
-import com.biorecorder.bichart.configs.BiChartConfig;
-import com.biorecorder.bichart.configs.ProcessingConfig;
 import com.biorecorder.bichart.graphics.BCanvas;
-import com.biorecorder.bichart.graphics.Range;
-import com.biorecorder.bichart.scales.LinearScale;
-import com.biorecorder.bichart.scales.TimeScale;
 import com.biorecorder.bichart.scroll.ScrollListener;
 import com.biorecorder.bichart.themes.DarkTheme;
 import com.biorecorder.bichart.traces.TracePainter;
@@ -84,7 +79,7 @@ public class SmartBiChart extends BiChart {
 
     private void updateNavigatorRange(XYSeries data) {
         Range dataMinMax = dataMinMax(data);
-        Range navigatorRange = navigator.getXMinMax(navDefaultXPosition);
+        Range navigatorRange = new Range(navigator.getXMin(navDefaultXPosition), navigator.getXMax(navDefaultXPosition)) ;
         navigatorRange = Range.join(navigatorRange, dataMinMax);
         setNavigatorXMinMax(navigatorRange.getMin(), navigatorRange.getMax());
     }
@@ -94,9 +89,8 @@ public class SmartBiChart extends BiChart {
     }
 
     private void setChartTraceData(int traceNumber) {
-        Range minMax = chart.getXMinMax(chart.getTraceXPosition(traceNumber));
         double xLength = getXLength();
-        XYSeries data = dataProcessor.getProcessedChartData(traceNumber, minMax, xLength, getChartTraceMarkSize(traceNumber));
+        XYSeries data = dataProcessor.getProcessedChartData(traceNumber, chart.getXMin(chart.getTraceXPosition(traceNumber)), chart.getXMax(chart.getTraceXPosition(traceNumber)), xLength, getChartTraceMarkSize(traceNumber));
         chart.setTraceData(traceNumber, data);
         chartTraceNeedUpdateDataFlags.set(traceNumber, false);
     }

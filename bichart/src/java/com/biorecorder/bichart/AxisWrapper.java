@@ -4,7 +4,6 @@ import com.biorecorder.bichart.axis.Axis;
 import com.biorecorder.bichart.axis.AxisConfig;
 import com.biorecorder.bichart.graphics.*;
 import com.biorecorder.bichart.scales.Scale;
-import com.biorecorder.bichart.scales.TickLabelFormat;
 import com.sun.istack.internal.Nullable;
 
 
@@ -137,8 +136,12 @@ class AxisWrapper {
         return axis.isSizeDependsOnMinMax();
     }
 
-    public Range getMinMax() {
-        return new Range(axis.getMin(), axis.getMax());
+    public double getMin() {
+        return axis.getMin();
+    }
+
+    public double getMax() {
+        return axis.getMax();
     }
 
     public double getStart() {

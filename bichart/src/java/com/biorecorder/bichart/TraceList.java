@@ -5,7 +5,6 @@ import com.biorecorder.bichart.axis.YAxisPosition;
 import com.biorecorder.bichart.graphics.BCanvas;
 import com.biorecorder.bichart.graphics.BColor;
 import com.biorecorder.bichart.graphics.BRectangle;
-import com.biorecorder.bichart.graphics.Range;
 
 import java.util.*;
 
@@ -187,15 +186,6 @@ class TraceList {
         Range minMax = null;
         for (Trace trace : yTraces) {
             minMax = Range.join(minMax, trace.yMinMax());
-        }
-        return minMax;
-    }
-
-    public Range getAllTracesXMinMax() {
-        Range minMax = null;
-        for (Trace trace : traces) {
-            Range traceXMinMax = trace.xMinMax();
-            minMax = Range.join(minMax, traceXMinMax);
         }
         return minMax;
     }
