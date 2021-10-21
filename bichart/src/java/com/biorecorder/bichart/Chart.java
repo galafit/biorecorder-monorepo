@@ -216,10 +216,16 @@ public class Chart {
         invalidate();
     }
 
-    public Insets getMargin(RenderContext renderContext) {
+
+
+    Insets calculateMargin(RenderContext renderContext) {
         if (!isValid) {
             revalidate(renderContext);
         }
+        return margin;
+    }
+
+    public Insets getMargin() {
         return margin;
     }
 

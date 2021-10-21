@@ -95,22 +95,23 @@ public class BiChart {
         chart.setAutoMargin();
         navigator.setAutoMargin();
         //  выравниваем маргины и фиксируем их
-        Insets chartMargin = chart.getMargin(renderContext);
-        Insets navigatorMargin = navigator.getMargin(renderContext);
+        Insets chartMargin = chart.calculateMargin(renderContext);
+        Insets navigatorMargin = navigator.calculateMargin(renderContext);
         int leftMargin = Math.max(chartMargin.left(), navigatorMargin.left());
         int rightMargin = Math.max(chartMargin.right(), navigatorMargin.right());
         chart.setMargin(new Insets(chartMargin.top(), rightMargin, chartMargin.bottom(), leftMargin));
         navigator.setMargin(new Insets(navigatorMargin.top(), rightMargin, navigatorMargin.bottom(), leftMargin));
 
-        int viewportExtent = getChartXLength();
+        int viewportExtent = getXLength();
         for (XAxisPosition xPosition : axisToScrolls.keySet()) {
             axisToScrolls.get(xPosition).setViewportExtent(viewportExtent);
         }
         isValid = true;
     }
 
-    private int getChartXLength() {
-        return width - spacing.right() - spacing.left();
+    protected int getXLength() {
+        Insets margin = chart.getMargin();
+        return width - spacing.right() - spacing.left() - margin.left() - margin.right();
     }
 
     private Scale getChartBestScale(List<Integer> traceNumbers, Range minMax, int xLength) {
@@ -174,7 +175,7 @@ public class BiChart {
     }
 
     private void createScrolls() {
-        int viewportExtent = getChartXLength();
+        int viewportExtent = getXLength();
         for (XAxisPosition xPosition : XAxisPosition.values()) {
             createScroll(xPosition, viewportExtent);
         }
@@ -202,7 +203,7 @@ public class BiChart {
         }
         Scroll scroll = axisToScrolls.get(xPosition);
         if (scroll != null) {
-            Scale bestScale = getChartBestScale(traceNumbers, minMax, getChartXLength());
+            Scale bestScale = getChartBestScale(traceNumbers, minMax, getXLength());
             double zoomFactor = bestScale.getLength() / (scroll.getEnd() - scroll.getStart());
             scroll.zoom(zoomFactor, (int) (scroll.getViewportExtent() / 2));
         }
@@ -269,16 +270,6 @@ public class BiChart {
             Scroll scroll = axisToScrolls.get(xPosition);
             if (scroll != null) {
                 navigator.drawRect(canvas, navDefaultXPosition, scroll.getViewportMin(), scroll.getViewportMax(), scroll.getColor(), scroll.getBorder());
-            }
-        }
-    }
-
-    public void setNavigatorXMinMax(double min, double max) {
-        for (XAxisPosition xPosition : XAxisPosition.values()) {
-            navigator.setXMinMax(xPosition, min, max);
-            Scroll scroll = axisToScrolls.get(xPosition);
-            if (scroll != null) {
-                scroll.setMinMax(min, max);
             }
         }
     }
@@ -618,13 +609,18 @@ public class BiChart {
         if (scroll != null) {
             double centerValue = scroll.getViewportCenterValue();
             double centerValueNew = chart.positionToValue(xAxisPosition, chart.valueToPosition(xAxisPosition, centerValue) + dx);
-            for (XAxisPosition xPosition : axisToScrolls.keySet()) {
-                axisToScrolls.get(xPosition).setViewportCenterValue(centerValueNew);
+            scroll.setViewportCenterValue(centerValueNew);
+            centerValueNew = scroll.getViewportCenterValue();
+            if(centerValueNew != centerValue) {
+                for (XAxisPosition xPosition : axisToScrolls.keySet()) {
+                    if(xPosition != xAxisPosition) {
+                        axisToScrolls.get(xPosition).setViewportCenterValue(centerValueNew);
+                    }
+                }
             }
         }
         return isChanged;
     }
-
 
     boolean translateScrolls(XAxisPosition xAxisPosition, double dx) {
         isChanged = false;
@@ -632,8 +628,14 @@ public class BiChart {
         if (scroll != null) {
             double centerValue = scroll.getViewportCenterValue();
             double centerValueNew = navigator.positionToValue(navDefaultXPosition, navigator.valueToPosition(navDefaultXPosition, centerValue) + dx);
-            for (XAxisPosition xPosition : axisToScrolls.keySet()) {
-                axisToScrolls.get(xPosition).setViewportCenterValue(centerValueNew);
+            scroll.setViewportCenterValue(centerValueNew);
+            centerValueNew = scroll.getViewportCenterValue();
+            if(centerValueNew != centerValue) {
+                for (XAxisPosition xPosition : axisToScrolls.keySet()) {
+                    if(xPosition != xAxisPosition) {
+                        axisToScrolls.get(xPosition).setViewportCenterValue(centerValueNew);
+                    }
+                }
             }
         }
         return isChanged;

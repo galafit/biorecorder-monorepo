@@ -32,7 +32,11 @@ public class MainFrame extends JFrame {
         chartPanel = createChartPanel(facade);
         add(chartPanel);
         setLocation(X_START, Y_START);
-        setPreferredSize(new Dimension(WIDTH_START, HEIGHT_START));
+       // setPreferredSize(new Dimension(WIDTH_START, HEIGHT_START));
+        Toolkit tk = Toolkit.getDefaultToolkit();
+        Dimension d = tk.getScreenSize();
+        Insets insets = tk.getScreenInsets(getGraphicsConfiguration());
+        setPreferredSize(new Dimension(d.width - insets.left - insets.right, d.height - insets.top - insets.bottom));
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {

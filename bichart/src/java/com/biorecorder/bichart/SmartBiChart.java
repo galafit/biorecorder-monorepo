@@ -77,17 +77,6 @@ public class SmartBiChart extends BiChart {
         dataProcessor.removeNavigatorTraceData(traceNumber);
     }
 
-    private void updateNavigatorRange(XYSeries data) {
-        Range dataMinMax = dataMinMax(data);
-        Range navigatorRange = new Range(navigator.getXMin(navDefaultXPosition), navigator.getXMax(navDefaultXPosition)) ;
-        navigatorRange = Range.join(navigatorRange, dataMinMax);
-        setNavigatorXMinMax(navigatorRange.getMin(), navigatorRange.getMax());
-    }
-
-    private int getXLength() {
-        return navigator.getBounds().width;
-    }
-
     private void setChartTraceData(int traceNumber) {
         double xLength = getXLength();
         XYSeries data = dataProcessor.getProcessedChartData(traceNumber, chart.getXMin(chart.getTraceXPosition(traceNumber)), chart.getXMax(chart.getTraceXPosition(traceNumber)), xLength, getChartTraceMarkSize(traceNumber));
@@ -101,6 +90,7 @@ public class SmartBiChart extends BiChart {
         navigator.setTraceData(traceNumber, data);
         navTraceNeedUpdateDataFlags.set(traceNumber, false);
     }
+
 
     private void configure() {
         autoScaleX();

@@ -34,10 +34,12 @@ public class InteractiveBiChart implements Interactive {
                 stack = biChart.getChartTraceStack(selection);
             } else {
                 stack = biChart.getChartStackContaining(x, y);
-                xPositions = biChart.getChartXPositionsUsedByStack(stack);
-                yPositions = biChart.getChartYPositionsUsedByStack(stack);
+                if(stack >= 0) {
+                    xPositions = biChart.getChartXPositionsUsedByStack(stack);
+                    yPositions = biChart.getChartYPositionsUsedByStack(stack);
+                }
             }
-        } else {
+        } else{
             chartContain = false;
             int selection =biChart.getNavigatorSelectedTrace();
             if (selection >= 0) {
@@ -45,7 +47,9 @@ public class InteractiveBiChart implements Interactive {
                 stack = biChart.getNavigatorTraceStack(selection);
             } else {
                 stack = biChart.getNavigatorStackContaining(x, y);
-                yPositions = biChart.getNavigatorYPositionsUsedByStack(stack);
+                if(stack >= 0) {
+                    yPositions = biChart.getNavigatorYPositionsUsedByStack(stack);
+                }
                 XAxisPosition xPosition = biChart.scrollContain(x, y);
                 if(xPosition != null) {
                     xPositions.add(xPosition);
