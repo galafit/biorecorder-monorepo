@@ -21,12 +21,16 @@ public class IntColumn implements Column {
         this(name, new BaseIntEditableSeries(data));
     }
 
-    public IntColumn(String name, int[] arrData) {
-        this(name, new IntArrayWrapper(new IntArrayList(arrData)));
+    public IntColumn(String name, int[] data) {
+        this(name, new IntArrayListWrapper(new IntArrayList(data)));
     }
 
+   /* public IntColumn(String name, IntArrayList data) {
+        this(name, new IntArrayListWrapper(data));
+    }*/
+
     public IntColumn(String name) {
-        this(name, new IntArrayWrapper(new IntArrayList()));
+        this(name, new IntArrayListWrapper(new IntArrayList()));
     }
 
     public int intValue(int index) {
@@ -233,10 +237,10 @@ public class IntColumn implements Column {
         }
     }
 
-    static class IntArrayWrapper implements IntEditableSeries {
+    static class IntArrayListWrapper implements IntEditableSeries {
         private final IntArrayList intArrayList;
 
-        public IntArrayWrapper(IntArrayList intArrayList) {
+        public IntArrayListWrapper(IntArrayList intArrayList) {
             this.intArrayList = intArrayList;
         }
 

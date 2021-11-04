@@ -10,7 +10,7 @@ import javax.swing.*;
 import java.awt.*;
 
 public class BiChartPanel extends JPanel {
-    BiChart biChart;
+    SmartBiChart biChart;
     ChartPanel chartPanel;
 
     public BiChartPanel(boolean isDateTime) {
@@ -59,5 +59,23 @@ public class BiChartPanel extends JPanel {
     public void setPreferredSize(Dimension preferredSize) {
         super.setPreferredSize(preferredSize);
         chartPanel.setPreferredSize(preferredSize);
+    }
+
+    public void appendChartTraceData(int traceNumber, XYSeries data) {
+        biChart.appendChartTraceData(traceNumber, data);
+    }
+
+    public void appendNavigatorTraceData(int traceNumber, XYSeries data) {
+        biChart.appendNavigatorTraceData(traceNumber, data);
+    }
+
+    public void dataAppended() {
+        biChart.dataAppended();
+    }
+
+    public void autoScale() {
+        biChart.autoScaleX();
+        biChart.autoScaleChartY();
+        biChart.autoScaleNavigatorY();
     }
 }

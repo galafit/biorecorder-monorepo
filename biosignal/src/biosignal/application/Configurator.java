@@ -5,11 +5,14 @@ import biosignal.filter.pipe.FilterPipe;
 import com.biorecorder.bichart.GroupingApproximation;
 import biosignal.filter.XYData;
 
-public class Config {
-    private static final boolean IS_DATE_TIME = false; // true - time; false - indexes
+public class Configurator {
+    private int[] chartDataChannels1 = new int[0];
+    private int[] chartDataChannels2 = new int[0];;
+    private int[] navigatorDataChannels = new int[0];;
 
-    public static DataStore configDataStore(EdfProvider provider) {
-        DataStore dataStore = new DataStore(IS_DATE_TIME);
+
+    public DataStore configDataStore(DataProvider provider) {
+        DataStore dataStore = new DataStore();
         long startTime = provider.getRecordingStartTimeMs();
 
         int ecgSignal = 0;
@@ -18,7 +21,7 @@ public class Config {
         int stepMs = 10;
 
         FilterPipe ecgFilterPipe = new FilterPipe(startTime, ecgSampleStepMs);
-        provider.addListener(ecgSignal, ecgFilterPipe);
+        provider.addDataListener(ecgSignal, ecgFilterPipe);
 
         XYData ecg = ecgFilterPipe.accumulateData();
         dataStore.addDataChannel("ecg", ecg, GroupingApproximation.HIGH);
@@ -41,14 +44,21 @@ public class Config {
         XYData acc = accFilterPipe.accumulateData();
         dataStore.addDataChannel("accelerometer", acc);*/
 
-        int[] chartDataChannels1 = {0, 1, 2};
-        int[] chartDataChannels2 = {3};
-        int[] navigateDataChannels = {3};
-        dataStore.setChartDataChannels1(chartDataChannels1);
-        dataStore.setChartDataChannels2(chartDataChannels2);
-        dataStore.setNavigatorDataChannels(navigateDataChannels);
-
+        chartDataChannels1 = new int[] {0, 1, 2};
+        chartDataChannels2 = new int[] {3};
+        navigatorDataChannels = new int[] {3};
         return dataStore;
     }
 
+    public int[] getChartDataChannels1() {
+        return chartDataChannels1;
+    }
+
+    public int[] getChartDataChannels2() {
+        return chartDataChannels2;
+    }
+
+    public int[] getNavigatorDataChannels() {
+        return navigatorDataChannels;
+    }
 }

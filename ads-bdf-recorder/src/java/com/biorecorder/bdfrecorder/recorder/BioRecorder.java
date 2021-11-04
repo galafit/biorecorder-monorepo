@@ -1,6 +1,7 @@
 package com.biorecorder.bdfrecorder.recorder;
 
 import com.biorecorder.ads.*;
+import com.biorecorder.edflib.recordfilter.*;
 import com.biorecorder.filters.digitalfilter.IntDigitalFilter;
 import com.biorecorder.edflib.DataHeader;
 import com.biorecorder.edflib.DataRecordStream;

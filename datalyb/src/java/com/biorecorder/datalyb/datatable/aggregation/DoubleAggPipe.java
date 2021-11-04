@@ -34,4 +34,9 @@ public class DoubleAggPipe implements AggPipe {
         }
         this.columnToAgg =  columnToAgg;
     }
+
+    @Override
+    public void removeColumnToAgg() {
+        columnToAgg = null;
+    }
 }

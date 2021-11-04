@@ -1,5 +1,6 @@
 package biosignal.gui;
 
+import biosignal.application.DataAppendListener;
 import biosignal.application.Facade;
 import biosignal.filter.XYData;
 import com.biorecorder.bichart.GroupingApproximation;
@@ -8,31 +9,67 @@ import com.biorecorder.bichart.traces.LineTracePainter;
 import com.biorecorder.bichart.traces.VerticalLinePainter;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
+import java.io.File;
 
 public class MainFrame extends JFrame {
+    private static final Color BG_COLOR = Color.BLACK;
+    private static final Color MENU_BG_COLOR = Color.LIGHT_GRAY;
+    private static final Color MENU_TEXT_COLOR = Color.BLACK;
+
     private static final int X_START = 10; // Левый  угол фрейма от начала экрана
     private static final int Y_START = 10; // Верхий угол фрейма  от начала экрана
 
     private static final int HEIGHT_START = 1000; // Высота фрейма
-    public   static final int WIDTH_START =1800;  // Ширина фрейма
+    public static final int WIDTH_START = 1800;  // Ширина фрейма
     private final Facade facade;
     private BiChartPanel chartPanel;
     private long startTimeMs = 0;
     private long endTimeMs = 1000;
 
     public MainFrame(Facade facade) {
-        super("MainFrame");
+        super("Biosignal");
         this.facade = facade;
-        facade.read();
+
+        // create menu bar
+        JToolBar menu = new JToolBar();
+        menu.setBackground(MENU_BG_COLOR);
+        menu.setForeground(MENU_TEXT_COLOR);
+        menu.setBorder(BorderFactory.createEmptyBorder());
+        // file menu
+        JButton fileButton = new JButton("File");
+        fileButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                File file = chooseFileToRead(facade);
+                if (file != null) {
+                    facade.setDataProvider(file);
+                    updateChartPanel();
+                    facade.start();
+                    repaint();
+                }
+            }
+        });
+        menu.add(fileButton);
+        // biorecorder menu
+        JButton biorecorderButton = new JButton("BioRecorder");
+        menu.add(biorecorderButton);
+        biorecorderButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+
+            }
+        });
+        add(menu, BorderLayout.NORTH);
+
+        // create empty chart panel
         chartPanel = createChartPanel(facade);
-        add(chartPanel);
-        setLocation(X_START, Y_START);
-       // setPreferredSize(new Dimension(WIDTH_START, HEIGHT_START));
+        add(chartPanel, BorderLayout.CENTER);
+
+        // setLocation(X_START, Y_START);
+        // setPreferredSize(new Dimension(WIDTH_START, HEIGHT_START));
         Toolkit tk = Toolkit.getDefaultToolkit();
         Dimension d = tk.getScreenSize();
         Insets insets = tk.getScreenInsets(getGraphicsConfiguration());
@@ -43,10 +80,16 @@ public class MainFrame extends JFrame {
                 close();
             }
         });
-
-//      Вызов менеджера раскладки по умолчанию
-        pack();
+        facade.addDataAppendListener(new DataAppendListener() {
+            @Override
+            public void onDataAppend() {
+                chartPanel.dataAppended();
+                chartPanel.repaint();
+            }
+        });
         addKeyListener(new LetterKeyListener());
+        //Вызов менеджера раскладки по умолчанию
+        pack();
         setVisible(true);
     }
 
@@ -55,7 +98,7 @@ public class MainFrame extends JFrame {
         System.exit(0);  // Закрытие приложения без ошибок
     }
 
-    private static  BiChartPanel createChartPanel(Facade facade){
+    private static BiChartPanel createChartPanel(Facade facade) {
         boolean isTimeXAxis = facade.isDateTime(); // XAxis: false - index; true - time
         BiChartPanel chartPanel = new BiChartPanel(isTimeXAxis);
         int[] chartDataChannels1 = facade.getChartDataChannels1();
@@ -70,7 +113,7 @@ public class MainFrame extends JFrame {
             XYData xyData = facade.getData(channel);
             GroupingApproximation grApprox = facade.getDataGroupingApproximation(channel);
 
-            if(i > 0) {
+            if (i > 0) {
                 chartPanel.addChartStack();
             }
             LineTraceConfig lineConfig = new LineTraceConfig();
@@ -95,7 +138,7 @@ public class MainFrame extends JFrame {
             int channel = navDataChannels[i];
             XYData xyData = facade.getData(channel);
             GroupingApproximation grApprox = facade.getDataGroupingApproximation(channel);
-            if(i > 0) {
+            if (i > 0) {
                 chartPanel.addNavigatorStack();
             }
             chartPanel.addNavigatorTrace(xyData.getName(), xyData, grApprox, new VerticalLinePainter());
@@ -104,48 +147,63 @@ public class MainFrame extends JFrame {
         return chartPanel;
     }
 
+    private File chooseFileToRead(Facade facade) {
+        String[] fileExtensions = facade.getFileExtensions();
+        String extensionDescription = fileExtensions[0];
+        for (int i = 1; i < fileExtensions.length; i++) {
+            extensionDescription = extensionDescription.concat(", ").concat(fileExtensions[i]);
+        }
+        JFileChooser fileChooser = new JFileChooser();
+        File dirToRead = new File(System.getProperty("user.dir"), "records");
+        fileChooser.setCurrentDirectory(dirToRead);
+        fileChooser.setFileFilter(new FileNameExtensionFilter(extensionDescription, fileExtensions));
+        int fileChooserState = fileChooser.showOpenDialog(this);
+        if (fileChooserState == JFileChooser.APPROVE_OPTION) {
+            File file = fileChooser.getSelectedFile();
+            return file;
+        }
+        return null;
+    }
+
+    private void updateChartPanel() {
+        getContentPane().remove(chartPanel);
+        int width = chartPanel.getWidth();
+        int height = chartPanel.getHeight();
+        chartPanel = createChartPanel(facade);
+        chartPanel.setPreferredSize(new Dimension(width, height));
+        add(chartPanel);
+        revalidate();
+    }
+
+
     class LetterKeyListener extends KeyAdapter {
         @Override
         public void keyPressed(KeyEvent e) {
             if (e.getKeyCode() == KeyEvent.VK_S) {
                 double[] range = chartPanel.getChartXRange();
                 startTimeMs = (long) range[0];
-                System.out.println("start: "+ startTimeMs);
+                System.out.println("start: " + startTimeMs);
             }
             if (e.getKeyCode() == KeyEvent.VK_E) {
                 double[] range = chartPanel.getChartXRange();
                 endTimeMs = (long) range[1];
-                System.out.println("end: "+ endTimeMs);
+                System.out.println("end: " + endTimeMs);
             }
             if (e.getKeyCode() == KeyEvent.VK_U) {
-                System.out.println("read data from " + startTimeMs + " till: "+ endTimeMs);
+                System.out.println("read data from " + startTimeMs + " till: " + endTimeMs);
                 facade.setReadTimeInterval(startTimeMs, endTimeMs - startTimeMs);
-                facade.read();
-                getContentPane().remove(chartPanel);
-                int width = chartPanel.getWidth();
-                int height = chartPanel.getHeight();
-                chartPanel = createChartPanel(facade);
-                chartPanel.setPreferredSize(new Dimension(width, height));
-                add(chartPanel);
-                revalidate();
-                repaint();
+                updateChartPanel();
+                facade.start();
             }
             if (e.getKeyCode() == KeyEvent.VK_F) {
                 System.out.println("read full data");
                 facade.setFullReadInterval();
-                facade.read();
-                getContentPane().remove(chartPanel);
-                int width = chartPanel.getWidth();
-                int height = chartPanel.getHeight();
-                chartPanel = createChartPanel(facade);
-                chartPanel.setPreferredSize(new Dimension(width, height));
-                add(chartPanel);
-                revalidate();
-                repaint();
+                updateChartPanel();
+                facade.start();
             }
             if (e.getKeyCode() == KeyEvent.VK_C) {
-               String file = facade.copyReadIntervalToFile();
-               System.out.println("read interval saved to file: " + file);
+                String file = facade.copyReadIntervalToFile();
+                System.out.println("read interval saved to file: " + file);
             }
         }
     }

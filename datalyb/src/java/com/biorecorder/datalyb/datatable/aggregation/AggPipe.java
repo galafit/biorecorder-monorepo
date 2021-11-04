@@ -7,4 +7,6 @@ interface AggPipe {
     void push();
     Column resultantCol();
     void setColumnToAgg(Column columnToAgg) throws IllegalArgumentException;
+    // call this method after finalize aggregation to remove unnecesary reference!!!
+    void removeColumnToAgg();
 }

@@ -9,8 +9,12 @@ import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
 
-public class EdfProvider {
+public class EdfProvider implements DataProvider {
     private File edfFile;
     private int numberSignals;
     private List<DataListener>[] dataListeners;
@@ -19,6 +23,9 @@ public class EdfProvider {
     private long readStartMs; // Время начала чтения в мСек. Отсчитывается от старта записи
     private long readEndMs; // Время конца чтения в мСек. Отсчитывается от старта записи
     private DataHeader header;
+    private volatile boolean isStopped;
+    private final ExecutorService singleThreadExecutor;
+    private volatile Future executorFuture;
 
     public EdfProvider(File edfFile) {
         this.edfFile = edfFile;
@@ -43,9 +50,70 @@ public class EdfProvider {
         readEndMs = header.getDurationOfDataRecordMs() *
                header.getNumberOfDataRecords();
         readEndMs = 10000;
+        ThreadFactory namedThreadFactory = new ThreadFactory() {
+            public Thread newThread(Runnable r) {
+                return new Thread(r, "«EDF file provider» thread");
+            }
+        };
+        singleThreadExecutor = Executors.newSingleThreadExecutor(namedThreadFactory);
+
     }
 
-     public void setFullReadInterval(){
+    @Override
+    public void start() {
+        isStopped = false;
+        executorFuture = singleThreadExecutor.submit(new Runnable() {
+            @Override
+            public void run() {
+               read();
+            }
+        });
+    }
+
+    @Override
+    public void stop() {
+        isStopped = true;
+        if(executorFuture != null) {
+            executorFuture.cancel(true);
+        }
+    }
+
+    @Override
+    public void finish() {
+        stop();
+        try {
+            edfReader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void addDataListener(int signal, DataListener dataListener) {
+        if (signal < numberSignals) {
+            List<DataListener> signalListeners = dataListeners[signal];
+            signalListeners.add(dataListener);
+        }
+    }
+
+    @Override
+    public int signalsCount() {
+        return numberSignals;
+    }
+
+    @Override
+    public double signalSampleRate(int signal) {
+        double sampleRate = (1000.0 * header.getNumberOfSamplesInEachDataRecord(signal)) /
+                header.getDurationOfDataRecordMs();
+        return sampleRate;
+    }
+
+    @Override
+    public long getRecordingStartTimeMs() {
+        return recordingStarTimeMs + readStartMs;
+    }
+
+    public void setFullReadInterval(){
         readStartMs = 0;
         readEndMs = header.getDurationOfDataRecordMs() *
                     header.getNumberOfDataRecords();
@@ -64,41 +132,42 @@ public class EdfProvider {
         return pos;
     }
 
-    public void addListener(int signal, DataListener dataListener) {
-        if (signal < numberSignals) {
-            List<DataListener> signalListeners = dataListeners[signal];
-            signalListeners.add(dataListener);
-        }
-    }
-
-    public void read() {
+    private void read() {
+        int readPortion = 10000; //samples
         for (int i = 0; i < dataListeners.length; i++) {
             List<DataListener> signalListeners = dataListeners[i];
             if(signalListeners.size() > 0) {
                 long startPos = timeMsToPosition(i, readStartMs);
                 long endPos = timeMsToPosition(i, readEndMs);
                 int n = (int) (endPos - startPos);
-                int[] data = new int[n];
-                try {
-                    edfReader.setSamplePosition(i, startPos);
-                    edfReader.readSamples(i, n, data);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                int samplesToRead = Math.min(n, readPortion);
+                int totalReadSamples = 0;
+                int[] data = new int[samplesToRead];
+                edfReader.setSamplePosition(i, startPos);
+                while (!isStopped && totalReadSamples < n) {
+                    try {
+                        int readSamples = edfReader.readSamples(i, n, data);
+                        if (readSamples < data.length) {
+                            int[] data1 = new int[readSamples];
+                            System.arraycopy(data, 0, data1, 0, readSamples);
+                            data = data1;
+                        }
+                        totalReadSamples += readSamples;
 
-                for (int j = 0; j < signalListeners.size(); j++) {
-                    DataListener l = signalListeners.get(j);
-                    l.receiveData(data);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    for (int j = 0; j < signalListeners.size(); j++) {
+                        DataListener l = signalListeners.get(j);
+                        l.receiveData(data);
+                    }
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException ex) {
+                        ex.printStackTrace();
+                    }
                 }
             }
-        }
-    }
-
-    public void finish() {
-        try {
-            edfReader.close();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
@@ -116,20 +185,6 @@ public class EdfProvider {
     public void setReadTimeInterval(long readStartMs, long readIntervalMs) {
         this.readStartMs = readStartMs - recordingStarTimeMs;
         this.readEndMs = readStartMs + readIntervalMs;
-    }
-
-    public int signalsCount() {
-        return numberSignals;
-    }
-
-    public double signalSampleRate(int signal) {
-        double sampleRate = (1000.0 * header.getNumberOfSamplesInEachDataRecord(signal)) /
-                header.getDurationOfDataRecordMs();
-        return sampleRate;
-    }
-
-    public long getRecordingStartTimeMs() {
-        return recordingStarTimeMs + readStartMs;
     }
 
     public String copyReadIntervalToFile() {

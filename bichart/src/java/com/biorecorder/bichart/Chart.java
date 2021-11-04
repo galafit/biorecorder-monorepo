@@ -216,8 +216,6 @@ public class Chart {
         invalidate();
     }
 
-
-
     Insets calculateMargin(RenderContext renderContext) {
         if (!isValid) {
             revalidate(renderContext);
@@ -430,6 +428,14 @@ public class Chart {
         int width = end - start;
         int height = graphArea.height - 2 * borderWidth;
         canvas.drawRect(start, graphArea.y + borderWidth, width, height);
+    }
+
+    Range getTraceDataRange(int traceNumber, boolean isDataOrdered) {
+        return traceList.getTrace(traceNumber).getDataRange(isDataOrdered);
+    }
+
+    int getTraceDataSize(int traceNumber) {
+        return traceList.getTrace(traceNumber).getDataSize();
     }
 
     public int stackCount() {

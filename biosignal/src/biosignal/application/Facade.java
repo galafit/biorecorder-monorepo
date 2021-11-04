@@ -3,10 +3,17 @@ package biosignal.application;
 import biosignal.filter.XYData;
 import com.biorecorder.bichart.GroupingApproximation;
 
-public interface Facade {
-    void read();
+import java.io.File;
 
-    void finish();
+public interface Facade {
+    void start();
+    void stop();
+
+    void setDataProvider(File file);
+
+    String[] getFileExtensions();
+
+    void addDataAppendListener(DataAppendListener l);
 
     XYData getData(int channel);
 
@@ -20,11 +27,13 @@ public interface Facade {
 
     boolean isDateTime();
 
-   void setFullReadInterval();
+    void setFullReadInterval();
 
     void setReadInterval(int signal, long startPos, long samplesToRead);
 
     void setReadTimeInterval(long readStartMs, long readIntervalMs);
+
+    void finish();
 
     // return the name of new file
     String copyReadIntervalToFile();

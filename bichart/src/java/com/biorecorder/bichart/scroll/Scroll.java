@@ -41,6 +41,17 @@ public class Scroll {
         }
     }
 
+    public boolean isViewportAtTheEnd() {
+        if(model.getViewportPosition() + model.getViewportExtent() == model.getEnd()) {
+            return true;
+        }
+        return false;
+    }
+
+    public void setViewportAtTheEnd() {
+        model.setViewportPosition(model.getEnd() - model.getViewportExtent());
+    }
+
     public double getStart() {
        return model.getStart();
     }

@@ -32,7 +32,7 @@ class GroupedData {
                 resampler.setColumnAggregations(0, xySeries.getGroupingApproximationX().getAggregation());
                 resampler.setColumnAggregations(1, xySeries.getGroupingApproximationY().getAggregation());
                 resampler.resampleAndAppend(xySeries.getDataTable());
-                dataList.add(new ResampledData(resampler, xySeries.getGroupingApproximationX(), xySeries.getGroupingApproximationY()));
+                dataList.add(new ResampledData(xySeries, resampler, xySeries.getGroupingApproximationX(), xySeries.getGroupingApproximationY()));
             } else {
                 dataList.add(new RawData(xySeries));
             }
@@ -62,11 +62,15 @@ class GroupedData {
                 resampler.setColumnAggregations(0, xySeries.getGroupingApproximationX().getAggregation());
                 resampler.setColumnAggregations(1, xySeries.getGroupingApproximationY().getAggregation());
                 resampler.resampleAndAppend(xySeries.getDataTable());
-                dataList.add(new ResampledData(resampler, xySeries.getGroupingApproximationX(), xySeries.getGroupingApproximationY()));
+                dataList.add(new ResampledData(xySeries, resampler, xySeries.getGroupingApproximationX(), xySeries.getGroupingApproximationY()));
             } else {
                 dataList.add(new RawData(xySeries));
             }
         }
+    }
+
+    public Range getDataRange() {
+        return dataList.get(0).getDataRange();
     }
 
     public XYSeries getData(double xLength, int markSize) {
@@ -90,6 +94,12 @@ class GroupedData {
         }
     }
 
+    public void dataAppended() {
+        for (DataWrapper dataWrapper : dataList) {
+            dataWrapper.dataAppended();
+        }
+    }
+
     static int intervalToPoints(XYSeries data, double interval) {
         //double dataStep = dataRange(data).length() / (data.rowCount() - 1);
         //return (int)Math.round(interval / dataStep);
@@ -102,22 +112,23 @@ class GroupedData {
         return dataRange(data).length() * markSize / xLength;
     }
 
-    static int bestPointsInGroup(int dataSize, double xLength, int markSize) {
-        return (int)Math.round(dataSize * markSize / xLength);
-    }
-
     // suppose that data is ordered
     static Range dataRange(XYSeries data) {
-        if(data != null && data.size() > 0) {
+        if(data.size() > 0) {
             return new Range(data.getX(0), data.getX(data.size() - 1));
         }
         return null;
     }
 
+    static int bestPointsInGroup(int dataSize, double xLength, int markSize) {
+        return (int)Math.round(dataSize * markSize / xLength);
+    }
+
     interface DataWrapper {
         XYSeries getData();
-
         void appendData(XYSeries data);
+        void dataAppended();
+        Range getDataRange();
     }
 
     class RawData implements DataWrapper {
@@ -136,17 +147,36 @@ class GroupedData {
         public void appendData(XYSeries data) {
             data.appendData(data);
         }
+
+        @Override
+        public void dataAppended() {
+            // do nothing
+        }
+
+        @Override
+        public Range getDataRange() {
+            return dataRange(data);
+        }
     }
 
     class ResampledData implements DataWrapper {
-        Resampler resampler;
-        GroupingApproximation xApprox;
-        GroupingApproximation yApprox;
+        private XYSeries originalData;
+        private int dataSize;
+        private Resampler resampler;
+        private GroupingApproximation xApprox;
+        private GroupingApproximation yApprox;
 
-        public ResampledData(Resampler r, GroupingApproximation xApprox, GroupingApproximation yApprox) {
+        public ResampledData(XYSeries originalData, Resampler r, GroupingApproximation xApprox, GroupingApproximation yApprox) {
+            this.originalData = originalData;
+            dataSize = originalData.size();
             resampler = r;
             this.xApprox = xApprox;
             this.yApprox = yApprox;
+        }
+
+        @Override
+        public Range getDataRange() {
+            return dataRange(new XYSeries(resampler.resultantData()));
         }
 
         @Override
@@ -160,6 +190,14 @@ class GroupedData {
         @Override
         public void appendData(XYSeries data) {
             resampler.resampleAndAppend(data.getDataTable());
+        }
+
+        @Override
+        public void dataAppended() {
+            int from = dataSize;
+            dataSize = originalData.size();
+            int length = dataSize - from;
+            resampler.resampleAndAppend(originalData.getDataTable(), from, length);
         }
     }
 }

@@ -5,7 +5,7 @@ import com.biorecorder.bichart.axis.YAxisPosition;
 import com.biorecorder.bichart.graphics.*;
 import com.biorecorder.bichart.traces.TracePainter;
 
-public class Trace {
+class Trace {
     private ChartData data;
     private final TracePainter tracePainter;
     private final XAxisPosition xAxisPosition;
@@ -45,6 +45,20 @@ public class Trace {
 
     public void setData(ChartData data) {
         this.data = data;
+    }
+
+    public Range getDataRange(boolean isDataOrdered) {
+        if(data.size() == 0) {
+            return null;
+        }
+        if(isDataOrdered) {
+          return new Range(data.value(0,0), data.value(data.size() - 1, 0));
+        }
+        return data.columnMinMax(0);
+    }
+
+    public int getDataSize() {
+        return data.size();
     }
 
     public AxisWrapper getXAxis() {

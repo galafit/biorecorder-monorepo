@@ -14,11 +14,11 @@ public class Aggregation {
         this.aggFunction = aggFunction;
     }
 
-    public RegularColumn aggregate(RegularColumn columnToAgg, int pointsInGroup) {
+    public RegularColumn aggregate(RegularColumn columnToAgg, int pointsInGroup, int from, int length) {
         if(rc == null) {
-            rc = new RegularColumn(columnToAgg.name(), columnToAgg.getStartValue(), columnToAgg.getStep(), columnToAgg.size());
+            rc = new RegularColumn(columnToAgg.name(), columnToAgg.value(from), columnToAgg.getStep(), length);
         } else {
-            rc.append(columnToAgg);
+            rc.append(columnToAgg, from, length);
         }
         String name1 = rc.name() + "_" + aggFunction.name();
         int resampledSize = rc.size() / pointsInGroup;
@@ -31,7 +31,7 @@ public class Aggregation {
         return new RegularColumn(name1, aggFunction.getAggregatedRegularColumnStart(rc, pointsInGroup) ,rc.getStep() * pointsInGroup , resampledSize);
     }
 
-    public Column aggregate(Column columnToAgg, IntSeries groups) {
+    public Column aggregate(Column columnToAgg, IntSeries groups, int from, int length) {
         if(pipe == null) {
             BaseType colType = columnToAgg.type();
             if(aggFunction.outType(colType) == colType) {
@@ -53,7 +53,8 @@ public class Aggregation {
         if(groups.size() > 0) {
             groupStart = groups.get(groupCounter);
         }
-        for (int i = 0; i < columnToAgg.size(); i++) {
+        int till = from + length;
+        for (int i = from; i < till; i++) {
             if(i == groupStart) {
                 pipe.push();
                 groupCounter++;
@@ -63,6 +64,7 @@ public class Aggregation {
             }
             pipe.agg(i);
         }
+        pipe.removeColumnToAgg();
         return pipe.resultantCol();
     }
 }

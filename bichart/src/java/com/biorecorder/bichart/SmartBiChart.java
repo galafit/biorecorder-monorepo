@@ -2,6 +2,7 @@ package com.biorecorder.bichart;
 
 import com.biorecorder.bichart.axis.XAxisPosition;
 import com.biorecorder.bichart.graphics.BCanvas;
+import com.biorecorder.bichart.scroll.Scroll;
 import com.biorecorder.bichart.scroll.ScrollListener;
 import com.biorecorder.bichart.themes.DarkTheme;
 import com.biorecorder.bichart.traces.TracePainter;
@@ -11,7 +12,6 @@ import java.util.List;
 
 public class SmartBiChart extends BiChart {
     private DataProcessor dataProcessor;
-    private boolean isConfigured = false;
     private List<Boolean> chartTraceNeedUpdateDataFlags = new ArrayList<>();
     private List<Boolean> navTraceNeedUpdateDataFlags = new ArrayList<>();
 
@@ -38,7 +38,7 @@ public class SmartBiChart extends BiChart {
     }
 
     @Override
-    public void addChartTrace(String name, XYSeries data, TracePainter tracePainter, boolean isXOpposite,  boolean isYOpposite) {
+    public void addChartTrace(String name, XYSeries data, TracePainter tracePainter, boolean isXOpposite, boolean isYOpposite) {
         super.addChartTrace(name, data, tracePainter, isXOpposite, isYOpposite);
         dataProcessor.addChartTraceData(data);
         chartTraceNeedUpdateDataFlags.add(true);
@@ -49,18 +49,6 @@ public class SmartBiChart extends BiChart {
         super.addNavigatorTrace(name, data, tracePainter, isYOpposite);
         dataProcessor.addNavigatorTraceData(data);
         navTraceNeedUpdateDataFlags.add(true);
-    }
-
-    @Override
-    public void setChartTraceData(int traceNumber, XYSeries data) {
-        dataProcessor.setChartTraceData(traceNumber, data);
-        chartTraceNeedUpdateDataFlags.set(traceNumber, true);
-    }
-
-    @Override
-    public void setNavigatorTraceData(int traceNumber, XYSeries data) {
-        dataProcessor.setNavigatorTraceData(traceNumber, data);
-        navTraceNeedUpdateDataFlags.set(traceNumber, true);
     }
 
     @Override
@@ -91,40 +79,82 @@ public class SmartBiChart extends BiChart {
         navTraceNeedUpdateDataFlags.set(traceNumber, false);
     }
 
+    @Override
+    public void autoScaleNavigatorX() {
+        Range xMinMax = null;
+        for (int i = 0; i < navigator.traceCount(); i++) {
+            xMinMax = Range.join(xMinMax, dataProcessor.getNavigatorTraceDataRange(i));
+        }
+        for (int i = 0; i < chart.traceCount(); i++) {
+            xMinMax = Range.join(xMinMax, dataProcessor.getChartTraceDataRange(i));
+        }
+        if (xMinMax != null) {
+            navigator.setXMinMax(navDefaultXPosition, xMinMax.getMin(), xMinMax.getMax());
+            for (XAxisPosition xPosition : axisToScrolls.keySet()) {
+                Scroll scroll = axisToScrolls.get(xPosition);
+                scroll.setMinMax(xMinMax.getMin(), xMinMax.getMax());
+            }
+        }
+    }
 
-    private void configure() {
-        autoScaleX();
+    @Override
+    protected void configure() {
+        boolean scrollCreated = createScrolls();
+        boolean scrollAtTheEnd = true;
+        for (XAxisPosition xPosition : axisToScrolls.keySet()) {
+            Scroll scroll = axisToScrolls.get(xPosition);
+            if(scroll != null && !scroll.isViewportAtTheEnd()) {
+                scrollAtTheEnd = false;
+            }
+        }
+        autoScaleNavigatorX();
+        if(scrollAtTheEnd) {
+            for (XAxisPosition xPosition : axisToScrolls.keySet()) {
+                Scroll scroll = axisToScrolls.get(xPosition);
+                if(scroll != null) {
+                    scroll.setViewportAtTheEnd();
+                }
+            }
+           /* for (int i = 0; i < chart.traceCount(); i++) {
+                setChartTraceData(i);
+            }
+            for (int i = 0; i < navigator.traceCount(); i++) {
+                setNavigatorTraceData(i);
+            }*/
+        }
+        if(scrollCreated) {
+            autoScaleChartY();
+        }
         for (int i = 0; i < chartTraceNeedUpdateDataFlags.size(); i++) {
-            if(chartTraceNeedUpdateDataFlags.get(i)) {
+            if (chartTraceNeedUpdateDataFlags.get(i)) {
                 setChartTraceData(i);
             }
         }
         for (int i = 0; i < navTraceNeedUpdateDataFlags.size(); i++) {
-            if(navTraceNeedUpdateDataFlags.get(i)) {
+            if (navTraceNeedUpdateDataFlags.get(i)) {
                 setNavigatorTraceData(i);
             }
+        }
+        if(scrollCreated) {
+            autoScaleChartY();
         }
         autoScaleNavigatorY();
-        autoScaleChartY();
-        isConfigured = true;
     }
 
-    @Override
-    public void draw(BCanvas canvas) {
-        revalidate(canvas.getRenderContext());
-        if (!isConfigured) {
-            configure();
-        }
-        for (int i = 0; i < chartTraceNeedUpdateDataFlags.size(); i++) {
-           if(chartTraceNeedUpdateDataFlags.get(i)) {
-               setChartTraceData(i);
-           }
-        }
-        for (int i = 0; i < navTraceNeedUpdateDataFlags.size(); i++) {
-            if(navTraceNeedUpdateDataFlags.get(i)) {
-                setNavigatorTraceData(i);
-            }
-        }
-        super.draw(canvas);
+    public void appendChartTraceData(int traceNumber, XYSeries data) {
+        dataProcessor.appendChartTraceData(traceNumber, data);
+        isDataChanged = true;
+        //chartTraceNeedUpdateDataFlags.set(traceNumber, false);
+    }
+
+    public void appendNavigatorTraceData(int traceNumber, XYSeries data) {
+        dataProcessor.appendNavigatorTraceData(traceNumber, data);
+        isDataChanged = true;
+        //navTraceNeedUpdateDataFlags.set(traceNumber, true);
+    }
+
+    public void dataAppended() {
+        dataProcessor.dataAppended();
+        isDataChanged = true;
     }
 }

@@ -20,12 +20,16 @@ public class DoubleColumn implements Column {
         this(name, new BaseDoubleEditableSeries(data));
     }
 
-    public DoubleColumn(String name, double[] arrData) {
-        this(name, new DoubleArrayWrapper(new DoubleArrayList(arrData)));
+    public DoubleColumn(String name, double[] data) {
+        this(name, new DoubleArrayListWrapper(new DoubleArrayList(data)));
     }
 
+   /* public DoubleColumn(String name, DoubleArrayList data) {
+        this(name, new DoubleArrayListWrapper(data));
+    }*/
+
     public DoubleColumn(String name) {
-        this(name, new DoubleArrayWrapper(new DoubleArrayList()));
+        this(name, new DoubleArrayListWrapper(new DoubleArrayList()));
     }
 
     public void append(double value) throws UnsupportedOperationException {
@@ -214,10 +218,10 @@ public class DoubleColumn implements Column {
         }
     }
 
-    static class DoubleArrayWrapper implements DoubleEditableSeries {
+    static class DoubleArrayListWrapper implements DoubleEditableSeries {
         private final DoubleArrayList doubleArrayList;
 
-        public DoubleArrayWrapper(DoubleArrayList doubleArrayList) {
+        public DoubleArrayListWrapper(DoubleArrayList doubleArrayList) {
             this.doubleArrayList = doubleArrayList;
         }
 

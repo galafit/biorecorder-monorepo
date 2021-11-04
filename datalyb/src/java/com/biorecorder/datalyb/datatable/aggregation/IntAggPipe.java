@@ -37,4 +37,9 @@ public class IntAggPipe implements AggPipe {
         }
         this.columnToAgg = (IntColumn) columnToAgg;
     }
+
+    @Override
+    public void removeColumnToAgg() {
+        columnToAgg = null;
+    }
 }

@@ -36,11 +36,29 @@ public class RegularColumn extends DoubleColumn {
         setSize(size()+1);
     }
 
+    public void append(Column col, int from, int length) throws IllegalArgumentException {
+        if(! (col instanceof RegularColumn)) {
+            String errMsg = "In RegularColumn may be append only regular column";
+            throw new IllegalArgumentException(errMsg);
+        }
+        RegularColumn rc = (RegularColumn) col;
+        if(step != rc.step) {
+            String errMsg = "Steps of the columns must be equal. Step: "+ step +
+                    ", step of the appended column: " +rc.step;
+            throw new IllegalArgumentException(errMsg);
+        }
+        double expectedStartValue = value(size() - 1) + step;
+        if(expectedStartValue != rc.value(from)) {
+            String errMsg = "Expected start value: "+ expectedStartValue +
+                    ", start value of appended column: " +rc.value(from);
+            throw new IllegalArgumentException(errMsg);
+        }
+        sizeRegulator.setSize(size() + length);
+    }
+
     @Override
     public void append(Column col) throws IllegalArgumentException {
-        for (int i = 0; i < col.size(); i++) {
-            data.add(col.value(i));
-        }
+        append(col, 0, col.size());
     }
 
     @Override
@@ -127,18 +145,18 @@ public class RegularColumn extends DoubleColumn {
         }
 
         @Override
-        public void add(double value) throws UnsupportedOperationException {
+        public void add(double value) throws IllegalArgumentException {
             if(value == get(size)) {
                 size++;
             } else {
                 String errMsg = "In RegularColumn may be added only regular values. Expected: "
                         + get(size) + ", added: " + value;
-                throw new UnsupportedOperationException(errMsg);
+                throw new IllegalArgumentException(errMsg);
             }
         }
 
         @Override
-        public void add(double... values) throws UnsupportedOperationException {
+        public void add(double... values) throws IllegalArgumentException {
             for (double value : values) {
                 add(value);
             }

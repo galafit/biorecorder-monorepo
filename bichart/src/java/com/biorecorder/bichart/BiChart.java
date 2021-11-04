@@ -18,23 +18,20 @@ public class BiChart {
     private int gap = 0; // between Chart and Preview px
     private Insets spacing = new Insets(0);
     private int navigatorHeightMin = 16; // px
-    protected Chart chart;
-    protected Chart navigator;
     private BiChartConfig config;
     private int width = 250;
     private int height = 100;
-    private List<XYSeries> chartDataList = new ArrayList<>();
-    private List<XYSeries> navigatorDataList = new ArrayList<>();
-    private Map<XAxisPosition, Scroll> axisToScrolls = new HashMap<>(2);
-    Map<XAxisPosition, List<ScrollListener>> axisToScrollListeners = new HashMap<>(2);
-
     private boolean isPointToPointChart = false;
-    XAxisPosition navDefaultXPosition = XAxisPosition.BOTTOM;
+    protected Chart chart;
+    protected Chart navigator;
+    protected Map<XAxisPosition, Scroll> axisToScrolls = new HashMap<>(2);
+    protected Map<XAxisPosition, List<ScrollListener>> axisToScrollListeners = new HashMap<>(2);
+    protected XAxisPosition navDefaultXPosition = XAxisPosition.BOTTOM;
 
     private boolean isValid = false;
-    private boolean isChanged = false;
-    private boolean isScrollsConfigured = false;
+    private boolean isScrollChanged = false;
     private boolean isDateTime;
+    protected boolean isDataChanged = false;
 
     public BiChart(BiChartConfig config, boolean isDateTime) {
         Scale xScale = createScale(isDateTime);
@@ -119,10 +116,10 @@ public class BiChart {
         int fullLength = isPointToPointChart ? 0 : xLength;
         for (int i = 0; i < traceNumbers.size(); i++) {
             int traceNumber = traceNumbers.get(i);
-            XYSeries traceData = chartDataList.get(traceNumber);
-            Range traceDataMinMax = dataMinMax(traceData);
-            if (traceData.size() > 1 && traceDataMinMax != null && traceDataMinMax.length() > 0) {
-                int dataLength = traceData.size() * chart.getTraceMarkSize(traceNumber);
+            Range traceDataMinMax = chart.getTraceDataRange(traceNumber, true);
+            int traceDataSize = chart.getTraceDataSize(traceNumber);
+            if (traceDataSize > 1 && traceDataMinMax != null && traceDataMinMax.length() > 0) {
+                int dataLength = traceDataSize * chart.getTraceMarkSize(traceNumber);
                 xScale.setMinMax(traceDataMinMax.getMin(), traceDataMinMax.getMax());
                 xScale.setStartEnd(0, dataLength);
                 double minPosition = xScale.scale(minMax.getMin());
@@ -138,21 +135,21 @@ public class BiChart {
         return xScale;
     }
 
-    private void createScroll(XAxisPosition xPosition, int viewportExtent) {
+    // return true if new scroll was created and false otherwise
+    private boolean createScroll(XAxisPosition xPosition, int viewportExtent) {
         List<Integer> traceNumbers = chart.getTraces(xPosition);
         Range minMax = null;
         for (Integer traceNumber : traceNumbers) {
-            XYSeries traceData = chartDataList.get(traceNumber);
-            minMax = Range.join(minMax, dataMinMax(traceData));
+            minMax = Range.join(minMax, chart.getTraceDataRange(traceNumber, true));
         }
         if (minMax == null) {
             axisToScrolls.remove(xPosition);
-            return;
+            return false;
         }
         if (minMax.length() == 0) {
             axisToScrolls.remove(xPosition);
             chart.setXMinMax(xPosition, minMax.getMin() - 1, minMax.getMax() + 1);
-            return;
+            return false;
         }
         if (axisToScrolls.get(xPosition) == null) {
             Scale scrollScale = getChartBestScale(traceNumbers, minMax, viewportExtent);
@@ -163,7 +160,7 @@ public class BiChart {
             scroll.addListener(new ScrollListener() {
                 @Override
                 public void onScrollChanged(double viewportMin, double viewportMax) {
-                    isChanged = true;
+                    isScrollChanged = true;
                     List<ScrollListener> scrollListeners = axisToScrollListeners.get(xPosition);
                     chart.setXMinMax(xPosition, viewportMin, viewportMax);
                     for (ScrollListener listener : scrollListeners) {
@@ -171,16 +168,11 @@ public class BiChart {
                     }
                 }
             });
+            return true;
         }
+        return false;
     }
 
-    private void createScrolls() {
-        int viewportExtent = getXLength();
-        for (XAxisPosition xPosition : XAxisPosition.values()) {
-            createScroll(xPosition, viewportExtent);
-        }
-        isScrollsConfigured = true;
-    }
 
     public void autoScaleChartX(XAxisPosition xPosition) {
         if (!isValid) {
@@ -189,8 +181,7 @@ public class BiChart {
         List<Integer> traceNumbers = chart.getTraces(xPosition);
         Range minMax = null;
         for (Integer traceNumber : traceNumbers) {
-            XYSeries traceData = chartDataList.get(traceNumber);
-            minMax = Range.join(minMax, dataMinMax(traceData));
+            minMax = Range.join(minMax, chart.getTraceDataRange(traceNumber, true));
         }
         if (minMax == null) {
             axisToScrolls.remove(xPosition);
@@ -209,19 +200,20 @@ public class BiChart {
         }
     }
 
-    private void autoScaleNavigatorX() {
+    public void autoScaleNavigatorX() {
         Range xMinMax = null;
-        for (int i = 0; i < navigatorDataList.size(); i++) {
-            XYSeries data = navigatorDataList.get(i);
-            xMinMax = Range.join(xMinMax, dataMinMax(data));
+        for (int i = 0; i < navigator.traceCount(); i++) {
+            xMinMax = Range.join(xMinMax, navigator.getTraceDataRange(i, true));
         }
-        for (XAxisPosition xPosition : axisToScrolls.keySet()) {
-            Scroll scroll = axisToScrolls.get(xPosition);
-            Range scrollRange = new Range(scroll.getMin(), scroll.getMax());
-            xMinMax = Range.join(xMinMax, scrollRange);
+        for (int i = 0; i < chart.traceCount(); i++) {
+            xMinMax = Range.join(xMinMax, chart.getTraceDataRange(i, true));
         }
         if (xMinMax != null) {
             navigator.setXMinMax(navDefaultXPosition, xMinMax.getMin(), xMinMax.getMax());
+            for (XAxisPosition xPosition : axisToScrolls.keySet()) {
+                Scroll scroll = axisToScrolls.get(xPosition);
+                scroll.setMinMax(xMinMax.getMin(), xMinMax.getMax());
+            }
         }
     }
 
@@ -229,9 +221,6 @@ public class BiChart {
     public void autoScaleX() {
         if (!isValid) {
             return;
-        }
-        if (!isScrollsConfigured) {
-            createScrolls();
         }
         for (XAxisPosition xPosition : XAxisPosition.values()) {
             autoScaleChartX(xPosition);
@@ -253,14 +242,32 @@ public class BiChart {
      * ==================================================*
      */
 
+    protected boolean createScrolls() {
+        boolean scrollCreated = false;
+        int viewportExtent = getXLength();
+        for (XAxisPosition xPosition : XAxisPosition.values()) {
+            if(createScroll(xPosition, viewportExtent)) {
+                scrollCreated = true;
+            }
+        }
+        return scrollCreated;
+    }
+
+    protected void configure() {
+        if(createScrolls()) {
+            autoScaleChartY();
+        }
+        autoScaleNavigatorX();
+        autoScaleNavigatorY();
+    }
+
     public void draw(BCanvas canvas) {
         revalidate(canvas.getRenderContext());
-        if (!isScrollsConfigured) {
-            createScrolls();
-            autoScaleNavigatorX();
-            autoScaleChartY();
-            autoScaleNavigatorY();
+        if(isDataChanged) {
+            configure();
+            isDataChanged = false;
         }
+        configure();
         canvas.setColor(config.getBackgroundColor());
         canvas.fillRect(0, 0, width, height);
         chart.draw(canvas);
@@ -340,13 +347,13 @@ public class BiChart {
 
     public void addChartTrace(String name, XYSeries data, TracePainter tracePainter, boolean isXOpposite, boolean isYOpposite) {
         chart.addTrace(name, data, tracePainter, isXOpposite, isYOpposite);
-        chartDataList.add(data);
+        isDataChanged = true;
     }
 
 
     public void removeChartTrace(int traceNumber) {
         chart.removeTrace(traceNumber);
-        chartDataList.remove(traceNumber);
+        isDataChanged = true;
     }
 
     public int chartTraceCount() {
@@ -367,11 +374,6 @@ public class BiChart {
 
     public void setChartYPrefixAndSuffix(int stack, YAxisPosition yPosition, @Nullable String prefix, @Nullable String suffix) {
         navigator.setYPrefixAndSuffix(stack, yPosition, prefix, suffix);
-    }
-
-    public void setChartTraceData(int traceNumber, XYSeries data) {
-        chart.setTraceData(traceNumber, data);
-        chartDataList.set(traceNumber, data);
     }
 
     /**
@@ -407,21 +409,16 @@ public class BiChart {
 
     public void addNavigatorTrace(String name, XYSeries data, TracePainter tracePainter, boolean isYOpposite) {
         navigator.addTrace(name, data, tracePainter, false, isYOpposite);
-        navigatorDataList.add(data);
+        isDataChanged = true;
     }
 
     public void removeNavigatorTrace(int traceNumber) {
         navigator.removeTrace(traceNumber);
-        navigatorDataList.remove(traceNumber);
+        isDataChanged = true;
     }
 
     public int navigatorTraceCount() {
         return navigator.traceCount();
-    }
-
-    public void setNavigatorTraceData(int traceNumber, XYSeries data) {
-        navigator.setTraceData(traceNumber, data);
-        navigatorDataList.set(traceNumber, data);
     }
 
     public void setNavigatorXTitle(XAxisPosition xPosition, String title) {
@@ -586,25 +583,25 @@ public class BiChart {
     }
 
     boolean positionScrolls(double x) {
-        isChanged = false;
+        isScrollChanged = false;
         double xValue = navigator.positionToValue(navDefaultXPosition, x);
         for (XAxisPosition xPosition : axisToScrolls.keySet()) {
             axisToScrolls.get(xPosition).setViewportCenterValue(xValue);
         }
-        return isChanged;
+        return isScrollChanged;
     }
 
     boolean positionChartX(XAxisPosition xAxisPosition, double x) {
-        isChanged = false;
+        isScrollChanged = false;
         double xValue = chart.positionToValue(xAxisPosition, x);
         for (XAxisPosition xPosition : axisToScrolls.keySet()) {
             axisToScrolls.get(xPosition).setViewportCenterValue(xValue);
         }
-        return isChanged;
+        return isScrollChanged;
     }
 
     boolean translateChartX(XAxisPosition xAxisPosition, double dx) {
-        isChanged = false;
+        isScrollChanged = false;
         Scroll scroll = axisToScrolls.get(xAxisPosition);
         if (scroll != null) {
             double centerValue = scroll.getViewportCenterValue();
@@ -619,11 +616,11 @@ public class BiChart {
                 }
             }
         }
-        return isChanged;
+        return isScrollChanged;
     }
 
     boolean translateScrolls(XAxisPosition xAxisPosition, double dx) {
-        isChanged = false;
+        isScrollChanged = false;
         Scroll scroll = axisToScrolls.get(xAxisPosition);
         if (scroll != null) {
             double centerValue = scroll.getViewportCenterValue();
@@ -638,16 +635,16 @@ public class BiChart {
                 }
             }
         }
-        return isChanged;
+        return isScrollChanged;
     }
 
     boolean zoomChartX(XAxisPosition xAxisPosition, double zoomFactor, int anchorPoint) {
-        isChanged = false;
+        isScrollChanged = false;
         Scroll scroll = axisToScrolls.get(xAxisPosition);
         if (scroll != null) {
             scroll.zoom(zoomFactor, anchorPoint);
         }
-        return isChanged;
+        return isScrollChanged;
     }
 
     boolean zoomChartY(int stack, YAxisPosition yPosition, double zoomFactor, int anchorPoint) {

@@ -9,8 +9,8 @@ public class DataProcessor {
     private ProcessingConfig config;
     private boolean isDateTime;
     private int minPointsForCrop = 100;
-    private List<XYSeries> chartRowData = new ArrayList<>();
-    private List<XYSeries> navigatorRowData = new ArrayList<>();
+    private List<XYSeries> chartData = new ArrayList<>();
+    private List<XYSeries> navigatorData = new ArrayList<>();
     private List<GroupedData> navigatorGroupedData = new ArrayList<>();
 
     public DataProcessor(ProcessingConfig config, boolean isDateTime) {
@@ -18,35 +18,46 @@ public class DataProcessor {
         this.isDateTime = isDateTime;
     }
 
-    public boolean isDateTime() {
-        return isDateTime;
+    // suppose that data is ordered
+    private Range dataRange(XYSeries data) {
+        if(data.size() > 0) {
+            return new Range(data.getX(0), data.getX(data.size() - 1));
+        }
+        return null;
+    }
+
+    public Range getChartTraceDataRange(int traceNumber) {
+        return dataRange(chartData.get(traceNumber));
+    }
+
+    public Range getNavigatorTraceDataRange(int traceNumber) {
+        GroupedData groupedData = navigatorGroupedData.get(traceNumber);
+        if(groupedData != null) {
+            return groupedData.getDataRange();
+        }
+        return dataRange(navigatorData.get(traceNumber));
     }
 
     public void addChartTraceData(XYSeries data) {
-        chartRowData.add(data);
+        chartData.add(data);
     }
 
     public void addNavigatorTraceData(XYSeries data) {
-        navigatorRowData.add(data);
+        navigatorData.add(data);
         navigatorGroupedData.add(null);
     }
 
     public void removeNavigatorTraceData(int traceNumber) {
-        navigatorRowData.remove(traceNumber);
+        navigatorData.remove(traceNumber);
         navigatorGroupedData.remove(traceNumber);
     }
 
     public void removeChartTraceData(int traceNumber) {
-        chartRowData.remove(traceNumber);
+        chartData.remove(traceNumber);
     }
 
-    public void setChartTraceData(int traceNumber, XYSeries data) {
-        chartRowData.set(traceNumber, data);
-    }
-
-    public void setNavigatorTraceData(int traceNumber, XYSeries data) {
-        navigatorRowData.set(traceNumber, data);
-        navigatorGroupedData.set(traceNumber, null);
+    public void appendChartTraceData(int traceNumber, XYSeries data) {
+        chartData.get(traceNumber).appendData(data);
     }
 
     public void appendNavigatorTraceData(int traceNumber, XYSeries data) {
@@ -54,36 +65,39 @@ public class DataProcessor {
         if(groupedData != null) {
             groupedData.appendData(data);
         } else {
-            XYSeries rowData = navigatorRowData.get(traceNumber);
+            XYSeries rowData = navigatorData.get(traceNumber);
             rowData.appendData(data);
         }
     }
 
-    public void appendChartTraceData(int traceNumber, XYSeries dataToAppend) {
-        XYSeries data = chartRowData.get(traceNumber);
-        data.appendData(dataToAppend);
+    public void dataAppended() {
+        for (GroupedData groupedData : navigatorGroupedData) {
+            if(groupedData != null) {
+                groupedData.dataAppended();
+            }
+        }
     }
 
     public XYSeries getProcessedNavigatorData(int traceNumber, double xLength, int markSize) {
         if(!config.isDataGroupingEnabled()) {
-            return navigatorRowData.get(traceNumber);
+            return navigatorData.get(traceNumber);
         }
         GroupedData groupedData = navigatorGroupedData.get(traceNumber);
         if(groupedData == null) {
-            XYSeries rowData = navigatorRowData.get(traceNumber);
+            XYSeries rowData = navigatorData.get(traceNumber);
             if(isDateTime) {
                 groupedData = new GroupedData(rowData, config.getGroupingType(), config.getGroupingTimeIntervals(), xLength, markSize);
             } else {
                 groupedData = new GroupedData(rowData, config.getGroupingType(), config.getGroupingIntervals(), xLength, markSize);
             }
             navigatorGroupedData.set(traceNumber, groupedData);
-            navigatorRowData.set(traceNumber, null);
+            navigatorData.set(traceNumber, null);
         }
         return groupedData.getData(xLength, markSize);
     }
 
     public XYSeries getProcessedChartData(int traceNumber, double min, double max, double xLength, int markSize) {
-        XYSeries data = chartRowData.get(traceNumber);
+        XYSeries data = chartData.get(traceNumber);
         Range dataXRange = GroupedData.dataRange(data);
         int pointsPerGroup = 1;
         if(config.isDataCropEnabled() && dataXRange != null && (dataXRange.getMin() < min
@@ -119,9 +133,5 @@ public class DataProcessor {
         }
 
         return data;
-    }
-
-    public XYSeries getChartRowData(int traceNumber) {
-        return chartRowData.get(traceNumber);
     }
 }
