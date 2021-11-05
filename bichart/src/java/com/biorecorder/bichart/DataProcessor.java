@@ -8,7 +8,7 @@ import java.util.List;
 public class DataProcessor {
     private ProcessingConfig config;
     private boolean isDateTime;
-    private int minPointsForCrop = 100;
+    private int minPointsForCrop = 10;
     private List<XYSeries> chartData = new ArrayList<>();
     private List<XYSeries> navigatorData = new ArrayList<>();
     private List<GroupedData> navigatorGroupedData = new ArrayList<>();
@@ -98,7 +98,7 @@ public class DataProcessor {
 
     public XYSeries getProcessedChartData(int traceNumber, double min, double max, double xLength, int markSize) {
         XYSeries data = chartData.get(traceNumber);
-        Range dataXRange = GroupedData.dataRange(data);
+        Range dataXRange = dataRange(data);
         int pointsPerGroup = 1;
         if(config.isDataCropEnabled() && dataXRange != null && (dataXRange.getMin() < min
                 || dataXRange.getMax() > max) && data.size() > minPointsForCrop) {
@@ -131,7 +131,6 @@ public class DataProcessor {
                 data = new GroupedData(data, config.getGroupingType(), new double[0], xLength, markSize).getData(xLength, markSize);
             }
         }
-
         return data;
     }
 }

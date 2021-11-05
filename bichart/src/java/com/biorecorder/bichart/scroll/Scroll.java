@@ -112,6 +112,9 @@ public class Scroll {
     }
 
     public void zoom(double zoomFactor, int anchorPoint) {
+        if(zoomFactor == 1) {
+            return;
+        }
         double scaleStart = scale.getStart();
         double scaleEnd = scale.getEnd();
         scaleEnd = scaleStart + (scaleEnd - scaleStart) * zoomFactor;

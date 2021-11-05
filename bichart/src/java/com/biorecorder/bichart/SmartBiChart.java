@@ -67,7 +67,8 @@ public class SmartBiChart extends BiChart {
 
     private void setChartTraceData(int traceNumber) {
         double xLength = getXLength();
-        XYSeries data = dataProcessor.getProcessedChartData(traceNumber, chart.getXMin(chart.getTraceXPosition(traceNumber)), chart.getXMax(chart.getTraceXPosition(traceNumber)), xLength, getChartTraceMarkSize(traceNumber));
+        XAxisPosition xAxisPosition = chart.getTraceXPosition(traceNumber);
+        XYSeries data = dataProcessor.getProcessedChartData(traceNumber, chart.getXMin(xAxisPosition), chart.getXMax(xAxisPosition), xLength, getChartTraceMarkSize(traceNumber));
         chart.setTraceData(traceNumber, data);
         chartTraceNeedUpdateDataFlags.set(traceNumber, false);
     }
@@ -99,7 +100,18 @@ public class SmartBiChart extends BiChart {
 
     @Override
     protected void configure() {
-        boolean scrollCreated = createScrolls();
+        boolean scrollCreated = false;
+        int viewportExtent = getXLength();
+        for (XAxisPosition xPosition : XAxisPosition.values()) {
+            if(createScroll(xPosition, viewportExtent)) {
+                List<Integer> traceNumbers = chart.getTraces(xPosition);
+                for (int i = 0; i < traceNumbers.size(); i++) {
+                    int traceNumber = traceNumbers.get(i);
+                    chartTraceNeedUpdateDataFlags.set(traceNumber, true);
+                }
+                scrollCreated = true;
+            }
+        }
         boolean scrollAtTheEnd = true;
         for (XAxisPosition xPosition : axisToScrolls.keySet()) {
             Scroll scroll = axisToScrolls.get(xPosition);
@@ -121,9 +133,6 @@ public class SmartBiChart extends BiChart {
             for (int i = 0; i < navigator.traceCount(); i++) {
                 setNavigatorTraceData(i);
             }*/
-        }
-        if(scrollCreated) {
-            autoScaleChartY();
         }
         for (int i = 0; i < chartTraceNeedUpdateDataFlags.size(); i++) {
             if (chartTraceNeedUpdateDataFlags.get(i)) {

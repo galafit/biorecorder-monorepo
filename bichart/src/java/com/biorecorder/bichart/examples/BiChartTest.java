@@ -26,7 +26,7 @@ public class BiChartTest extends JFrame{
         setTitle("Test chart");
 
         int[] data = new int[100];
-        int[] data1 = new int[11];
+        int[] data1 = new int[100];
 
         for (int i = 0; i < data.length; i++) {
             data[i] = i;

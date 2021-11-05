@@ -136,7 +136,7 @@ public class BiChart {
     }
 
     // return true if new scroll was created and false otherwise
-    private boolean createScroll(XAxisPosition xPosition, int viewportExtent) {
+    protected boolean createScroll(XAxisPosition xPosition, int viewportExtent) {
         List<Integer> traceNumbers = chart.getTraces(xPosition);
         Range minMax = null;
         for (Integer traceNumber : traceNumbers) {
@@ -195,7 +195,8 @@ public class BiChart {
         Scroll scroll = axisToScrolls.get(xPosition);
         if (scroll != null) {
             Scale bestScale = getChartBestScale(traceNumbers, minMax, getXLength());
-            double zoomFactor = bestScale.getLength() / (scroll.getEnd() - scroll.getStart());
+            double bestLength = bestScale.scale(scroll.getMax()) - bestScale.scale(scroll.getMin());
+            double zoomFactor = bestLength / (scroll.getEnd() - scroll.getStart());
             scroll.zoom(zoomFactor, (int) (scroll.getViewportExtent() / 2));
         }
     }
@@ -242,7 +243,7 @@ public class BiChart {
      * ==================================================*
      */
 
-    protected boolean createScrolls() {
+    protected void configure() {
         boolean scrollCreated = false;
         int viewportExtent = getXLength();
         for (XAxisPosition xPosition : XAxisPosition.values()) {
@@ -250,11 +251,7 @@ public class BiChart {
                 scrollCreated = true;
             }
         }
-        return scrollCreated;
-    }
-
-    protected void configure() {
-        if(createScrolls()) {
+        if(scrollCreated) {
             autoScaleChartY();
         }
         autoScaleNavigatorX();

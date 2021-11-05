@@ -14,7 +14,7 @@ public class SmartBiChartTest extends JFrame {
         int width = 400;
         int height = 500;
 
-        int[] data1 = new int[80];
+        int[] data1 = new int[100];
         int[] data2 = new int[10];
 
         for (int i = 0; i < data1.length; i++) {
@@ -56,8 +56,8 @@ public class SmartBiChartTest extends JFrame {
         xySeries2.appendData(new XYSeries(0, 1, data1));
         smartBiChart.dataAppended();
         chartPanel.repaint();
-        int size = 50;
-        /*for (int i = 0; i < 5; i++) {
+        int size = 10;
+        for (int i = 0; i < 0; i++) {
             try {
                 Thread.sleep(2000);
             } catch (InterruptedException e) {
@@ -74,7 +74,7 @@ public class SmartBiChartTest extends JFrame {
             xySeries2.appendData(regData);
             smartBiChart.dataAppended();
             chartPanel.repaint();
-        }*/
+        }
     }
 
     public static void main(String[] args) {
