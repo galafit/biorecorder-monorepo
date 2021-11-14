@@ -1,10 +1,9 @@
 package com.biorecorder.bichart.examples;
 
+import com.biorecorder.bichart.BiChart;
 import com.biorecorder.bichart.ChartPanel;
-import com.biorecorder.bichart.SmartBiChart;
 import com.biorecorder.bichart.XYSeries;
 import com.biorecorder.bichart.traces.LineTracePainter;
-import com.biorecorder.bichart.traces.VerticalLinePainter;
 
 import javax.swing.*;
 import java.awt.*;
@@ -28,8 +27,11 @@ public class SmartBiChartTest extends JFrame {
 
         XYSeries xySeries1 = new XYSeries(new int[0], new int[0]);
         XYSeries xySeries2 = new XYSeries(0, 1, new int[0]);
+        xySeries1 = new XYSeries(data1, data1);
+        xySeries2 = new XYSeries(0, 1, data1);
 
-        SmartBiChart smartBiChart = new SmartBiChart(false);
+
+        BiChart smartBiChart = new BiChart(false, true);
         smartBiChart.addChartTrace("No Regular", xySeries1, new LineTracePainter());
         smartBiChart.addChartStack();
         smartBiChart.addChartTrace("Regular", xySeries2, new LineTracePainter(), true, false);
@@ -47,7 +49,7 @@ public class SmartBiChartTest extends JFrame {
         // addKeyListener(chartPanel);
         setLocationRelativeTo(null);
         setVisible(true);
-        try {
+    /*    try {
             Thread.sleep(2000);
         } catch (InterruptedException e) {
             System.out.println(e);
@@ -74,7 +76,7 @@ public class SmartBiChartTest extends JFrame {
             xySeries2.appendData(regData);
             smartBiChart.dataAppended();
             chartPanel.repaint();
-        }
+        }*/
     }
 
     public static void main(String[] args) {

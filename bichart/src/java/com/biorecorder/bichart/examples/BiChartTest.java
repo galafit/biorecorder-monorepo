@@ -40,11 +40,11 @@ public class BiChartTest extends JFrame{
        XYSeries xySeries1 = new XYSeries(0, 1, data);
        XYSeries xySeries2 = new XYSeries(0, 10, data1);
 
-        chart = new BiChart(DarkTheme.getNavigableChartConfig(), false);
+        chart = new BiChart(false, false);
 
         chart.addChartTrace("trace1", xySeries1, new LineTracePainter());
         chart.addChartStack();
-        //chart.addChartTrace("trace2", xySeries2, new LineTracePainter(), true, true);
+        chart.addChartTrace("trace2", xySeries2, new LineTracePainter(), true, true);
 
         //chart.addNavigatorTrace("trace1", xySeries1, new LineTracePainter());
         //chart.addNavigatorStack();
@@ -60,17 +60,7 @@ public class BiChartTest extends JFrame{
         addKeyListener(chartPanel.getKeyListener());
         setLocationRelativeTo(null);
         setVisible(true);
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException ex) {
-            ex.printStackTrace();
-        }
-        chart.addChartTrace("trace2", xySeries2, new LineTracePainter(), true, true);
-        repaint();
-
     }
-
-
     public static void main(String[] args) {
         BiChartTest chartTest = new BiChartTest();
     }

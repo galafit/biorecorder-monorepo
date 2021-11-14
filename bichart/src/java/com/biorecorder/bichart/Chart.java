@@ -430,13 +430,13 @@ public class Chart {
         canvas.drawRect(start, graphArea.y + borderWidth, width, height);
     }
 
-    Range getTraceDataRange(int traceNumber, boolean isDataOrdered) {
+    /*Range getTraceDataRange(int traceNumber, boolean isDataOrdered) {
         return traceList.getTrace(traceNumber).getDataRange(isDataOrdered);
     }
 
     int getTraceDataSize(int traceNumber) {
         return traceList.getTrace(traceNumber).getDataSize();
-    }
+    }*/
 
     public int stackCount() {
         return yAxisList.size() / 2;

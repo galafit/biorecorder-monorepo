@@ -6,7 +6,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 
 public class ProcessingConfig {
-
     private boolean isDataCropEnabled = true;
     private boolean isDataGroupingEnabled = true;
     private int cropShoulder = 1; // number of additional points that we leave on every side during crop
