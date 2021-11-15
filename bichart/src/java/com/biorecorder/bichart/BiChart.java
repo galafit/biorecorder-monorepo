@@ -47,7 +47,7 @@ public class BiChart {
         for (XAxisPosition xPosition : XAxisPosition.values()) {
             axisToScrollListeners.put(xPosition, new ArrayList<>());
         }
-        dataProcessor = new DataProcessor(isDateTime, isProcessingEnabled);
+        dataProcessor = new DataProcessor(isDateTime, xScale, isProcessingEnabled);
     }
 
     public BiChart(boolean isDateTime, boolean isProcessingEnabled) {
@@ -184,18 +184,22 @@ public class BiChart {
         return null;
     }
 
-    private void setChartTraceData(int traceNumber) {
-        double xLength = getXLength();
-        XAxisPosition xAxisPosition = chart.getTraceXPosition(traceNumber);
-        XYSeries data = dataProcessor.getProcessedChartData(traceNumber, chart.getXMin(xAxisPosition), chart.getXMax(xAxisPosition), xLength, chart.getTraceMarkSize(traceNumber));
-        chart.setTraceData(traceNumber, data);
+    private void setChartTraceData() {
+        Map<Integer, XYSeries> tracesData = dataProcessor.chartTracesDataToUpdate();
+        if(tracesData != null) {
+            for (Integer traceNumber : tracesData.keySet()) {
+                chart.setTraceData(traceNumber, tracesData.get(traceNumber));
+            }
+        }
     }
 
-    private void setNavigatorTraceData(int traceNumber) {
-        double xLength = getXLength();
-        XYSeries data = dataProcessor.getProcessedNavigatorData(traceNumber, xLength, navigator.getTraceMarkSize(traceNumber));
-        navigator.setTraceData(traceNumber, data);
-        System.out.println("setNavigatorTraceData");
+    private void setNavigatorTraceData() {
+        Map<Integer, XYSeries> tracesData = dataProcessor.navigatorTracesDataToUpdate();
+        if(tracesData != null) {
+            for (Integer traceNumber : tracesData.keySet()) {
+                navigator.setTraceData(traceNumber, tracesData.get(traceNumber));
+            }
+        }
     }
 
 
@@ -255,9 +259,14 @@ public class BiChart {
         autoScaleNavigatorX();
     }
 
-    public double geChartXMin(XAxisPosition xPosition) {
+    public double getChartXMin(XAxisPosition xPosition) {
         return chart.getXMin(xPosition);
     }
+
+    public double getChartXMax(XAxisPosition xPosition) {
+        return chart.getXMax(xPosition);
+    }
+
 
     /**
      * ==================================================*
@@ -290,16 +299,8 @@ public class BiChart {
                 }
             }
         }
-        for (int i = 0; i < chart.traceCount(); i++) {
-             if (dataProcessor.isChartTraceNeedData(i)) {
-                setChartTraceData(i);
-            }
-        }
-        for (int i = 0; i < navigator.traceCount(); i++) {
-            if (dataProcessor.isNavigatorTraceNeedData(i)) {
-                setNavigatorTraceData(i);
-            }
-        }
+        setChartTraceData();
+        setNavigatorTraceData();
         if (scrollCreated) {
             autoScaleChartY();
         }
@@ -312,16 +313,8 @@ public class BiChart {
             configure();
             isDataChanged = false;
         }
-        for (int i = 0; i < chart.traceCount(); i++) {
-            if (dataProcessor.isChartTraceNeedData(i)) {
-                setChartTraceData(i);
-            }
-        }
-        for (int i = 0; i < navigator.traceCount(); i++) {
-            if (dataProcessor.isNavigatorTraceNeedData(i)) {
-                setNavigatorTraceData(i);
-            }
-        }
+        setChartTraceData();
+        setNavigatorTraceData();
         canvas.setColor(config.getBackgroundColor());
         canvas.fillRect(0, 0, width, height);
         chart.draw(canvas);
@@ -398,7 +391,7 @@ public class BiChart {
 
     public void addChartTrace(String name, XYSeries data, TracePainter tracePainter, boolean isXOpposite, boolean isYOpposite) {
         chart.addTrace(name, data, tracePainter, isXOpposite, isYOpposite);
-        dataProcessor.addChartTraceData(data);
+        dataProcessor.addChartTraceData(data, chart.getTraceMarkSize(chart.traceCount() - 1));
         isDataChanged = true;
     }
 
@@ -462,7 +455,7 @@ public class BiChart {
 
     public void addNavigatorTrace(String name, XYSeries data, TracePainter tracePainter, boolean isYOpposite) {
         navigator.addTrace(name, data, tracePainter, false, isYOpposite);
-        dataProcessor.addNavigatorTraceData(data);
+        dataProcessor.addNavigatorTraceData(data, navigator.getTraceMarkSize(navigator.traceCount() -1));
         isDataChanged = true;
     }
 

@@ -10,11 +10,11 @@ import javax.swing.*;
 import java.awt.*;
 
 public class BiChartPanel extends JPanel {
-    SmartBiChart biChart;
+    BiChart biChart;
     ChartPanel chartPanel;
 
     public BiChartPanel(boolean isDateTime) {
-        biChart = new SmartBiChart(isDateTime);
+        biChart = new BiChart(isDateTime, true);
         chartPanel = new ChartPanel(biChart);
         setLayout(new BorderLayout());
         add(chartPanel);
@@ -40,8 +40,8 @@ public class BiChartPanel extends JPanel {
         double min = Double.MAX_VALUE;
         double max = Double.MIN_VALUE;
         for (XAxisPosition xPosition : XAxisPosition.values()) {
-            min = Math.min(min, biChart.geChartXMin(xPosition));
-            max = Math.max(max, biChart.geChartXMax(xPosition));
+            min = Math.min(min, biChart.getChartXMin(xPosition));
+            max = Math.max(max, biChart.getChartXMax(xPosition));
         }
         double[] range = {min, max};
         return range;
@@ -59,14 +59,6 @@ public class BiChartPanel extends JPanel {
     public void setPreferredSize(Dimension preferredSize) {
         super.setPreferredSize(preferredSize);
         chartPanel.setPreferredSize(preferredSize);
-    }
-
-    public void appendChartTraceData(int traceNumber, XYSeries data) {
-        biChart.appendChartTraceData(traceNumber, data);
-    }
-
-    public void appendNavigatorTraceData(int traceNumber, XYSeries data) {
-        biChart.appendNavigatorTraceData(traceNumber, data);
     }
 
     public void dataAppended() {

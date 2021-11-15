@@ -6,28 +6,10 @@ import java.util.Arrays;
 import java.util.Comparator;
 
 public class ProcessingConfig {
-    private boolean isDataCropEnabled = true;
-    private boolean isDataGroupingEnabled = true;
     private int cropShoulder = 1; // number of additional points that we leave on every side during crop
     private double[] groupingIntervals = null; //{50, 100};
     private TimeInterval[] groupingTimeIntervals = null;
     private GroupingType groupingType = GroupingType.EQUAL_POINTS;
-
-    public boolean isDataCropEnabled() {
-        return isDataCropEnabled;
-    }
-
-    public void setDataCropEnabled(boolean dataCropEnabled) {
-        isDataCropEnabled = dataCropEnabled;
-    }
-
-    public boolean isDataGroupingEnabled() {
-        return isDataGroupingEnabled;
-    }
-
-    public void setDataGroupingEnabled(boolean dataGroupingEnabled) {
-        isDataGroupingEnabled = dataGroupingEnabled;
-    }
 
     public int getCropShoulder() {
         return cropShoulder;

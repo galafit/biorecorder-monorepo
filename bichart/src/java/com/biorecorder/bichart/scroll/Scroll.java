@@ -18,10 +18,10 @@ public class Scroll {
         this.model = new ScrollModel();
         this.config = config;
         this.scale = scale;
-        double start = scale.getStart();
-        double end = scale.getEnd();
+        int start = (int)scale.getStart();
+        int end = (int)scale.getEnd();
         double position = start;
-        double extent = end - start;
+        int extent = end - start;
         model.setRangeProperties(position, extent, start, end);
         model.addListener(new ChangeListener() {
             @Override
@@ -64,16 +64,16 @@ public class Scroll {
         return model.getViewportExtent();
     }
 
-    public void setStartEnd(double start, double end) {
+    public void setStartEnd(int start, int end) {
         model.setStartEnd(start, end);
     }
 
-    public void setViewportExtent(double extent) {
+    public void setViewportExtent(int extent) {
         model.setViewportExtent(extent);
     }
 
     public void setMinMax(double min, double max) {
-        model.setStartEnd(scale.scale(min), scale.scale(max));
+        model.setStartEnd((int)scale.scale(min), (int)scale.scale(max));
     }
 
     public double getMin() {
@@ -115,12 +115,16 @@ public class Scroll {
         if(zoomFactor == 1) {
             return;
         }
-        double scaleStart = scale.getStart();
-        double scaleEnd = scale.getEnd();
-        scaleEnd = scaleStart + (scaleEnd - scaleStart) * zoomFactor;
-        scale.setStartEnd(scaleStart, scaleEnd);
-        double start = model.getStart();
-        double end = start + (model.getEnd() - model.getStart()) * zoomFactor;
+        int length = model.getEnd() - model.getStart();
+        if(length == model.getViewportExtent() && zoomFactor < 1) {
+            return;
+        }
+        zoomFactor = Math.max(zoomFactor, 1.0 * model.getViewportExtent()/length);
+
+        int scaleEnd = (int)(scale.getStart() + (scale.getEnd() - scale.getStart()) * zoomFactor);
+        scale.setStartEnd(scale.getStart(), scaleEnd);
+        int start = model.getStart();
+        int end = (int)(start + (model.getEnd() - model.getStart()) * zoomFactor);
         double position = start + (model.getViewportPosition() - start) * zoomFactor;
         position += (zoomFactor - 1) * anchorPoint;
         // to prevent double listeners firing

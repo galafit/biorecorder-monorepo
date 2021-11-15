@@ -9,16 +9,32 @@ import java.util.List;
 class GroupedData {
     List<DataWrapper> dataList = new ArrayList<>();
 
-    public GroupedData(XYSeries xySeries, GroupingType groupingType, double[] intervals, double xLength, int markSize) {
+    public GroupedData(XYSeries xySeries, int... pointsPerGroups) {
         if(xySeries.size() <= 1) {
             dataList.add(new RawData(xySeries));
             return;
         }
-        if(intervals == null || intervals.length == 0) {
-            intervals = new double[1];
-            intervals[0] = bestInterval(xySeries, xLength, markSize);
+        for (int i = 0; i < pointsPerGroups.length; i++) {
+            int points = pointsPerGroups[i];
+            if (points > 1) {
+                Resampler resampler = Resampler.createEqualPointsResampler(points);
+                resampler.setColumnAggregations(0, xySeries.getGroupingApproximationX().getAggregation());
+                resampler.setColumnAggregations(1, xySeries.getGroupingApproximationY().getAggregation());
+                resampler.resampleAndAppend(xySeries.getDataTable());
+                dataList.add(new ResampledData(xySeries, resampler, xySeries.getGroupingApproximationX(), xySeries.getGroupingApproximationY()));
+            }
         }
+        if(dataList.size() == 0) {
+            dataList.add(new RawData(xySeries));
+        }
+    }
 
+
+    public GroupedData(XYSeries xySeries, GroupingType groupingType, double... intervals) {
+        if(xySeries.size() <= 1) {
+            dataList.add(new RawData(xySeries));
+            return;
+        }
         for (int i = 0; i < intervals.length; i++) {
             double interval = intervals[i];
             int pointsPerInterval = intervalToPoints(xySeries, interval);
@@ -33,21 +49,17 @@ class GroupedData {
                 resampler.setColumnAggregations(1, xySeries.getGroupingApproximationY().getAggregation());
                 resampler.resampleAndAppend(xySeries.getDataTable());
                 dataList.add(new ResampledData(xySeries, resampler, xySeries.getGroupingApproximationX(), xySeries.getGroupingApproximationY()));
-            } else {
-                dataList.add(new RawData(xySeries));
             }
+        }
+        if(dataList.size() == 0) {
+            dataList.add(new RawData(xySeries));
         }
     }
 
-    public GroupedData(XYSeries xySeries, GroupingType groupingType, TimeInterval[] timeIntervals, double xLength, int markSize) {
+    public GroupedData(XYSeries xySeries, GroupingType groupingType, TimeInterval... timeIntervals) {
         if(xySeries.size() <= 1) {
             dataList.add(new RawData(xySeries));
             return;
-        }
-
-        if(timeIntervals == null || timeIntervals.length == 0) {
-            timeIntervals = new TimeInterval[1];
-            timeIntervals[0] = TimeInterval.getUpper(Math.round(bestInterval(xySeries, xLength, markSize)), false);
         }
         for (int i = 0; i < timeIntervals.length; i++) {
             TimeInterval timeInterval = timeIntervals[i];
@@ -63,14 +75,11 @@ class GroupedData {
                 resampler.setColumnAggregations(1, xySeries.getGroupingApproximationY().getAggregation());
                 resampler.resampleAndAppend(xySeries.getDataTable());
                 dataList.add(new ResampledData(xySeries, resampler, xySeries.getGroupingApproximationX(), xySeries.getGroupingApproximationY()));
-            } else {
-                dataList.add(new RawData(xySeries));
             }
         }
-    }
-
-    public Range getDataRange() {
-        return dataList.get(0).getDataRange();
+        if(dataList.size() == 0) {
+            dataList.add(new RawData(xySeries));
+        }
     }
 
     public XYSeries getData(double xLength, int markSize) {
@@ -88,12 +97,6 @@ class GroupedData {
         }
     }
 
-    public void appendData(XYSeries data) {
-        for (DataWrapper dataWrapper : dataList) {
-            dataWrapper.appendData(data);
-        }
-    }
-
     public void dataAppended() {
         for (DataWrapper dataWrapper : dataList) {
             dataWrapper.dataAppended();
@@ -108,9 +111,6 @@ class GroupedData {
         return pointsPerGroup;
     }
 
-    static double bestInterval(XYSeries data, double xLength, int markSize) {
-        return dataRange(data).length() * markSize / xLength;
-    }
 
     // suppose that data is ordered
     static Range dataRange(XYSeries data) {
@@ -118,10 +118,6 @@ class GroupedData {
             return new Range(data.getX(0), data.getX(data.size() - 1));
         }
         return null;
-    }
-
-    static int bestPointsInGroup(int dataSize, double xLength, int markSize) {
-        return (int)Math.round(dataSize * markSize / xLength);
     }
 
     interface DataWrapper {
