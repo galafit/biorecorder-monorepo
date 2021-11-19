@@ -7,13 +7,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 class GroupedData {
-    List<DataWrapper> dataList = new ArrayList<>();
+    List<ResampledData> dataList = new ArrayList<>();
 
-    public GroupedData(XYSeries xySeries, int... pointsPerGroups) {
-        if(xySeries.size() <= 1) {
-            dataList.add(new RawData(xySeries));
-            return;
-        }
+    private GroupedData(List<ResampledData> dataList) {
+        this.dataList = dataList;
+    }
+
+    public static GroupedData groupDataByPoints(XYSeries xySeries, int... pointsPerGroups) {
+        int size = pointsPerGroups.length == 0 ? 1 : pointsPerGroups.length;
+        List<ResampledData> dataList = new ArrayList<>(size);
         for (int i = 0; i < pointsPerGroups.length; i++) {
             int points = pointsPerGroups[i];
             if (points > 1) {
@@ -24,62 +26,35 @@ class GroupedData {
                 dataList.add(new ResampledData(xySeries, resampler, xySeries.getGroupingApproximationX(), xySeries.getGroupingApproximationY()));
             }
         }
-        if(dataList.size() == 0) {
-            dataList.add(new RawData(xySeries));
-        }
+        return new GroupedData(dataList);
     }
 
 
-    public GroupedData(XYSeries xySeries, GroupingType groupingType, double... intervals) {
-        if(xySeries.size() <= 1) {
-            dataList.add(new RawData(xySeries));
-            return;
-        }
+    public static GroupedData groupDataByIntervals(XYSeries xySeries, double... intervals) {
+        int size = intervals.length == 0 ? 1 : intervals.length;
+        List<ResampledData> dataList = new ArrayList<>(size);
         for (int i = 0; i < intervals.length; i++) {
-            double interval = intervals[i];
-            int pointsPerInterval = intervalToPoints(xySeries, interval);
-            if (pointsPerInterval > 1) {
-                Resampler resampler;
-                if (groupingType == GroupingType.EQUAL_POINTS) {
-                    resampler = Resampler.createEqualPointsResampler(pointsPerInterval);
-                } else {
-                    resampler = Resampler.createEqualIntervalResampler(interval);
-                }
-                resampler.setColumnAggregations(0, xySeries.getGroupingApproximationX().getAggregation());
-                resampler.setColumnAggregations(1, xySeries.getGroupingApproximationY().getAggregation());
-                resampler.resampleAndAppend(xySeries.getDataTable());
-                dataList.add(new ResampledData(xySeries, resampler, xySeries.getGroupingApproximationX(), xySeries.getGroupingApproximationY()));
-            }
+            Resampler resampler = Resampler.createEqualIntervalResampler(intervals[i]);
+            resampler.setColumnAggregations(0, xySeries.getGroupingApproximationX().getAggregation());
+            resampler.setColumnAggregations(1, xySeries.getGroupingApproximationY().getAggregation());
+            resampler.resampleAndAppend(xySeries.getDataTable());
+            dataList.add(new ResampledData(xySeries, resampler, xySeries.getGroupingApproximationX(), xySeries.getGroupingApproximationY()));
+
         }
-        if(dataList.size() == 0) {
-            dataList.add(new RawData(xySeries));
-        }
+        return new GroupedData(dataList);
     }
 
-    public GroupedData(XYSeries xySeries, GroupingType groupingType, TimeInterval... timeIntervals) {
-        if(xySeries.size() <= 1) {
-            dataList.add(new RawData(xySeries));
-            return;
-        }
+    public static GroupedData groupDataByTimeIntervals(XYSeries xySeries, TimeInterval... timeIntervals) {
+        int size = timeIntervals.length == 0 ? 1 : timeIntervals.length;
+        List<ResampledData> dataList = new ArrayList<>(size);
         for (int i = 0; i < timeIntervals.length; i++) {
-            TimeInterval timeInterval = timeIntervals[i];
-            int pointsPerInterval = intervalToPoints(xySeries, timeInterval.toMilliseconds());
-            if (pointsPerInterval > 1) {
-                Resampler resampler;
-                if (groupingType == GroupingType.EQUAL_POINTS) {
-                    resampler = Resampler.createEqualPointsResampler(pointsPerInterval);
-                } else {
-                    resampler = Resampler.createEqualTimeIntervalResampler(timeInterval);
-                }
-                resampler.setColumnAggregations(0, xySeries.getGroupingApproximationX().getAggregation());
-                resampler.setColumnAggregations(1, xySeries.getGroupingApproximationY().getAggregation());
-                resampler.resampleAndAppend(xySeries.getDataTable());
-                dataList.add(new ResampledData(xySeries, resampler, xySeries.getGroupingApproximationX(), xySeries.getGroupingApproximationY()));
-            }
+            Resampler resampler = Resampler.createEqualTimeIntervalResampler(timeIntervals[i]);
+            resampler.setColumnAggregations(0, xySeries.getGroupingApproximationX().getAggregation());
+            resampler.setColumnAggregations(1, xySeries.getGroupingApproximationY().getAggregation());
+            resampler.resampleAndAppend(xySeries.getDataTable());
+            dataList.add(new ResampledData(xySeries, resampler, xySeries.getGroupingApproximationX(), xySeries.getGroupingApproximationY()));
         }
-        if(dataList.size() == 0) {
-            dataList.add(new RawData(xySeries));
-        }
+        return new GroupedData(dataList);
     }
 
     public XYSeries getData(double xLength, int markSize) {
@@ -98,64 +73,13 @@ class GroupedData {
     }
 
     public void dataAppended() {
-        for (DataWrapper dataWrapper : dataList) {
-            dataWrapper.dataAppended();
+        for (ResampledData ResampledData : dataList) {
+            ResampledData.dataAppended();
         }
     }
 
-    static int intervalToPoints(XYSeries data, double interval) {
-        //double dataStep = dataRange(data).length() / (data.rowCount() - 1);
-        //return (int)Math.round(interval / dataStep);
-        double groups = dataRange(data).length() / interval;
-        int pointsPerGroup = (int)Math.round(data.size() / groups);
-        return pointsPerGroup;
-    }
-
-
-    // suppose that data is ordered
-    static Range dataRange(XYSeries data) {
-        if(data.size() > 0) {
-            return new Range(data.getX(0), data.getX(data.size() - 1));
-        }
-        return null;
-    }
-
-    interface DataWrapper {
-        XYSeries getData();
-        void appendData(XYSeries data);
-        void dataAppended();
-        Range getDataRange();
-    }
-
-    class RawData implements DataWrapper {
-        private XYSeries data;
-
-        public RawData(XYSeries data) {
-            this.data = data;
-        }
-
-        @Override
-        public XYSeries getData() {
-            return data;
-        }
-
-        @Override
-        public void appendData(XYSeries data) {
-            data.appendData(data);
-        }
-
-        @Override
-        public void dataAppended() {
-            // do nothing
-        }
-
-        @Override
-        public Range getDataRange() {
-            return dataRange(data);
-        }
-    }
-
-    class ResampledData implements DataWrapper {
+    
+    static class ResampledData {
         private XYSeries originalData;
         private int dataSize;
         private Resampler resampler;
@@ -170,25 +94,18 @@ class GroupedData {
             this.yApprox = yApprox;
         }
 
-        @Override
-        public Range getDataRange() {
-            return dataRange(new XYSeries(resampler.resultantData()));
-        }
-
-        @Override
+        
         public XYSeries getData() {
             XYSeries xySeries = new XYSeries(resampler.resultantData());
             xySeries.setGroupingApproximationX(xApprox);
             xySeries.setGroupingApproximationY(yApprox);
             return xySeries;
         }
-
-        @Override
+        
         public void appendData(XYSeries data) {
             resampler.resampleAndAppend(data.getDataTable());
         }
-
-        @Override
+        
         public void dataAppended() {
             int from = dataSize;
             dataSize = originalData.size();
