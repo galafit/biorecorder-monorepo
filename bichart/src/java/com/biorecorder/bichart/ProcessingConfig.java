@@ -7,9 +7,27 @@ import java.util.Comparator;
 
 public class ProcessingConfig {
     private int cropShoulder = 1; // number of additional points that we leave on every side during crop
-    private double[] groupingIntervals = null; //{50, 100};
-    private TimeInterval[] groupingTimeIntervals = null;
+    private double[] groupingIntervals = {}; //{50, 100};
+    private TimeInterval[] groupingTimeIntervals = {};
     private GroupingType groupingType = GroupingType.EQUAL_POINTS;
+    private boolean isCropEnabled = true;
+    private boolean isGroupingEnabled = true;
+
+    public boolean isCropEnabled() {
+        return isCropEnabled;
+    }
+
+    public void setCropEnabled(boolean cropEnabled) {
+        isCropEnabled = cropEnabled;
+    }
+
+    public boolean isGroupingEnabled() {
+        return isGroupingEnabled;
+    }
+
+    public void setGroupingEnabled(boolean groupingEnabled) {
+        isGroupingEnabled = groupingEnabled;
+    }
 
     public int getCropShoulder() {
         return cropShoulder;
@@ -24,6 +42,10 @@ public class ProcessingConfig {
     }
 
     public void setGroupingIntervals(double[] groupingIntervals) {
+        if(groupingIntervals == null) {
+            this.groupingIntervals = null;
+            return;
+        }
         Arrays.sort(groupingIntervals);
         this.groupingIntervals = groupingIntervals;
     }
@@ -33,6 +55,10 @@ public class ProcessingConfig {
     }
 
     public void setGroupingTimeIntervals(TimeGroupInterval[] groupingTimeIntervals) {
+        if(groupingTimeIntervals == null) {
+            this.groupingTimeIntervals = null;
+            return;
+        }
         TimeInterval[] timeIntervals = new TimeInterval[groupingTimeIntervals.length];
         for (int i = 0; i < timeIntervals.length; i++) {
             timeIntervals[i] = groupingTimeIntervals[i].getTimeInterval();

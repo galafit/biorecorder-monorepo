@@ -49,7 +49,7 @@ public class DataProcessor {
     }
 
     public Map<Integer, XYSeries> chartTracesDataToUpdate() {
-        if(!isProcessingEnabled || chartTracesToUpdate.keySet().isEmpty()) {
+        if (!isProcessingEnabled || chartTracesToUpdate.keySet().isEmpty()) {
             return null;
         }
         HashMap<Integer, XYSeries> tracesData = new HashMap<>(chartData.size());
@@ -67,12 +67,12 @@ public class DataProcessor {
     }
 
     public Map<Integer, XYSeries> navigatorTracesDataToUpdate() {
-        if(!isProcessingEnabled || !navTracesNeedUpdate) {
+        if (!isProcessingEnabled || !navTracesNeedUpdate) {
             return null;
         }
         HashMap<Integer, XYSeries> tracesData = new HashMap<>(navigatorData.size());
         for (int i = 0; i < navigatorData.size(); i++) {
-            XYSeries data = getProcessedNavigatorData(i,navigatorRange.getMin(), navigatorRange.getMax(), xLength);
+            XYSeries data = getProcessedNavigatorData(i, navigatorRange.getMin(), navigatorRange.getMax(), xLength);
             tracesData.put(i, data);
         }
         navTracesNeedUpdate = false;
@@ -81,7 +81,7 @@ public class DataProcessor {
 
     // suppose that data is ordered
     private static Range dataRange(XYSeries data) {
-        if(data.size() > 0) {
+        if (data.size() > 0) {
             return new Range(data.getX(0), data.getX(data.size() - 1));
         }
         return null;
@@ -123,10 +123,146 @@ public class DataProcessor {
 
     public void dataAppended() {
         for (GroupedData groupedData : navigatorGroupedData) {
-            if(groupedData != null) {
+            if (groupedData != null) {
                 groupedData.dataAppended();
             }
         }
+    }
+
+    private XYSeries getProcessedChartData(int traceNumber, double min, double max, int minMaxLength) {
+        XYSeries data = chartData.get(traceNumber);
+        if(config.isCropEnabled()) {
+            data = cropData(data, min, max);
+        }
+        if (!config.isGroupingEnabled() || data.size() <= 1 ) {
+            return data;
+        }
+        int markSize = chartTracesMarkSizes.get(traceNumber);
+        GroupedData groupedData = groupData(data, markSize, min, max, minMaxLength, null, null);
+        if (groupedData != null) {
+            return groupedData.getData(minMaxLength, markSize);
+        }
+        return data;
+    }
+
+    private XYSeries getProcessedNavigatorData(int traceNumber, double min, double max, int minMaxLength) {
+        if(!config.isGroupingEnabled()) {
+           return navigatorData.get(traceNumber);
+        }
+        GroupedData groupedData = navigatorGroupedData.get(traceNumber);
+        int markSize = navigatorTracesMarkSizes.get(traceNumber);
+        if (groupedData != null) {
+            return groupedData.getData(minMaxLength, markSize);
+        }
+        XYSeries rowData = navigatorData.get(traceNumber);
+        groupedData = groupData(rowData, markSize, min, max, minMaxLength, config.getGroupingIntervals(), config.getGroupingTimeIntervals());
+        if (groupedData != null) {
+            navigatorGroupedData.set(traceNumber, groupedData);
+            return groupedData.getData(minMaxLength, markSize);
+        }
+        return rowData;
+    }
+
+    private XYSeries cropData(XYSeries data, double min, double max) {
+        if (data.size() < minPointsForCrop) {
+            return data;
+        }
+        // suppose that data is ordered
+        double dataMin = data.getX(0);
+        double dataMax = data.getX(data.size() - 1);
+        if (dataMin > max || dataMax < min) {
+            return data.getEmptyCopy();
+        }
+        if (dataMax == dataMin) {
+            return data;
+        }
+        // crop data
+        int indexFrom = 0;
+        int indexTill = data.size();
+        if (dataMin < min) {
+            indexFrom = data.bisectLeft(min);
+        }
+        if (dataMax > max) {
+            indexTill = data.bisectRight(max);
+        }
+
+        int extraPoints = config.getCropShoulder();
+        indexFrom -= extraPoints;
+        indexTill += extraPoints;
+        if (indexFrom < 0) {
+            indexFrom = 0;
+        }
+        if (indexTill > data.size()) {
+            indexTill = data.size();
+        }
+        int dataSize = indexTill - indexFrom;
+        if (dataSize < data.size()) {
+            return data.view(indexFrom, indexTill - indexFrom);
+        }
+        return data;
+    }
+
+    private GroupedData groupData(XYSeries data, int markSize, double min, double max, int minMaxLength, double[] intervals, TimeInterval[] timeIntervals) {
+        int dataSize = data.size();
+        if(dataSize <= 1) {
+            return null;
+        }
+        // suppose that data is ordered
+        double dataMin = data.getX(0);
+        double dataMax = data.getX(data.size() - 1);
+        int dataLength = getDataLength(data, min, max, minMaxLength);
+
+        if (config.getGroupingType() == GroupingType.EQUAL_INTERVALS) {
+            if(isDateTime) {
+                TimeInterval[] timeIntervals1 = normalizeTimeIntervals(timeIntervals, dataMin, dataMax, dataSize, dataLength, markSize);
+                if (timeIntervals1 != null && timeIntervals1.length > 0) {
+                    return GroupedData.groupDataByTimeIntervals(data, timeIntervals);
+                }
+            } else {
+                double[] intervals1 = normalizeIntervals(intervals, dataMin, dataMax, dataSize, dataLength, markSize);
+                if (intervals1 != null && intervals1.length > 0) {
+                    return GroupedData.groupDataByIntervals(data, intervals);
+                }
+            }
+        }
+
+        if (config.getGroupingType() == GroupingType.EQUAL_POINTS) {
+            IntArrayList pointsList = new IntArrayList();
+            boolean intervalsNotNull = false;
+            if(isDateTime) {
+                if(timeIntervals !=null && timeIntervals.length > 0){
+                    intervalsNotNull = true;
+                    for (TimeInterval timeInterval : timeIntervals) {
+                        int points = intervalToPoints(dataMin, dataMax, dataSize, timeInterval.toMilliseconds());
+                        if(points > 1) {
+                            pointsList.add(points);
+                        }
+                    }
+                }
+            } else {
+                if(intervals != null && intervals.length > 0) {
+                    intervalsNotNull = true;
+                    for (double interval : intervals) {
+                        int points = intervalToPoints(dataMin, dataMax, dataSize, interval);
+                        if(points > 1) {
+                            pointsList.add(points);
+                        }
+                    }
+                }
+            }
+
+            if(intervalsNotNull == false) {
+                int bestPoints = bestPointsInGroup(dataSize, dataLength, markSize);
+                if (bestPoints > 1) {
+                    pointsList.add(bestPoints);
+                }
+            }
+
+            if(pointsList.size() != 0) {
+               return GroupedData.groupDataByPoints(data, pointsList.toArray());
+            }
+        }
+        return null;
     }
 
     private int getDataLength(XYSeries data, double min, double max, int minMaxLength) {
@@ -136,177 +272,55 @@ public class DataProcessor {
         // prepare scale to calculate dataLength
         scale.setStartEnd(0, minMaxLength);
         scale.setMinMax(min, max);
-        int dataLength = (int)(scale.scale(dataMax) - scale.scale(dataMin));
-        if(dataLength < 1) {
+        int dataLength = (int) (scale.scale(dataMax) - scale.scale(dataMin));
+        if (dataLength < 1) {
             dataLength = 1;
         }
         return dataLength;
     }
 
-    private XYSeries getProcessedNavigatorData(int traceNumber,  double min, double max, int minMaxLength) {
-        GroupedData groupedData = navigatorGroupedData.get(traceNumber);
-        int markSize = navigatorTracesMarkSizes.get(traceNumber);
-        if(groupedData != null) {
-            return groupedData.getData(minMaxLength, markSize);
+    private double[] normalizeIntervals(double[] intervals, double dataMin, double dataMax, int dataSize, int dataLength, int markSize) {
+        if (intervals != null && intervals.length != 0) {
+            return intervals;
         }
-        XYSeries rowData = navigatorData.get(traceNumber);
-        if(rowData.size() > 1) {
-            int dataLength = getDataLength(rowData, min, max, minMaxLength);
-            if (isDateTime) {
-                groupedData = groupDataWithTimeIntervals(rowData, config.getGroupingType(), dataLength, markSize, config.getGroupingTimeIntervals());
-            } else {
-                groupedData = groupDataWithIntervals(rowData, config.getGroupingType(),dataLength, markSize, config.getGroupingIntervals());
-            }
-            if(groupedData != null) {
-                navigatorGroupedData.set(traceNumber, groupedData);
-                return groupedData.getData(minMaxLength, markSize);
-            }
-        }
-        return rowData;
-    }
-
-    private XYSeries getProcessedChartData(int traceNumber, double min, double max, int minMaxLength) {
-        XYSeries data = chartData.get(traceNumber);
-        if(data.size() < minPointsForCrop) {
-            return data;
-        }
-        int markSize = chartTracesMarkSizes.get(traceNumber);
-        // suppose that data is ordered
-        double dataMin = data.getX(0);
-        double dataMax = data.getX(data.size() - 1);
-        if(dataMin > max || dataMax < min) {
-           return data.getEmptyCopy();
-        }
-        if(dataMax == dataMin) {
-            return data;
-        }
-        // crop data
-        int indexFrom = 0;
-        int indexTill = data.size();
-        if(dataMin < min) {
-            indexFrom = data.bisectLeft(min);
-        }
-        if(dataMax > max) {
-            indexTill = data.bisectRight(max);
-        }
-
-        int extraPoints = config.getCropShoulder();
-        indexFrom -= extraPoints;
-        indexTill += extraPoints;
-        if(indexFrom < 0) {
-            indexFrom = 0;
-        }
-        if(indexTill > data.size()) {
-            indexTill = data.size();
-        }
-        int dataSize = indexTill - indexFrom;
-        if(dataSize < data.size()) {
-            data = data.view(indexFrom, indexTill - indexFrom);
-        }
-        if(data.size() <= 1) {
-            return data;
-        }
-        int dataLength = getDataLength(data, min, max, minMaxLength);
-        GroupedData groupedData = null;
-        if (isDateTime) {
-            groupedData = groupDataWithTimeIntervals(data, config.getGroupingType(), dataLength, markSize, null);
-        } else {
-            groupedData = groupDataWithIntervals(data, config.getGroupingType(),dataLength, markSize, null);
-        }
-        if(groupedData != null) {
-            return groupedData.getData(minMaxLength, markSize);
-        }
-        return data;
-    }
-
-    private GroupedData groupDataWithTimeIntervals(XYSeries data, GroupingType groupingType, double dataLength, int markSize, TimeInterval[] timeIntervals) {
-        int dataSize = data.size();
-        // suppose that data is ordered
-        double dataMin = data.getX(0);
-        double dataMax = data.getX(dataSize - 1);
-        if(timeIntervals != null && timeIntervals.length != 0) {
-            if(groupingType == GroupingType.EQUAL_INTERVALS) {
-               return GroupedData.groupDataByTimeIntervals(data, timeIntervals);
-            }
-            if(groupingType == GroupingType.EQUAL_POINTS) {
-                IntArrayList pointsList = new IntArrayList(timeIntervals.length);
-                for (TimeInterval interval : timeIntervals) {
-                    int points = intervalToPoints(dataMin, dataMax, dataSize, interval.toMilliseconds());
-                    if(points > 1) {
-                        pointsList.add(points);
-                    }
-                }
-                if(pointsList.size() > 0) {
-                    return GroupedData.groupDataByPoints(data, pointsList.toArray());
-                }
-            }
-        } else {
-            int bestPoints = bestPointsInGroup(dataSize, dataLength, markSize);
-            if(bestPoints > 1) {
-                if(groupingType == GroupingType.EQUAL_INTERVALS) {
-                    double bestInterval = bestGroupingInterval(dataMin, dataMax, dataLength, markSize);
-                    TimeInterval bestTimeInterval = TimeInterval.getUpper((long)bestInterval, true);
-                    return GroupedData.groupDataByTimeIntervals(data, bestTimeInterval);
-                }
-                if(groupingType == GroupingType.EQUAL_POINTS) {
-                    return GroupedData.groupDataByPoints(data, bestPoints);
-                }
-            }
+        int bestPoints = bestPointsInGroup(dataSize, dataLength, markSize);
+        if (bestPoints > 1) {
+            double bestInterval = bestGroupingInterval(dataMin, dataMax, dataLength, markSize);
+            double[] bestIntervals = {bestInterval};
+            return bestIntervals;
         }
         return null;
     }
 
-    private GroupedData groupDataWithIntervals(XYSeries data, GroupingType groupingType, int dataLength, int markSize, double[] intervals) {
-        int dataSize = data.size();
-        // suppose that data is ordered
-        double dataMin = data.getX(0);
-        double dataMax = data.getX(data.size() - 1);
-        if(intervals != null && intervals.length != 0) {
-            if(groupingType == GroupingType.EQUAL_INTERVALS) {
-                return GroupedData.groupDataByIntervals(data, intervals);
-            }
-            if(groupingType == GroupingType.EQUAL_POINTS) {
-                IntArrayList pointsList = new IntArrayList(intervals.length);
-                for (double interval : intervals) {
-                    int points = intervalToPoints(dataMin, dataMax, dataSize, interval);
-                    if(points > 1) {
-                        pointsList.add(points);
-                    }
-                }
-                if(pointsList.size() > 0) {
-                    return GroupedData.groupDataByPoints(data, pointsList.toArray());
-                }
-            }
-        } else {
-            int bestPoints = bestPointsInGroup(dataSize, dataLength, markSize);
-            if(bestPoints > 1) {
-                if(groupingType == GroupingType.EQUAL_INTERVALS) {
-                    double bestInterval = bestGroupingInterval(dataMin, dataMax, dataLength, markSize);
-                    return GroupedData.groupDataByIntervals(data, bestInterval);
-                }
-                if(groupingType == GroupingType.EQUAL_POINTS) {
-                    return GroupedData.groupDataByPoints(data, bestPoints);
-                }
-            }
+    private TimeInterval[] normalizeTimeIntervals(TimeInterval[] timeIntervals, double dataMin, double dataMax, int dataSize, int dataLength, int markSize) {
+        if (timeIntervals != null && timeIntervals.length != 0) {
+            return timeIntervals;
+        }
+        int bestPoints = bestPointsInGroup(dataSize, dataLength, markSize);
+        if (bestPoints > 1) {
+            double bestInterval = bestGroupingInterval(dataMin, dataMax, dataLength, markSize);
+            TimeInterval[] bestIntervals = {TimeInterval.getUpper((long) bestInterval, true)};
+            return bestIntervals;
         }
         return null;
     }
 
-    private int intervalToPoints(double dataMin, double dataMax, int dataSize , double interval) {
+
+    private int intervalToPoints(double dataMin, double dataMax, int dataSize, double interval) {
         double groups = (dataMax - dataMin) / interval;
-        if(groups < 1) {
+        if (groups < 1) {
             groups = 1;
         }
-        int pointsPerGroup = (int)Math.round(dataSize / groups);
+        int pointsPerGroup = (int) Math.round(dataSize / groups);
         return pointsPerGroup;
     }
 
-    private static int bestPointsInGroup(int dataSize, double dataLength, int markSize) {
-        return (int)Math.round(dataSize * markSize / dataLength);
+    private int bestPointsInGroup(int dataSize, double dataLength, int markSize) {
+        return (int) Math.round(dataSize * markSize / dataLength);
     }
 
-    static double bestGroupingInterval(double dataMin, double dataMax, double dataLength, int markSize) {
-        if(dataMax == dataMin) {
+    private double bestGroupingInterval(double dataMin, double dataMax, double dataLength, int markSize) {
+        if (dataMax == dataMin) {
             return 1;
         }
         return (dataMax - dataMin) * markSize / dataLength;
