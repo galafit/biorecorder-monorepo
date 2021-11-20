@@ -122,9 +122,13 @@ public class DataProcessor {
     }
 
     public void dataAppended() {
-        for (GroupedData groupedData : navigatorGroupedData) {
+        for (int i = 0; i < navigatorGroupedData.size(); i++) {
+            GroupedData groupedData = navigatorGroupedData.get(i);
             if (groupedData != null) {
-                groupedData.dataAppended();
+                XYSeries rowData= navigatorData.get(i);
+                int from = groupedData.processedSampleCount();
+                int length = rowData.size() - from;
+                groupedData.appendData(rowData, from, length);
             }
         }
     }

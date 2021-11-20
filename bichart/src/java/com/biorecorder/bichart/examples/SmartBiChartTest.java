@@ -49,19 +49,15 @@ public class SmartBiChartTest extends JFrame {
         // addKeyListener(chartPanel);
         setLocationRelativeTo(null);
         setVisible(true);
-    /*    try {
+        try {
             Thread.sleep(2000);
         } catch (InterruptedException e) {
             System.out.println(e);
         }
-        xySeries1.appendData(new XYSeries(data1, data1));
-        xySeries2.appendData(new XYSeries(0, 1, data1));
-        smartBiChart.dataAppended();
-        chartPanel.repaint();
         int size = 10;
-        for (int i = 0; i < 0; i++) {
+        for (int i = 0; i < 5; i++) {
             try {
-                Thread.sleep(2000);
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 System.out.println(e);
             }
@@ -76,7 +72,7 @@ public class SmartBiChartTest extends JFrame {
             xySeries2.appendData(regData);
             smartBiChart.dataAppended();
             chartPanel.repaint();
-        }*/
+        }
     }
 
     public static void main(String[] args) {
