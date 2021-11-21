@@ -29,6 +29,7 @@ public class SmartBiChartTest extends JFrame {
         XYSeries xySeries2 = new XYSeries(0, 1, new int[0]);
         xySeries1 = new XYSeries(data1, data1);
         xySeries2 = new XYSeries(0, 1, data1);
+        XYSeries xySeries3 = new XYSeries(0, 1, data2);
 
 
         BiChart smartBiChart = new BiChart(false, true);
@@ -39,7 +40,7 @@ public class SmartBiChartTest extends JFrame {
         //  chartPanel.addNavigatorTrace("zero", new XYData(new int[0]), new LineTracePainter() );
         // chartPanel.addNavigatorTrace("No Regular", xyData1, new LineTracePainter() );
         // chartPanel.addNavigatorStack();
-        smartBiChart.addNavigatorTrace("Regular", xySeries2, new LineTracePainter());
+        smartBiChart.addNavigatorTrace("Regular", xySeries3, new LineTracePainter());
 
         ChartPanel chartPanel = new ChartPanel(smartBiChart);
         chartPanel.setPreferredSize(new Dimension(width, height));
@@ -54,8 +55,8 @@ public class SmartBiChartTest extends JFrame {
         } catch (InterruptedException e) {
             System.out.println(e);
         }
-        int size = 10;
-        for (int i = 0; i < 5; i++) {
+        int size = 50;
+        for (int i = 0; i < 3; i++) {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
@@ -73,6 +74,7 @@ public class SmartBiChartTest extends JFrame {
             smartBiChart.dataAppended();
             chartPanel.repaint();
         }
+        chartPanel.repaint();
     }
 
     public static void main(String[] args) {

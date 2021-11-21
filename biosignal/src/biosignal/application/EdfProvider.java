@@ -133,7 +133,7 @@ public class EdfProvider implements DataProvider {
     }
 
     private void read() {
-        int readPortion = 10000; //samples
+        int readPortion = 1000; //samples
         for (int i = 0; i < dataListeners.length; i++) {
             List<DataListener> signalListeners = dataListeners[i];
             if(signalListeners.size() > 0) {
@@ -144,23 +144,29 @@ public class EdfProvider implements DataProvider {
                 int totalReadSamples = 0;
                 int[] data = new int[samplesToRead];
                 edfReader.setSamplePosition(i, startPos);
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
+                }
                 while (!isStopped && totalReadSamples < n) {
                     try {
-                        int readSamples = edfReader.readSamples(i, n, data);
+                        int readSamples = edfReader.readSamples(i, samplesToRead, data);
                         if (readSamples < data.length) {
                             int[] data1 = new int[readSamples];
                             System.arraycopy(data, 0, data1, 0, readSamples);
                             data = data1;
                         }
                         totalReadSamples += readSamples;
-
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+
                     for (int j = 0; j < signalListeners.size(); j++) {
                         DataListener l = signalListeners.get(j);
                         l.receiveData(data);
                     }
+
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException ex) {

@@ -13,6 +13,17 @@ public class ProcessingConfig {
     private boolean isCropEnabled = true;
     private boolean isGroupingEnabled = true;
 
+
+    public boolean isProcessingEnabled() {
+        return isCropEnabled && isGroupingEnabled;
+    }
+
+    public ProcessingConfig processingDisable() {
+        isCropEnabled = false;
+        isGroupingEnabled = false;
+        return this;
+    }
+
     public boolean isCropEnabled() {
         return isCropEnabled;
     }

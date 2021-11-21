@@ -13,11 +13,16 @@ public class BiChartPanel extends JPanel {
     BiChart biChart;
     ChartPanel chartPanel;
 
-    public BiChartPanel(boolean isDateTime) {
-        biChart = new BiChart(isDateTime, true);
+    public BiChartPanel(boolean isDateTime, ProcessingConfig processingConfig, boolean scrollsAtEnd) {
+        biChart = new BiChart(isDateTime, processingConfig, scrollsAtEnd);
         chartPanel = new ChartPanel(biChart);
         setLayout(new BorderLayout());
         add(chartPanel);
+    }
+
+
+    public BiChartPanel(boolean isDateTime, boolean scrollsAtEnd) {
+       this(isDateTime, new ProcessingConfig(), scrollsAtEnd);
     }
 
     public void addChartStack() {

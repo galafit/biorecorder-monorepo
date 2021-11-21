@@ -74,6 +74,7 @@ public class MainFrame extends JFrame {
         Dimension d = tk.getScreenSize();
         Insets insets = tk.getScreenInsets(getGraphicsConfiguration());
         setPreferredSize(new Dimension(d.width - insets.left - insets.right, d.height - insets.top - insets.bottom));
+        setPreferredSize(new Dimension(1300,1000 ));
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
@@ -100,7 +101,8 @@ public class MainFrame extends JFrame {
 
     private static BiChartPanel createChartPanel(Facade facade) {
         boolean isTimeXAxis = facade.isDateTime(); // XAxis: false - index; true - time
-        BiChartPanel chartPanel = new BiChartPanel(isTimeXAxis);
+        boolean scrollsAtEnd = true;
+        BiChartPanel chartPanel = new BiChartPanel(isTimeXAxis, scrollsAtEnd);
         int[] chartDataChannels1 = facade.getChartDataChannels1();
         int[] chartDataChannels2 = facade.getChartDataChannels2();
         int[] navDataChannels = facade.getNavigatorDataChannels();

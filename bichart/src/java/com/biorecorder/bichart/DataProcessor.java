@@ -11,7 +11,6 @@ import java.util.Map;
 
 public class DataProcessor {
     private ProcessingConfig config;
-    private boolean isProcessingEnabled = true;
     private boolean isDateTime;
     private int minPointsForCrop = 10;
     private List<XYSeries> chartData = new ArrayList<>();
@@ -27,10 +26,9 @@ public class DataProcessor {
     private Range navigatorRange;
     private boolean navTracesNeedUpdate;
 
-    public DataProcessor(boolean isDateTime, Scale scale, boolean isProcessingEnabled) {
-        this.config = new ProcessingConfig();
+    public DataProcessor(boolean isDateTime, Scale scale, ProcessingConfig config) {
+        this.config = config;
         this.isDateTime = isDateTime;
-        this.isProcessingEnabled = isProcessingEnabled;
         this.scale = scale;
     }
 
@@ -49,7 +47,7 @@ public class DataProcessor {
     }
 
     public Map<Integer, XYSeries> chartTracesDataToUpdate() {
-        if (!isProcessingEnabled || chartTracesToUpdate.keySet().isEmpty()) {
+        if (!config.isProcessingEnabled() || chartTracesToUpdate.keySet().isEmpty()) {
             return null;
         }
         HashMap<Integer, XYSeries> tracesData = new HashMap<>(chartData.size());
@@ -67,16 +65,20 @@ public class DataProcessor {
     }
 
     public Map<Integer, XYSeries> navigatorTracesDataToUpdate() {
-        if (!isProcessingEnabled || !navTracesNeedUpdate) {
+        if (!config.isProcessingEnabled() || !navTracesNeedUpdate) {
             return null;
         }
-        HashMap<Integer, XYSeries> tracesData = new HashMap<>(navigatorData.size());
-        for (int i = 0; i < navigatorData.size(); i++) {
-            XYSeries data = getProcessedNavigatorData(i, navigatorRange.getMin(), navigatorRange.getMax(), xLength);
-            tracesData.put(i, data);
+        if(navigatorRange != null) {
+            HashMap<Integer, XYSeries> tracesData = new HashMap<>(navigatorData.size());
+            for (int i = 0; i < navigatorData.size(); i++) {
+                XYSeries data = getProcessedNavigatorData(i, navigatorRange.getMin(), navigatorRange.getMax(), xLength);
+                tracesData.put(i, data);
+            }
+            navTracesNeedUpdate = false;
+            return tracesData;
         }
-        navTracesNeedUpdate = false;
-        return tracesData;
+        return null;
+
     }
 
     // suppose that data is ordered

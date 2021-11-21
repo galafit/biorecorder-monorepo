@@ -2,6 +2,7 @@ package com.biorecorder.bichart.examples;
 
 import com.biorecorder.bichart.BiChart;
 import com.biorecorder.bichart.ChartPanel;
+import com.biorecorder.bichart.ProcessingConfig;
 import com.biorecorder.bichart.XYSeries;
 import com.biorecorder.bichart.themes.DarkTheme;
 import com.biorecorder.bichart.traces.LineTracePainter;
@@ -40,7 +41,7 @@ public class BiChartTest extends JFrame{
        XYSeries xySeries1 = new XYSeries(0, 1, data);
        XYSeries xySeries2 = new XYSeries(0, 10, data1);
 
-        chart = new BiChart(false, false);
+        chart = new BiChart(false, new ProcessingConfig().processingDisable(), false);
 
         chart.addChartTrace("trace1", xySeries1, new LineTracePainter());
         chart.addChartStack();

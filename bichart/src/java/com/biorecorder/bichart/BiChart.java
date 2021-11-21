@@ -32,26 +32,37 @@ public class BiChart {
     protected XAxisPosition navDefaultXPosition = XAxisPosition.BOTTOM;
 
     private boolean isValid = false;
-    private boolean isScrollChanged = false;
+    private boolean scrollsChanged = false;
+    private boolean scrollsAtEnd = false;
     private boolean isDateTime;
-    protected boolean isDataChanged = false;
+    private boolean isDataChanged = false;
 
-    public BiChart(BiChartConfig config, boolean isDateTime, boolean isProcessingEnabled) {
+
+    public BiChart(boolean isDateTime, BiChartConfig chartConfig, ProcessingConfig processingConfig, boolean scrollsAtEnd) {
         Scale xScale = createScale(isDateTime);
         this.isDateTime = isDateTime;
-        this.config = new BiChartConfig(config);
-        chart = new Chart(config.getChartConfig(), xScale, XAxisPosition.TOP, YAxisPosition.RIGHT);
-        navigator = new Chart(config.getNavigatorConfig(), xScale, navDefaultXPosition, YAxisPosition.RIGHT);
+        this.config = new BiChartConfig(chartConfig);
+        chart = new Chart(chartConfig.getChartConfig(), xScale, XAxisPosition.TOP, YAxisPosition.RIGHT);
+        navigator = new Chart(chartConfig.getNavigatorConfig(), xScale, navDefaultXPosition, YAxisPosition.RIGHT);
         chart.setSpacing(new Insets(0));
         navigator.setSpacing(new Insets(0));
         for (XAxisPosition xPosition : XAxisPosition.values()) {
             axisToScrollListeners.put(xPosition, new ArrayList<>());
         }
-        dataProcessor = new DataProcessor(isDateTime, xScale, isProcessingEnabled);
+        dataProcessor = new DataProcessor(isDateTime, xScale, processingConfig);
+        this.scrollsAtEnd = scrollsAtEnd;
     }
 
-    public BiChart(boolean isDateTime, boolean isProcessingEnabled) {
-        this(DarkTheme.getNavigableChartConfig(), isDateTime, isProcessingEnabled);
+    public BiChart(boolean isDateTime, ProcessingConfig processingConfig, boolean scrollsAtEnd ) {
+        this(isDateTime, DarkTheme.getNavigableChartConfig(), processingConfig, scrollsAtEnd);
+    }
+
+    public BiChart(boolean isDateTime, boolean scrollsAtEnd) {
+        this(isDateTime, DarkTheme.getNavigableChartConfig(), new ProcessingConfig(), scrollsAtEnd);
+    }
+
+    public BiChart(boolean isDateTime) {
+        this(isDateTime, DarkTheme.getNavigableChartConfig(), new ProcessingConfig(), false);
     }
 
     private static Scale createScale(boolean isDateTime) {
@@ -148,6 +159,7 @@ public class BiChart {
     protected Scroll createScroll(XAxisPosition xPosition, int viewportExtent) {
         List<Integer> traceNumbers = chart.getTraces(xPosition);
         Range minMax = null;
+
         for (Integer traceNumber : traceNumbers) {
             minMax = Range.join(minMax, dataProcessor.getChartTraceDataRange(traceNumber));
         }
@@ -170,7 +182,7 @@ public class BiChart {
             scroll.addListener(new ScrollListener() {
                 @Override
                 public void onScrollChanged(double viewportMin, double viewportMax) {
-                    isScrollChanged = true;
+                    scrollsChanged = true;
                     List<ScrollListener> scrollListeners = axisToScrollListeners.get(xPosition);
                     chart.setXMinMax(xPosition, viewportMin, viewportMax);
                     dataProcessor.onChartRangeChanged(viewportMin, viewportMax, chart.getTraces(xPosition));
@@ -280,18 +292,21 @@ public class BiChart {
         for (XAxisPosition xPosition : XAxisPosition.values()) {
             Scroll scroll = createScroll(xPosition, viewportExtent);
             if (scroll != null) {
+                if(scrollsAtEnd) {
+                    scroll.setViewportAtTheEnd();
+                }
                 scrollCreated = true;
             }
         }
-        boolean scrollAtTheEnd = true;
+        boolean scrollsAtTheEnd = true;
         for (XAxisPosition xPosition : axisToScrolls.keySet()) {
             Scroll scroll = axisToScrolls.get(xPosition);
             if (scroll != null && !scroll.isViewportAtTheEnd()) {
-                scrollAtTheEnd = false;
+                scrollsAtTheEnd = false;
             }
         }
         autoScaleNavigatorX();
-        if (scrollAtTheEnd) {
+        if (scrollsAtTheEnd) {
             for (XAxisPosition xPosition : axisToScrolls.keySet()) {
                 Scroll scroll = axisToScrolls.get(xPosition);
                 if (scroll != null) {
@@ -631,25 +646,25 @@ public class BiChart {
     }
 
     boolean positionScrolls(double x) {
-        isScrollChanged = false;
+        scrollsChanged = false;
         double xValue = navigator.positionToValue(navDefaultXPosition, x);
         for (XAxisPosition xPosition : axisToScrolls.keySet()) {
             axisToScrolls.get(xPosition).setViewportCenterValue(xValue);
         }
-        return isScrollChanged;
+        return scrollsChanged;
     }
 
     boolean positionChartX(XAxisPosition xAxisPosition, double x) {
-        isScrollChanged = false;
+        scrollsChanged = false;
         double xValue = chart.positionToValue(xAxisPosition, x);
         for (XAxisPosition xPosition : axisToScrolls.keySet()) {
             axisToScrolls.get(xPosition).setViewportCenterValue(xValue);
         }
-        return isScrollChanged;
+        return scrollsChanged;
     }
 
     boolean translateChartX(XAxisPosition xAxisPosition, double dx) {
-        isScrollChanged = false;
+        scrollsChanged = false;
         Scroll scroll = axisToScrolls.get(xAxisPosition);
         if (scroll != null) {
             double centerValue = scroll.getViewportCenterValue();
@@ -664,11 +679,11 @@ public class BiChart {
                 }
             }
         }
-        return isScrollChanged;
+        return scrollsChanged;
     }
 
     boolean translateScrolls(XAxisPosition xAxisPosition, double dx) {
-        isScrollChanged = false;
+        scrollsChanged = false;
         Scroll scroll = axisToScrolls.get(xAxisPosition);
         if (scroll != null) {
             double centerValue = scroll.getViewportCenterValue();
@@ -683,16 +698,16 @@ public class BiChart {
                 }
             }
         }
-        return isScrollChanged;
+        return scrollsChanged;
     }
 
     boolean zoomChartX(XAxisPosition xAxisPosition, double zoomFactor, int anchorPoint) {
-        isScrollChanged = false;
+        scrollsChanged = false;
         Scroll scroll = axisToScrolls.get(xAxisPosition);
         if (scroll != null) {
             scroll.zoom(zoomFactor, anchorPoint);
         }
-        return isScrollChanged;
+        return scrollsChanged;
     }
 
     boolean zoomChartY(int stack, YAxisPosition yPosition, double zoomFactor, int anchorPoint) {
