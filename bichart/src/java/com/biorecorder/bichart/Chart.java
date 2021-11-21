@@ -34,6 +34,7 @@ public class Chart {
      **/
     private List<AxisWrapper> xAxisList = new ArrayList<>(2);
     private List<AxisWrapper> yAxisList = new ArrayList<>();
+    private Map<XAxisPosition , Set<Integer>> xPositionToYNumbers = new HashMap<>(2);
 
     private ArrayList<Integer> stackWeights = new ArrayList<Integer>();
     private TraceList traceList = new TraceList();
@@ -69,6 +70,21 @@ public class Chart {
             }
         });
     }
+
+    private void remadeXAxisPositionToTraceNumbers() {
+        xPositionToYNumbers = new HashMap<>();
+        for (int i = 0; i < traceList.size(); i++) {
+            XAxisPosition xPosition = traceList.getTraceXPosition(i);
+            AxisWrapper yAxis = traceList.getTraceY(i);
+            Set<Integer> yNumbers = xPositionToYNumbers.get(xPosition);
+            if(yNumbers == null) {
+                yNumbers = new HashSet<>();
+                xPositionToYNumbers.put(xPosition, yNumbers);
+            }
+            yNumbers.add(yAxisList.indexOf(yAxis));
+        }
+    }
+
 
     private BRectangle graphArea(Insets margin) {
         int graphAreaWidth = width - margin.left() - margin.right();
@@ -429,14 +445,6 @@ public class Chart {
         int height = graphArea.height - 2 * borderWidth;
         canvas.drawRect(start, graphArea.y + borderWidth, width, height);
     }
-
-    /*Range getTraceDataRange(int traceNumber, boolean isDataOrdered) {
-        return traceList.getTrace(traceNumber).getDataRange(isDataOrdered);
-    }
-
-    int getTraceDataSize(int traceNumber) {
-        return traceList.getTrace(traceNumber).getDataSize();
-    }*/
 
     public int stackCount() {
         return yAxisList.size() / 2;
