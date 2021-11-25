@@ -1,7 +1,6 @@
 package com.biorecorder.bichart;
 
-import com.biorecorder.bichart.axis.XAxisPosition;
-import com.biorecorder.bichart.axis.YAxisPosition;
+import com.biorecorder.bichart.axis.Orientation;
 import com.biorecorder.bichart.graphics.BCanvas;
 import com.biorecorder.bichart.graphics.BRectangle;
 
@@ -12,8 +11,8 @@ public class InteractiveBiChart implements Interactive {
     private final BiChart biChart;
     private boolean chartContain;
     private boolean scrollContain;
-    private List<YAxisPosition> yPositions = new ArrayList<>(2);
-    private List<XAxisPosition> xPositions = new ArrayList<>(2);;
+    private List<Integer> yAxesNumbers = new ArrayList<>(2);
+    private List<Integer> xAxesNumbers = new ArrayList<>(2);;
     private int stack;
     private boolean released = true;
 
@@ -22,37 +21,37 @@ public class InteractiveBiChart implements Interactive {
     }
 
     private void getPositions(int x, int y) {
-        xPositions.clear();
-        yPositions.clear();
+        System.out.println("get pos");
+        xAxesNumbers.clear();
+        yAxesNumbers.clear();
         scrollContain = false;
         if(biChart.chartContain(x, y)) {
             chartContain = true;
             int selection =biChart.getChartSelectedTrace();
             if (selection >= 0) {
-                yPositions.add(biChart.getChartTraceYPosition(selection));
-                xPositions.add(biChart.getChartTraceXPosition(selection));
-                stack = biChart.getChartTraceStack(selection);
+                yAxesNumbers.add(biChart.getChartTraceYAxisNumber(selection));
+                xAxesNumbers.add(biChart.getChartTraceXAxisNumber(selection));
             } else {
                 stack = biChart.getChartStackContaining(x, y);
                 if(stack >= 0) {
-                    xPositions = biChart.getChartXPositionsUsedByStack(stack);
-                    yPositions = biChart.getChartYPositionsUsedByStack(stack);
+                    xAxesNumbers = biChart.getChartXAxisNumbersUsedByStack(stack);
+                    yAxesNumbers = biChart.getChartYAxisNumbersUsedByStack(stack);
                 }
             }
         } else{
             chartContain = false;
+            System.out.println("nav contain");
             int selection =biChart.getNavigatorSelectedTrace();
             if (selection >= 0) {
-                yPositions.add(biChart.getNavigatorTraceYPosition(selection));
-                stack = biChart.getNavigatorTraceStack(selection);
+                yAxesNumbers.add(biChart.getNavigatorTraceYAxisNumber(selection));
             } else {
                 stack = biChart.getNavigatorStackContaining(x, y);
                 if(stack >= 0) {
-                    yPositions = biChart.getNavigatorYPositionsUsedByStack(stack);
+                    yAxesNumbers = biChart.getNavigatorYAxisNumbersUsedByStack(stack);
                 }
-                XAxisPosition xPosition = biChart.scrollContain(x, y);
-                if(xPosition != null) {
-                    xPositions.add(xPosition);
+                int xAxisNumber = biChart.scrollContain(x, y);
+                if(xAxisNumber > 0) {
+                    xAxesNumbers.add(xAxisNumber);
                     scrollContain = true;
                 }
             }
@@ -66,12 +65,12 @@ public class InteractiveBiChart implements Interactive {
         if(released) {
             getPositions(x, y);
         }
-        if(xPositions.size() > 0) {
+        if(xAxesNumbers.size() > 0) {
             if(chartContain) {
-                return biChart.translateChartX(xPositions.get(0), dx);
+                return biChart.translateChartX(xAxesNumbers.get(0), dx);
             }
             if(scrollContain) {
-                return biChart.translateScrolls(xPositions.get(0), -dx);
+                return biChart.translateScrolls(xAxesNumbers.get(0), -dx);
             }
         }
         return false;
@@ -87,12 +86,12 @@ public class InteractiveBiChart implements Interactive {
         }
         boolean isChanged = false;
         if(chartContain) {
-            for (YAxisPosition yPosition : yPositions) {
-                isChanged = biChart.translateChartY(stack, yPosition, dy) || isChanged;
+            for (int i = 0; i < yAxesNumbers.size(); i++) {
+                isChanged = biChart.translateChartY(yAxesNumbers.get(i), dy) || isChanged;
             }
         } else {
-            for (YAxisPosition yPosition : yPositions) {
-                isChanged = biChart.translateNavigatorY(stack, yPosition, dy) || isChanged;
+            for (int i = 0; i < yAxesNumbers.size(); i++) {
+                isChanged = biChart.translateNavigatorY(yAxesNumbers.get(i), dy) || isChanged;
             }
         }
         return isChanged;
@@ -108,8 +107,8 @@ public class InteractiveBiChart implements Interactive {
         }
         if(chartContain) {
             boolean isChanged = false;
-            for (XAxisPosition xPosition : xPositions) {
-                isChanged = biChart.zoomChartX(xPosition, scaleFactor, x) || isChanged;
+            for (int i = 0; i < xAxesNumbers.size(); i++) {
+                isChanged = biChart.zoomChartX(xAxesNumbers.get(i), scaleFactor, x) || isChanged;
             }
             return isChanged;
         }
@@ -126,12 +125,12 @@ public class InteractiveBiChart implements Interactive {
         }
         boolean isChanged = false;
         if(chartContain) {
-            for (YAxisPosition yPosition : yPositions) {
-                isChanged = biChart.zoomChartY(stack, yPosition, scaleFactor, y) || isChanged;
+            for (int i = 0; i < yAxesNumbers.size(); i++) {
+                isChanged = biChart.zoomChartY(yAxesNumbers.get(i), scaleFactor, y) || isChanged;
             }
         } else {
-            for (YAxisPosition yPosition : yPositions) {
-                isChanged = biChart.zoomNavigatorY(stack, yPosition, scaleFactor, y) || isChanged;
+            for (int i = 0; i < yAxesNumbers.size(); i++) {
+                isChanged = biChart.zoomNavigatorY(yAxesNumbers.get(i), scaleFactor, y) || isChanged;
             }
         }
         return isChanged;
@@ -173,20 +172,18 @@ public class InteractiveBiChart implements Interactive {
         if(biChart.navigatorContain(x, y)) {
             return biChart.positionScrolls(x);
         } else {
-            List<XAxisPosition> xPositions;
+            xAxesNumbers.clear();
             int selection =biChart.getChartSelectedTrace();
-            int stack;
-            xPositions = new ArrayList();
             if (selection >= 0) {
-                xPositions.add(biChart.getChartTraceXPosition(selection));
+                xAxesNumbers.add(biChart.getChartTraceXAxisNumber(selection));
             } else {
                 stack = biChart.getChartStackContaining(x, y);
                 if(stack >= 0) {
-                    xPositions = biChart.getChartXPositionsUsedByStack(stack);
+                    xAxesNumbers = biChart.getChartXAxisNumbersUsedByStack(stack);
                 }
             }
-            if(xPositions.size() > 0) {
-                return biChart.positionChartX(xPositions.get(0), x);
+            if(xAxesNumbers.size() > 0) {
+                return biChart.positionChartX(xAxesNumbers.get(0), x);
             }
         }
         return false;

@@ -83,7 +83,7 @@ public abstract class Scale {
         return range[range.length - 1];
     }
 
-    public double getLength() {
+    public double length() {
         return Math.abs(getStart() - getEnd());
     }
 

@@ -1,23 +1,19 @@
 package com.biorecorder.bichart;
 
-import com.biorecorder.bichart.axis.Axis;
 import com.biorecorder.bichart.graphics.*;
+import com.biorecorder.bichart.scales.Scale;
 import com.biorecorder.bichart.traces.TracePainter;
 
-class Trace {
+class Trace1 {
     private ChartData data;
     private final TracePainter tracePainter;
-    private final AxisWrapper xAxis;
-    private final AxisWrapper yAxis;
     private String name;
     private BColor color;
     private int[] sortedIndices;
 
-    public Trace(String name, ChartData data, TracePainter tracePainter, AxisWrapper xAxis, AxisWrapper yAxis, BColor traceColor) {
+    public Trace1(String name, ChartData data, TracePainter tracePainter, BColor traceColor) {
         this.data = data;
         this.tracePainter = tracePainter;
-        this.xAxis = xAxis;
-        this.yAxis = yAxis;
         this.name = name;
         this.color = traceColor;
     }
@@ -36,12 +32,6 @@ class Trace {
 
     public void setColor(BColor color) {
         this.color = color;
-    }
-
-    public BRectangle getTraceStackArea() {
-        int x =  (int) Math.min(xAxis.getStart(), xAxis.getEnd());
-        int y =  (int) Math.min(yAxis.getStart(), yAxis.getEnd());
-        return  new BRectangle(x, y, (int) xAxis.length(), (int) yAxis.length());
     }
 
     public void setData(ChartData data) {
@@ -82,9 +72,9 @@ class Trace {
         return nearest;
     }
 
-    public int nearest(int x, int y) {
+    public int nearest(int x, int y, Scale xScale) {
         double argumentValue;
-        argumentValue = xAxis.invert(x);
+        argumentValue = xScale.invert(x);
         return nearest(argumentValue);
     }
 
@@ -95,25 +85,26 @@ class Trace {
     public Range yMinMax() {
         return tracePainter.yMinMax(data);
     }
+
     public Range xMinMax() {
         return data.columnMinMax(0);
     }
 
-    public String[] getTooltipInfo(int dataIndex) {
-        return tracePainter.getTooltipInfo(data, dataIndex, xAxis.getScale(), yAxis.getScale());
+    public String[] getTooltipInfo(int dataIndex, Scale xScale, Scale yScale) {
+        return tracePainter.getTooltipInfo(data, dataIndex, xScale, yScale);
     }
 
-    public BPoint getCrosshairPoint(int dataIndex) {
-        return tracePainter.getCrosshairPoint(data, dataIndex, xAxis.getScale(), yAxis.getScale());
+    BPoint getCrosshairPoint(int dataIndex, Scale xScale, Scale yScale) {
+        return tracePainter.getCrosshairPoint(data, dataIndex, xScale, yScale);
     }
 
 
-    void draw(BCanvas canvas) {
-        tracePainter.drawTrace(canvas, data, xAxis.getScale(), yAxis.getScale(), color);
+    void draw(BCanvas canvas, Scale xScale, Scale yScale) {
+        tracePainter.drawTrace(canvas, data, xScale, yScale, color);
     }
 
-    public int distanceSqw(int pointIndex,  int x, int y) {
-        BRectangle hoverRect = tracePainter.getHoverArea(data, pointIndex, xAxis.getScale(), yAxis.getScale());
+    public int distanceSqw(int pointIndex,  int x, int y, Scale xScale, Scale yScale) {
+        BRectangle hoverRect = tracePainter.getHoverArea(data, pointIndex, xScale, yScale);
         if (hoverRect.width > 0 && hoverRect.height > 0) {
             if (hoverRect.contain(x, y)) {
                 return 0;
@@ -139,4 +130,3 @@ class Trace {
         return dy * dy + dx * dx;
     }
 }
-

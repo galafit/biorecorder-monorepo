@@ -14,33 +14,33 @@ public class Axis {
     private String title;
     private AxisPainter painter;
     private AxisConfig config;
+    private OrientationFunctions orientationFunctions;
     private Orientation orientation;
     private TickLabelFormat tickLabelPrefixAndSuffix;
 
     private double tickInterval = -1; // in axis domain units (If <= 0 will not be taken into account)
 
-    public Axis(Scale scale, AxisConfig axisConfig, XAxisPosition xAxisPosition) {
+    public Axis(Scale scale, AxisConfig axisConfig, Orientation orientation) {
         this.scale = scale.copy();
         this.config = axisConfig;
-        switch (xAxisPosition) {
+        this.orientation = orientation;
+        switch (orientation) {
             case TOP:
-                orientation = new TopOrientation();
+                orientationFunctions = new TopOrientationFunctions();
                 break;
             case BOTTOM:
-                orientation = new BottomOrientation();
+                orientationFunctions = new BottomOrientationFunctions();
+                break;
+            case LEFT:
+                orientationFunctions = new LeftOrientationFunctions();
+                break;
+            case RIGHT:
+                orientationFunctions = new RightOrientationFunctions();
         }
     }
 
-    public Axis(Scale scale, AxisConfig axisConfig, YAxisPosition yAxisPosition) {
-        this.scale = scale.copy();
-        this.config = axisConfig;
-        switch (yAxisPosition) {
-            case LEFT:
-                orientation = new LeftOrientation();
-                break;
-            case RIGHT:
-                orientation = new RightOrientation();
-        }
+    public Orientation getOrientation() {
+        return orientation;
     }
 
     public void setTickLabelPrefixAndSuffix(@Nullable String prefix, @Nullable String suffix) {
@@ -146,11 +146,11 @@ public class Axis {
     }
 
     public boolean isVertical() {
-        return orientation.isVertical();
+        return orientationFunctions.isVertical();
     }
 
     public boolean isSizeDependsOnMinMax() {
-        return orientation.isVertical() && config.isTickLabelOutside();
+        return orientationFunctions.isVertical() && config.isTickLabelOutside();
     }
 
     public double getMin() {
@@ -190,27 +190,27 @@ public class Axis {
     }
 
     public double length() {
-        return Math.abs(getEnd() - getStart());
+        return scale.length();
     }
     
     public void revalidate(RenderContext renderContext) {
         if(painter == null) {
             boolean isRoundingEnabled = false;
-            painter = new AxisPainter(scale, config, orientation, renderContext, title, tickInterval, tickLabelPrefixAndSuffix, isRoundingEnabled);
+            painter = new AxisPainter(scale, config, orientationFunctions, renderContext, title, tickInterval, tickLabelPrefixAndSuffix, isRoundingEnabled);
         }
     }
 
     public void round(RenderContext renderContext) {
         if(painter == null) {
             boolean isRoundingEnabled = true;
-            painter = new AxisPainter(scale, config, orientation, renderContext, title, tickInterval, tickLabelPrefixAndSuffix, isRoundingEnabled);
+            painter = new AxisPainter(scale, config, orientationFunctions, renderContext, title, tickInterval, tickLabelPrefixAndSuffix, isRoundingEnabled);
         }
     }
 
     public int getWidthOut(RenderContext renderContext) {
         if(!isSizeDependsOnMinMax()) {
             String label = "";
-            return AxisPainter.calculateWidthOut(renderContext, orientation, (int) length(), config, label, title);
+            return AxisPainter.calculateWidthOut(renderContext, orientationFunctions, (int) length(), config, label, title);
         }
         revalidate(renderContext);
         return painter.getWidthOut();

@@ -1,7 +1,6 @@
 package com.biorecorder.bichart;
 
-import com.biorecorder.bichart.axis.XAxisPosition;
-import com.biorecorder.bichart.axis.YAxisPosition;
+import com.biorecorder.bichart.axis.Orientation;
 import com.biorecorder.bichart.graphics.BCanvas;
 import com.biorecorder.bichart.graphics.BRectangle;
 
@@ -10,8 +9,8 @@ import java.util.List;
 
 public class InteractiveChart implements Interactive {
     private final Chart chart;
-    private List<YAxisPosition> yPositions = new ArrayList<>(2);
-    private List<XAxisPosition> xPositions = new ArrayList<>(2);;
+    private List<Integer> yAxesNumbers = new ArrayList<>(2);
+    private List<Integer> xAxesNumbers = new ArrayList<>(2);
     private int stack;
     private boolean released = true;
 
@@ -20,17 +19,16 @@ public class InteractiveChart implements Interactive {
     }
 
     private void getPositions(int x, int y) {
-        xPositions.clear();
-        yPositions.clear();
+        xAxesNumbers.clear();
+        yAxesNumbers.clear();
         int selection = chart.getSelectedTrace();
         if (selection >= 0) {
-            yPositions.add(chart.getTraceYPosition(selection));
-            stack = chart.getTraceStack(selection);
-            xPositions.add(chart.getTraceXPosition(selection));
+            yAxesNumbers.add(chart.getTraceYAxisNumber(selection));
+            xAxesNumbers.add(chart.getTraceXAxisNumber(selection));
         } else {
             stack = chart.getStackContaining(x, y);
-            yPositions = chart.getYPositionsUsedByStack(stack);
-            xPositions = chart.getXPositionsUsedByStack(stack);
+            yAxesNumbers = chart.getYAxesNumbersUsedByStack(stack);
+            xAxesNumbers = chart.getXAxesNumbersUsedByStack(stack);
         }
         released = false;
     }
@@ -53,8 +51,8 @@ public class InteractiveChart implements Interactive {
         if(released) {
             getPositions(x, y);
         }
-        for (XAxisPosition xPosition : xPositions) {
-            chart.translateX(xPosition, dx);
+        for (int i = 0; i < xAxesNumbers.size(); i++) {
+            chart.translateX(xAxesNumbers.get(i), dx);
         }
         return true;
     }
@@ -68,8 +66,8 @@ public class InteractiveChart implements Interactive {
             getPositions(x, y);
         }
         if(stack >= 0) {
-            for (YAxisPosition yPosition : yPositions) {
-                chart.translateY(stack, yPosition, dy);
+            for (int i = 0; i < yAxesNumbers.size(); i++) {
+                chart.translateY(yAxesNumbers.get(i), dy);
             }
             return true;
         }
@@ -84,8 +82,8 @@ public class InteractiveChart implements Interactive {
         if(released) {
             getPositions(x, y);
         }
-        for (XAxisPosition xPosition : xPositions) {
-            chart.zoomX(xPosition, scaleFactor, x);
+        for (int i = 0; i < xAxesNumbers.size(); i++) {
+            chart.zoomX(xAxesNumbers.get(i), scaleFactor, x);
         }
         return true;
     }
@@ -99,8 +97,8 @@ public class InteractiveChart implements Interactive {
             getPositions(x, y);
         }
         if(stack >= 0) {
-            for (YAxisPosition yPosition : yPositions) {
-                chart.zoomY(stack, yPosition, scaleFactor, y);
+            for (int i = 0; i < yAxesNumbers.size(); i++) {
+                chart.zoomY(yAxesNumbers.get(i), scaleFactor, x);
             }
             return true;
         }
@@ -127,8 +125,7 @@ public class InteractiveChart implements Interactive {
     public boolean autoScaleX() {
         int selection = chart.getSelectedTrace();
         if(selection >= 0) {
-            XAxisPosition xPosition = chart.getTraceXPosition(selection);
-            chart.autoScaleX(xPosition);
+            chart.autoScaleX(chart.getTraceXAxisNumber(selection));
         } else {
             chart.autoScaleX();
         }
@@ -139,9 +136,7 @@ public class InteractiveChart implements Interactive {
     public boolean autoScaleY() {
         int selection = chart.getSelectedTrace();
         if(selection >= 0) {
-            YAxisPosition yPosition = chart.getTraceYPosition(selection);
-            int stack = chart.getTraceStack(selection);
-            chart.autoScaleY(stack, yPosition);
+            chart.autoScaleY(chart.getTraceYAxisNumber(selection));
         } else {
             chart.autoScaleY();
         }

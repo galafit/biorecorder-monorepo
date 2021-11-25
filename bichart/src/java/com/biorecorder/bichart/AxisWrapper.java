@@ -2,6 +2,7 @@ package com.biorecorder.bichart;
 
 import com.biorecorder.bichart.axis.Axis;
 import com.biorecorder.bichart.axis.AxisConfig;
+import com.biorecorder.bichart.axis.Orientation;
 import com.biorecorder.bichart.graphics.*;
 import com.biorecorder.bichart.scales.Scale;
 import com.sun.istack.internal.Nullable;
@@ -18,6 +19,10 @@ class AxisWrapper {
         this.axis = axis;
         min = axis.getMin();
         max = axis.getMax();
+    }
+
+    public Orientation getOrientation() {
+        return axis.getOrientation();
     }
 
     public void setStartEndOnTick(boolean startEndOnTick) {

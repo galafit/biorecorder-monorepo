@@ -1,15 +1,12 @@
 package com.biorecorder.bichart.axis;
 
 import com.biorecorder.bichart.graphics.*;
-import com.biorecorder.bichart.scales.Tick;
-
-import java.util.List;
 
 
 /**
  * Created by galafit on 29/8/18.
  */
-abstract class VerticalOrientation implements Orientation {
+abstract class VerticalOrientationFunctions implements OrientationFunctions {
     @Override
     public int labelSizeForWidth(TextMetric tm,  String label) {
         return tm.stringWidth(label);

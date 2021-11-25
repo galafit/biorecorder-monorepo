@@ -14,13 +14,13 @@ public class LegendPainter {
     private boolean isAttachedToStacks;
 
     public LegendPainter(RenderContext renderContext, TraceList traceList, LegendConfig config, boolean isAttachedToStacks, int x, int y, int width) {
-        buttons = new ArrayList(traceList.size());
+        buttons = new ArrayList(traceList.traceCount());
         this.isAttachedToStacks = isAttachedToStacks;
         margin = config.getLegendMargin();
         HashMap<BRectangle, List<SwitchButton>> areaToButtons = new HashMap();
         // create buttons
         if (isAttachedToStacks) {
-            for (int i = 0; i < traceList.size(); i++) {
+            for (int i = 0; i < traceList.traceCount(); i++) {
                 String traceName = traceList.getName(i);
                 SwitchButton b = new SwitchButton(traceName, config.getTextStyle());
                 b.setMargin(config.getButtonsMargin());
@@ -38,7 +38,7 @@ public class LegendPainter {
             BRectangle area = new BRectangle(x, y, width, 0);
             List<SwitchButton> areaButtons = new ArrayList<SwitchButton>();
             areaToButtons.put(area, areaButtons);
-            for (int i = 0; i < traceList.size(); i++) {
+            for (int i = 0; i < traceList.traceCount(); i++) {
                 String traceName = traceList.getName(i);
                 SwitchButton b = new SwitchButton(traceName, config.getTextStyle());
                 b.setBackgroundColor(config.getBackgroundColor());
