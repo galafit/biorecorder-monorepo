@@ -21,8 +21,9 @@ public class RecorderAdvancedView extends JDialog {
 
     private RecorderSettings settings;
 
-    public RecorderAdvancedView(RecorderSettings settings, Frame owner) {
-        super(owner, true);
+    public RecorderAdvancedView(RecorderSettings settings, Window owner) {
+        super(owner);
+        setModal(true);
         setTitle("Advanced settings");
         this.settings = settings;
 

@@ -1,6 +1,10 @@
 package biosignal.application;
 
 import biosignal.filter.XYData;
+import com.biorecorder.bdfrecorder.EdfBioRecorderApp;
+import com.biorecorder.bdfrecorder.JsonPreferences;
+import com.biorecorder.bdfrecorder.RecorderViewModelImpl;
+import com.biorecorder.bdfrecorder.gui.RecorderViewModel;
 import com.biorecorder.bichart.GroupingApproximation;
 
 import java.io.File;
@@ -29,6 +33,13 @@ public class MainFacade implements Facade {
                 }
             }
         });
+    }
+
+    @Override
+    public RecorderViewModel getRecorder() {
+        JsonPreferences preferences = new JsonPreferences();
+        RecorderViewModel bdfRecorder = new RecorderViewModelImpl(new EdfBioRecorderApp(), preferences);
+        return bdfRecorder;
     }
 
     @Override

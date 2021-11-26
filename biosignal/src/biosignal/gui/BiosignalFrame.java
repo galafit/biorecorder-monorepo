@@ -3,6 +3,7 @@ package biosignal.gui;
 import biosignal.application.DataAppendListener;
 import biosignal.application.Facade;
 import biosignal.filter.XYData;
+import com.biorecorder.bdfrecorder.gui.RecorderView;
 import com.biorecorder.bichart.GroupingApproximation;
 import com.biorecorder.bichart.traces.LineTraceConfig;
 import com.biorecorder.bichart.traces.LineTracePainter;
@@ -14,7 +15,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 
-public class MainFrame extends JFrame {
+public class BiosignalFrame extends JFrame {
     private static final Color BG_COLOR = Color.BLACK;
     private static final Color MENU_BG_COLOR = Color.LIGHT_GRAY;
     private static final Color MENU_TEXT_COLOR = Color.BLACK;
@@ -28,8 +29,9 @@ public class MainFrame extends JFrame {
     private BiChartPanel chartPanel;
     private long startTimeMs = 0;
     private long endTimeMs = 1000;
+    private RecorderView recorderPanel;
 
-    public MainFrame(Facade facade) {
+    public BiosignalFrame(Facade facade) {
         super("Biosignal");
         this.facade = facade;
 
@@ -59,7 +61,10 @@ public class MainFrame extends JFrame {
         biorecorderButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent event) {
-
+                if(recorderPanel == null) {
+                    recorderPanel = new RecorderView(facade.getRecorder(), BiosignalFrame.this);
+                }
+                JDialog recorderDialog = new BioRecorderDialog();
             }
         });
         add(menu, BorderLayout.NORTH);

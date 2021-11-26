@@ -91,9 +91,9 @@ public class RecorderView extends JPanel implements ProgressListener, StateChang
     private JComponent[] channelsHeaders = {new JLabel(" "), new JLabel(" "), new JLabel("Name", SwingConstants.CENTER), new JLabel("Frequency", SwingConstants.CENTER),
             new JLabel("Mode", SwingConstants.CENTER), new JLabel("Gain", SwingConstants.CENTER), filterOrContactsLabel};
 
-    private final JFrame parentFrame;
+    private final Window parentFrame;
 
-    public RecorderView(RecorderViewModel recorder, JFrame parentFrame) {
+    public RecorderView(RecorderViewModel recorder, Window parentFrame) {
         this.recorder = recorder;
         this.parentFrame = parentFrame;
         startRecordingButton.setForeground(COLOR_BRAND);

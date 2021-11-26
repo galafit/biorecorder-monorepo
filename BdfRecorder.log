@@ -1,0 +1,55 @@
+0    [EdfBioRecorderApp Timer] 2021-11-26 13:50:33,419 INFO  com.biorecorder.comport.ComportJSCC  - Thread[EdfBioRecorderApp Timer,5,main] opened comport: /dev/tty.usbserial-AH0604FV
+7    [EdfBioRecorderApp Timer] 2021-11-26 13:50:33,426 INFO  com.biorecorder.ads.FrameDecoder  - frame size: 0 bytes
+22593 [AWT-EventQueue-0] 2021-11-26 13:50:56,012 INFO  com.biorecorder.ads.FrameDecoder  - frame size: 14 bytes
+45046 [AWT-EventQueue-0] 2021-11-26 13:51:18,465 INFO  com.biorecorder.ads.FrameDecoder  - frame size: 0 bytes
+45047 [EdfBioRecorderApp Timer] 2021-11-26 13:51:18,466 INFO  com.biorecorder.ads.FrameDecoder  - frame size: 0 bytes
+71473 [AWT-EventQueue-0] 2021-11-26 13:51:44,892 INFO  com.biorecorder.ads.FrameDecoder  - frame size: 73 bytes
+72773 [EventThread /dev/tty.usbserial-AH0604FV] 2021-11-26 13:51:46,192 INFO  com.biorecorder.ads.Ads  - Stop recording message received
+0    [EdfBioRecorderApp Timer] 2021-11-26 13:54:25,904 INFO  com.biorecorder.comport.ComportJSCC  - Thread[EdfBioRecorderApp Timer,5,main] opened comport: /dev/tty.usbserial-AH0604FV
+7    [EdfBioRecorderApp Timer] 2021-11-26 13:54:25,911 INFO  com.biorecorder.ads.FrameDecoder  - frame size: 0 bytes
+214  [EventThread /dev/tty.usbserial-AH0604FV] 2021-11-26 13:54:26,118 INFO  com.biorecorder.ads.Ads  - Stop recording message received
+0    [EdfBioRecorderApp Timer] 2021-11-26 14:02:54,062 INFO  com.biorecorder.comport.ComportJSCC  - Thread[EdfBioRecorderApp Timer,5,main] opened comport: /dev/tty.usbserial-AH0604FV
+7    [EdfBioRecorderApp Timer] 2021-11-26 14:02:54,069 INFO  com.biorecorder.ads.FrameDecoder  - frame size: 0 bytes
+163  [EventThread /dev/tty.usbserial-AH0604FV] 2021-11-26 14:02:54,225 INFO  com.biorecorder.ads.Ads  - Stop recording message received
+6934 [AWT-EventQueue-0] 2021-11-26 14:03:00,996 INFO  com.biorecorder.ads.FrameDecoder  - frame size: 73 bytes
+8943 [«Data Records handling» thread] 2021-11-26 14:03:03,005 INFO  com.biorecorder.ads.Ads  - Ads configuration command:
+byte_1:  20 
+byte_2:  F0 
+byte_3:  11 
+byte_4:  F1 
+byte_5:  01 
+byte_6:  0A 
+byte_7:  02 
+byte_8:  A0 
+byte_9:  10 
+byte_10:  20 
+byte_11:  20 
+byte_12:  20 
+byte_13:  00 
+byte_14:  40 
+byte_15:  02 
+byte_16:  01 
+byte_17:  F2 
+byte_18:  01 
+byte_19:  01 
+byte_20:  F3 
+byte_21:  01 
+byte_22:  F4 
+byte_23:  01 
+byte_24:  F5 
+byte_25:  00 
+byte_26:  F6 
+byte_27:  14 
+byte_28:  F0 
+byte_29:  10 
+byte_30:  FE 
+byte_31:  55 
+byte_32:  55 
+41028 [EventThread /dev/tty.usbserial-AH0604FV] 2021-11-26 14:03:35,090 INFO  com.biorecorder.ads.Ads  - Stop recording message received
+41989 [AWT-EventQueue-0] 2021-11-26 14:03:36,051 INFO  com.biorecorder.bdfrecorder.EdfBioRecorderApp  - Data successfully saved to file:
+/Users/galafit/IdeaProjects/biorecorder-monorepo/records/26-11-2021_14-03.bdf
+
+Start recording time = 14:03:03
+Duration of data records(sec) = 0.9998747651847214
+Number of data records = 31
+41989 [AWT-EventQueue-0] 2021-11-26 14:03:36,051 INFO  com.biorecorder.ads.FrameDecoder  - frame size: 0 bytes

@@ -1,6 +1,7 @@
 package biosignal.application;
 
 import biosignal.filter.XYData;
+import com.biorecorder.bdfrecorder.gui.RecorderViewModel;
 import com.biorecorder.bichart.GroupingApproximation;
 
 import java.io.File;
@@ -10,6 +11,8 @@ public interface Facade {
     void stop();
 
     void setDataProvider(File file);
+
+    RecorderViewModel getRecorder();
 
     String[] getFileExtensions();
 

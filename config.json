@@ -7,7 +7,7 @@
   "channelsExtraDividers" : [ "D1", "D1", "D1", "D1", "D1", "D1", "D1", "D1" ],
   "accelerometerExtraDivider" : "D1",
   "isLabStreamingEnabled" : false,
-  "comportName" : null,
+  "comportName" : "/dev/tty.usbserial-AH0604FV",
   "dirToSave" : "/Users/galafit/IdeaProjects/biorecorder-monorepo/records",
   "recorderConfig" : {
     "batteryVoltageChannelDeletingEnable" : true,
