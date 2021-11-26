@@ -48,7 +48,7 @@ public class Chart {
 
     private Map<Integer, List<Integer>> xAxisNumberToTraceNumbers = new HashMap<>();
     private Map<Integer, List<Integer>> yAxisNumberToTraceNumbers = new HashMap<>();
-    private Map<Integer, Set<Integer>> xAxisNumberToyAxisNumbers = new HashMap<>(2);
+    private Map<Integer, Set<Integer>> xAxisNumberToYAxisNumbers = new HashMap<>(2);
     private Map<Integer, Integer> traceNumberToXAxisNumber = new HashMap<>();
     private Map<Integer, Integer> traceNumberToYAxisNumber = new HashMap<>();
 
@@ -601,10 +601,10 @@ public class Chart {
         }
         traces.add(traceNumber);
 
-        Set<Integer> yAxes = xAxisNumberToyAxisNumbers.get(xIndex);
+        Set<Integer> yAxes = xAxisNumberToYAxisNumbers.get(xIndex);
         if(yAxes == null) {
             yAxes = new HashSet<>();
-            xAxisNumberToyAxisNumbers.put(xIndex, yAxes);
+            xAxisNumberToYAxisNumbers.put(xIndex, yAxes);
         }
         yAxes.add(yIndex);
     }
@@ -701,6 +701,9 @@ public class Chart {
      * Base methods for careful use mostly to interact through GUI
      * ==================================================
      */
+    Set<Integer> getYAxesNumbersUsedByXAxis(int xAxisNumber) {
+       return xAxisNumberToYAxisNumbers.get(xAxisNumber);
+    }
 
     List<Integer> getXAxesNumbersUsedByStack(int stack) {
         List<Integer> xAxisNumbers = new ArrayList<>(1);

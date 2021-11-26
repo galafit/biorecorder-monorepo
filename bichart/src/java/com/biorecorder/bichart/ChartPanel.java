@@ -14,8 +14,6 @@ public class ChartPanel extends JPanel {
     private double defaultZoom = 2;
     private int pastX;
     private int pastY;
-    private int pressedX;
-    private int pressedY;
 
     public ChartPanel(Chart chart) {
         interactive = new InteractiveChart(chart);
@@ -28,7 +26,7 @@ public class ChartPanel extends JPanel {
     }
 
     private void init() {
-        addMouseMotionListener(new MouseMotionAdapter() {
+        addMouseMotionListener(new MouseMotionListener() {
             @Override
             public void mouseDragged(MouseEvent e) {
                 if (SwingUtilities.isRightMouseButton(e)) {
@@ -44,15 +42,19 @@ public class ChartPanel extends JPanel {
                             || e.isControlDown()
                             // || e.isShiftDown()
                             || e.isMetaDown()) {
-                        if (interactive.translateY(pressedX, pressedY, dy)) {
+                        if (interactive.translateY(pastX, pastY, dy)) {
                             repaint();
                         }
                     } else {
-                        if (interactive.translateX(pressedX, pressedY, dx)) {
+                        if (interactive.translateX(pastX, pastY, dx)) {
                             repaint();
                         }
                     }
                 }
+            }
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                interactive.release();
             }
         });
 
@@ -79,8 +81,6 @@ public class ChartPanel extends JPanel {
                         repaint();
                     }
                 } else {
-                    pressedX = e.getX();
-                    pressedY = e.getY();
                     pastX = e.getX();
                     pastY = e.getY();
                 }
@@ -100,7 +100,7 @@ public class ChartPanel extends JPanel {
             public void mouseWheelMoved(MouseWheelEvent e) {
                 e.consume(); // avoid the event to be triggered twice
                 int d = e.getUnitsToScroll(); //e.getWheelRotation() * scrollPointsPerRotation;
-                interactive.release();
+               // interactive.release();
                 if (e.isAltDown()
                         || e.isControlDown()
                         //    || e.isShiftDown() // JAVA BUG on MAC!!!!

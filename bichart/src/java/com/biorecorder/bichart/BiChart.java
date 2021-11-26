@@ -175,13 +175,20 @@ public class BiChart {
             double xMin = minMax.getMin() - 1;
             double xMax = minMax.getMax() + 1;
             chart.setXMinMax(xAxisNumber, xMin, xMax);
-            dataProcessor.onChartRangeChanged(xMin, xMax, chart.getTraces(xAxisNumber));
+            Set<Integer> yAxes = chart.getYAxesNumbersUsedByXAxis(xAxisNumber);
+            for (Integer yAxisNumber : yAxes) {
+                chart.autoScaleY(yAxisNumber);
+            }
             return null;
         }
         Scale scrollScale = getChartBestScale(traceNumbers, minMax);
         if(scrollScale.length() <= viewportExtent) {
             axisToScrolls.remove(xAxisNumber);
             chart.setXMinMax(xAxisNumber, minMax.getMin(), minMax.getMax());
+            Set<Integer> yAxes = chart.getYAxesNumbersUsedByXAxis(xAxisNumber);
+            for (Integer yAxisNumber : yAxes) {
+                chart.autoScaleY(yAxisNumber);
+            }
             dataProcessor.onChartRangeChanged(minMax.getMin(), minMax.getMax(), chart.getTraces(xAxisNumber));
             return null;
         }
@@ -287,7 +294,7 @@ public class BiChart {
         return chart.getXMin(xAxisNumber);
     }
 
-    public double getChartXMax(Integer xAxisNumber) {
+    public double getChartXMax(int xAxisNumber) {
         return chart.getXMax(xAxisNumber);
     }
 
@@ -466,7 +473,7 @@ public class BiChart {
         return navigator.traceCount();
     }
 
-    public void setNavigatorXTitle(Integer xAxisNumber, String title) {
+    public void setNavigatorXTitle(int xAxisNumber, String title) {
         navigator.setXTitle(xAxisNumber, title);
     }
 
@@ -617,7 +624,6 @@ public class BiChart {
                 }
             }
         }
-        System.out.println("scroll contain "+scrollXAxisNumber);
         return scrollXAxisNumber;
     }
 

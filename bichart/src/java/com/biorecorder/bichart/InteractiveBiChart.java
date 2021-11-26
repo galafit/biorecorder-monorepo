@@ -1,6 +1,5 @@
 package com.biorecorder.bichart;
 
-import com.biorecorder.bichart.axis.Orientation;
 import com.biorecorder.bichart.graphics.BCanvas;
 import com.biorecorder.bichart.graphics.BRectangle;
 
@@ -21,7 +20,6 @@ public class InteractiveBiChart implements Interactive {
     }
 
     private void getPositions(int x, int y) {
-        System.out.println("get pos");
         xAxesNumbers.clear();
         yAxesNumbers.clear();
         scrollContain = false;
@@ -40,7 +38,6 @@ public class InteractiveBiChart implements Interactive {
             }
         } else{
             chartContain = false;
-            System.out.println("nav contain");
             int selection =biChart.getNavigatorSelectedTrace();
             if (selection >= 0) {
                 yAxesNumbers.add(biChart.getNavigatorTraceYAxisNumber(selection));
@@ -50,7 +47,7 @@ public class InteractiveBiChart implements Interactive {
                     yAxesNumbers = biChart.getNavigatorYAxisNumbersUsedByStack(stack);
                 }
                 int xAxisNumber = biChart.scrollContain(x, y);
-                if(xAxisNumber > 0) {
+                if(xAxisNumber >= 0) {
                     xAxesNumbers.add(xAxisNumber);
                     scrollContain = true;
                 }
@@ -62,6 +59,9 @@ public class InteractiveBiChart implements Interactive {
 
     @Override
     public boolean translateX(int x, int y, int dx) {
+        if (dx == 0) {
+            return false;
+        }
         if(released) {
             getPositions(x, y);
         }

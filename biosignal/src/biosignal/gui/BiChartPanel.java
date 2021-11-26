@@ -44,9 +44,9 @@ public class BiChartPanel extends JPanel {
     public double[] getChartXRange() {
         double min = Double.MAX_VALUE;
         double max = Double.MIN_VALUE;
-        for (Orientation xPosition : Orientation.values()) {
-            min = Math.min(min, biChart.getChartXMin(xPosition));
-            max = Math.max(max, biChart.getChartXMax(xPosition));
+        for (int i = 0; i < 2; i++) {
+            min = Math.min(min, biChart.getChartXMin(i));
+            max = Math.max(max, biChart.getChartXMax(i));
         }
         double[] range = {min, max};
         return range;
