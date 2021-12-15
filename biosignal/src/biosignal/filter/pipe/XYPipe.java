@@ -50,11 +50,18 @@ public class XYPipe implements XYReceiver, Pipe {
     }
 
     static class DataSink implements XYReceiver {
-        private DoubleColumn xData = new DoubleColumn("x");
-        private IntColumn yData = new IntColumn("y");
+        private DoubleColumn xData;
+        private IntColumn yData;
+        private XYData xyData;
+
+        public DataSink() {
+            xData = new DoubleColumn("x");
+            yData = new IntColumn("y");
+            xyData = new XYData("XYData", xData, yData);
+        }
 
         public XYData getXYData() {
-            return new XYData("XYData", xData, yData);
+            return xyData;
         }
 
         @Override

@@ -9,7 +9,7 @@ import com.sun.istack.internal.Nullable;
  */
 public class LegendConfig {
     private TextStyle textStyle = new TextStyle(TextStyle.DEFAULT, TextStyle.NORMAL, 12);
-    private HorizontalAlign horizontalAlign = HorizontalAlign.LEFT;
+    private HorizontalAlign horizontalAlign = HorizontalAlign.RIGHT;
     private VerticalAlign verticalAlign = VerticalAlign.TOP;
     private int borderWidth = 1;
     private BColor backgroundColor = BColor.WHITE;

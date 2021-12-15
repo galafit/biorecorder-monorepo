@@ -3,48 +3,51 @@ package com.biorecorder.edflib.recordfilter;
 import com.biorecorder.edflib.DataHeader;
 import com.biorecorder.edflib.DataRecordStream;
 
-/**
- * FilterRecordStream is just a wrapper of an already existing
- * RecordStream (the underlying stream)
- * which do some transforms with input data records before
- * to write them to the underlying stream.
- */
-public class FilterRecordStream implements DataRecordStream {
-    protected DataHeader inConfig;
-    protected int inRecordSize;
-    protected DataRecordStream outStream;
+import java.util.ArrayList;
+import java.util.List;
 
-    public FilterRecordStream(DataRecordStream outStream) {
-        this.outStream = outStream;
+/**
+ * FilterRecordStream is  a wrapper of an already existing
+ * RecordStreams (the underlying streams)
+ * which do some transforms with input data records before
+ * to write them to the underlying streams.
+ */
+public class FilterRecordStream implements com.biorecorder.edflib.DataRecordStream {
+    protected DataHeader inConfig;
+    protected DataHeader outConfig;
+    protected int[] outRecord;
+    protected com.biorecorder.edflib.DataRecordStream[] outStreams;
+
+    public FilterRecordStream(com.biorecorder.edflib.DataRecordStream... outStream) {
+        this.outStreams = outStream;
     }
 
-
-    public DataHeader getResultantConfig(){
-        if(outStream instanceof FilterRecordStream) {
-            return ((FilterRecordStream) outStream).getResultantConfig();
-        } else {
-            return getOutConfig();
+    protected void sendData(int[] dataRecord) {
+        for (DataRecordStream outStream : outStreams) {
+            outStream.writeDataRecord(dataRecord);
         }
     }
 
     @Override
     public void setHeader(DataHeader header) {
-        this.inConfig = header;
-        inRecordSize = 0;
-        for (int i = 0; i < header.numberOfSignals(); i++) {
-            inRecordSize += header.getNumberOfSamplesInEachDataRecord(i);
+        inConfig = header;
+        outConfig = getOutConfig();
+        for (DataRecordStream outStream : outStreams) {
+            outStream.setHeader(outConfig);
         }
-        outStream.setHeader(getOutConfig());
+        outRecord = new int[outConfig.getRecordSize()];
     }
 
     @Override
     public void writeDataRecord(int[] dataRecord) {
-        outStream.writeDataRecord(dataRecord);
+        sendData(dataRecord);
     }
 
     @Override
     public void close() {
-        outStream.close();
+        for (DataRecordStream outStream : outStreams) {
+            outStream.close();
+        }
     }
 
     protected DataHeader getOutConfig() {

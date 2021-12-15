@@ -146,6 +146,16 @@ public class DoubleArrayList {
         return dest;
     }
 
+    public double[] toArray(int from, int length) throws IndexOutOfBoundsException {
+        if(from < 0 || length < 0 || from + length > size) {
+            String msg = "from: " + from + ", length: " + length + ", size: " + size;
+            throw new IndexOutOfBoundsException(msg);
+        }
+        double[] dest = new double[length];
+        System.arraycopy( data, from, dest, 0, length );
+        return dest;
+    }
+
 
     private void ensureCapacity(int minCapacity) {
         int oldCapacity = data.length;

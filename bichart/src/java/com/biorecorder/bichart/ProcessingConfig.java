@@ -52,7 +52,7 @@ public class ProcessingConfig {
         return groupingIntervals;
     }
 
-    public void setGroupingIntervals(double[] groupingIntervals) {
+    public void setGroupingIntervals(double... groupingIntervals) {
         if(groupingIntervals == null) {
             this.groupingIntervals = null;
             return;
@@ -65,15 +65,7 @@ public class ProcessingConfig {
         return groupingTimeIntervals;
     }
 
-    public void setGroupingTimeIntervals(TimeGroupInterval[] groupingTimeIntervals) {
-        if(groupingTimeIntervals == null) {
-            this.groupingTimeIntervals = null;
-            return;
-        }
-        TimeInterval[] timeIntervals = new TimeInterval[groupingTimeIntervals.length];
-        for (int i = 0; i < timeIntervals.length; i++) {
-            timeIntervals[i] = groupingTimeIntervals[i].getTimeInterval();
-        }
+    public void setGroupingTimeIntervals(TimeInterval... timeIntervals) {
         Arrays.sort(timeIntervals, new Comparator<TimeInterval>() {
             @Override
             public int compare(TimeInterval o1, TimeInterval o2) {

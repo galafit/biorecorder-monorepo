@@ -172,7 +172,8 @@ public class Chart {
     }
 
     private boolean isXAxisUsed(int xAxisNumber) {
-        return xAxisNumberToTraceNumbers.get(xAxisNumber) != null;
+        List<Integer> traces = xAxisNumberToTraceNumbers.get(xAxisNumber);
+        return traces != null && traces.size() > 0;
     }
 
     private boolean isYAxisUsed(int yAxisNumber) {
@@ -280,9 +281,7 @@ public class Chart {
     }
 
     Insets calculateMargin(RenderContext renderContext) {
-        if (!isValid) {
-            revalidate(renderContext);
-        }
+        revalidate(renderContext);
         return margin;
     }
 
@@ -327,7 +326,7 @@ public class Chart {
     }
 
     public void revalidate(RenderContext renderContext) {
-        if (isValid) {
+        if (isValid || width <= 0 || height <= 0) {
             return;
         }
         int top = spacing.top();
@@ -404,6 +403,9 @@ public class Chart {
     }
 
     public void draw(BCanvas canvas) {
+        if (width <= 0 || height <= 0) {
+            return;
+        }
         revalidate(canvas.getRenderContext());
         BRectangle graphArea = graphArea(margin);
         canvas.enableAntiAliasAndHinting();
@@ -799,7 +801,9 @@ public class Chart {
     }
 
     public boolean hoverOn(int traceNumber, int pointIndex) {
-        return tooltip.setHoverPoint(traceNumber, pointIndex, traceList.getTooltipData(traceNumber, pointIndex));
+        AxisWrapper xAxis = xAxisList.get(traceNumberToXAxisNumber.get(traceNumber));
+        AxisWrapper yAxis = yAxisList.get(traceNumberToYAxisNumber.get(traceNumber));
+        return tooltip.setHoverPoint(traceNumber, pointIndex, traceList.getTooltipData(traceNumber, pointIndex), xAxis, yAxis);
     }
 
     /**

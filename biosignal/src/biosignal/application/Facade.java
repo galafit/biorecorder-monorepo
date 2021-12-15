@@ -7,16 +7,16 @@ import com.biorecorder.bichart.GroupingApproximation;
 import java.io.File;
 
 public interface Facade {
-    void start();
-    void stop();
 
-    void setDataProvider(File file);
+    void chooseFileDataProvider(File file, boolean isParallel);
 
-    RecorderViewModel getRecorder();
+    RecorderViewModel chooseRecorderDataProvider();
 
     String[] getFileExtensions();
 
     void addDataAppendListener(DataAppendListener l);
+
+    void addProviderConfigListener(ProviderConfigListener l);
 
     XYData getData(int channel);
 
@@ -30,14 +30,14 @@ public interface Facade {
 
     boolean isDateTime();
 
-    void setFullReadInterval();
-
-    void setReadInterval(int signal, long startPos, long samplesToRead);
-
-    void setReadTimeInterval(long readStartMs, long readIntervalMs);
-
     void finish();
 
+   // void setFullReadInterval();
+
+   // void setReadInterval(int signal, long startPos, long samplesToRead);
+
+   // void setReadTimeInterval(long readStartMs, long readIntervalMs);
+
     // return the name of new file
-    String copyReadIntervalToFile();
+    //String copyReadIntervalToFile();
 }

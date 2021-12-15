@@ -40,7 +40,7 @@ public class SmartBiChartTest extends JFrame {
         //  chartPanel.addNavigatorTrace("zero", new XYData(new int[0]), new LineTracePainter() );
         // chartPanel.addNavigatorTrace("No Regular", xyData1, new LineTracePainter() );
         // chartPanel.addNavigatorStack();
-        smartBiChart.addNavigatorTrace("Regular", xySeries3, new LineTracePainter());
+        smartBiChart.addNavigatorTrace("No Regular", xySeries1, new LineTracePainter());
 
         ChartPanel chartPanel = new ChartPanel(smartBiChart);
         chartPanel.setPreferredSize(new Dimension(width, height));
@@ -51,12 +51,12 @@ public class SmartBiChartTest extends JFrame {
         setLocationRelativeTo(null);
         setVisible(true);
         try {
-            Thread.sleep(2000);
+            Thread.sleep(1000);
         } catch (InterruptedException e) {
             System.out.println(e);
         }
         int size = 10;
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 6; i++) {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
@@ -66,7 +66,7 @@ public class SmartBiChartTest extends JFrame {
             for (int j = 0; j < data.length; j++) {
                 data[j] = data1.length + i * size + j;
             }
-
+            System.out.println(i + " "+ xySeries1.size() + " "+ xySeries2.size());
             XYSeries unregData = new XYSeries(data, data);
             XYSeries regData = new XYSeries(data[0], 1, data);
             xySeries1.appendData(unregData);

@@ -402,7 +402,6 @@ public class DataHeader {
      */
 
     public int getNumberOfSamplesInEachDataRecord(int signalNumber) {
-
         return signals.get(signalNumber).getNumberOfSamplesInEachDataRecord();
     }
 
@@ -485,7 +484,6 @@ public class DataHeader {
      * @param physicalDimension physical dimension of the signal ("uV", "BPM", "mA", "Degr.", etc.)
      */
     public void setPhysicalDimension(int signalNumber, String physicalDimension) {
-
         signals.get(signalNumber).setPhysicalDimension(physicalDimension);
     }
 
@@ -497,7 +495,6 @@ public class DataHeader {
      * @param transducer   string describing getTransducer (electrodes) used for measuring
      */
     public void setTransducer(int signalNumber, String transducer) {
-
         signals.get(signalNumber).setTransducer(transducer);
     }
 
@@ -508,7 +505,6 @@ public class DataHeader {
      * @param prefiltering string describing filters that were applied to the signal
      */
     public void setPrefiltering(int signalNumber, String prefiltering) {
-
         signals.get(signalNumber).setPrefiltering(prefiltering);
     }
 
@@ -521,7 +517,6 @@ public class DataHeader {
      * @param label        getLabel of the signal
      */
     public void setLabel(int signalNumber, String label) {
-
         signals.get(signalNumber).setLabel(label);
     }
 

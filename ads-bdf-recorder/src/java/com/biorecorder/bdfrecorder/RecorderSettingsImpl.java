@@ -150,7 +150,7 @@ public class RecorderSettingsImpl implements RecorderSettings {
 
     @Override
     public int getChannelSampleRate(int channelNumber) {
-        return appConfig.getRecorderConfig().getChannelSampleRate(channelNumber) / appConfig.getChannelExtraDivider(channelNumber).getValue();
+        return appConfig.getRecorderConfig().getChannelSampleRate(channelNumber) / appConfig.getRecorderConfig().getChannelExtraDivider(channelNumber).getValue();
     }
 
 
@@ -179,7 +179,7 @@ public class RecorderSettingsImpl implements RecorderSettings {
             extraDivider = ExtraDivider.valueOf(extraDividerValue);
         }
         appConfig.getRecorderConfig().setChannelDivider(channelNumber, recorderDivider);
-        appConfig.setChannelExtraDivider(channelNumber, extraDivider);
+        appConfig.getRecorderConfig().setChannelExtraDivider(channelNumber, extraDivider);
     }
 
 
@@ -200,7 +200,7 @@ public class RecorderSettingsImpl implements RecorderSettings {
 
     @Override
     public int getAccelerometerFrequency() {
-        return appConfig.getRecorderConfig().getAccelerometerSampleRate() / appConfig.getAccelerometerExtraDivider().getValue();
+        return appConfig.getRecorderConfig().getAccelerometerSampleRate() / appConfig.getRecorderConfig().getAccelerometerExtraDivider().getValue();
     }
 
     @Override
@@ -220,7 +220,7 @@ public class RecorderSettingsImpl implements RecorderSettings {
             extraDividerValue = maxExtraDivider;
         }
 
-        appConfig.setAccelerometerExtraDivider(ExtraDivider.valueOf(extraDividerValue));
+        appConfig.getRecorderConfig().setAccelerometerExtraDivider(ExtraDivider.valueOf(extraDividerValue));
     }
 
     @Override
@@ -253,13 +253,13 @@ public class RecorderSettingsImpl implements RecorderSettings {
 
     @Override
     public boolean isDurationOfDataRecordAdjustable() {
-        return appConfig.isDurationOfDataRecordAdjustable();
+        return appConfig.getRecorderConfig().isDurationOfDataRecordAdjustable();
     }
 
 
     @Override
     public void setDurationOfDataRecordAdjustable(boolean isAdjustable) {
-        appConfig.setDurationOfDataRecordAdjustable(isAdjustable);
+        appConfig.getRecorderConfig().setDurationOfDataRecordAdjustable(isAdjustable);
 
     }
 
@@ -276,12 +276,12 @@ public class RecorderSettingsImpl implements RecorderSettings {
 
     @Override
     public double getDataRecordDuration() {
-        return appConfig.getDurationOfDataRecord();
+        return appConfig.getRecorderConfig().getDurationOfDataRecord();
     }
 
     @Override
     public void setDataRecordDuration(double duration) {
-        appConfig.setDurationOfDataRecord(duration);
+        appConfig.getRecorderConfig().setDurationOfDataRecord(duration);
     }
 
     @Override

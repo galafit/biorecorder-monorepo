@@ -1,8 +1,8 @@
 package com.biorecorder.datalyb.datatable;
 
 import com.biorecorder.datalyb.list.DoubleArrayList;
-import com.biorecorder.datalyb.series.DoubleEditableSeries;
 import com.biorecorder.datalyb.series.DoubleSeries;
+import com.biorecorder.datalyb.series.IntSeries;
 import com.biorecorder.datalyb.series.SeriesUtils;
 
 import java.util.Arrays;
@@ -10,69 +10,80 @@ import java.util.Arrays;
 public class DoubleColumn implements Column {
     private BaseType type = BaseType.DOUBLE;
     private String name;
-    DoubleEditableSeries data;
+    EditableDoubleSeries data;
 
-    public DoubleColumn(String name, DoubleEditableSeries data) {
+    public DoubleColumn(String name, EditableDoubleSeries data) {
         this.name = name;
         this.data = data;
     }
+
+    /**
+     * Data will not be copied but internalised as it is.
+     * So it will be impossible to change underlying column data by using
+     * column methods (add, set) but data may be changed from outside
+     **/
     public DoubleColumn(String name, DoubleSeries data) {
-        this(name, new BaseDoubleEditableSeries(data));
+        this(name, new BaseEditableDoubleSeries(data));
     }
 
+    /**
+     * Data will be copied to inner DoubleArrayList. So underlying column data
+     * cannot be changed from outside but may be change  by using
+     * column methods (add, set)
+     **/
     public DoubleColumn(String name, double[] data) {
-        this(name, new DoubleArrayListWrapper(new DoubleArrayList(data)));
+        this(name, new ArrayListWrapperDouble(new DoubleArrayList(data)));
     }
 
-   /* public DoubleColumn(String name, DoubleArrayList data) {
-        this(name, new DoubleArrayListWrapper(data));
-    }*/
-
+    /**
+     * Underlying column data will be saved to inner DoubleArrayList
+     * and may be change by using column methods (add, set).
+     **/
     public DoubleColumn(String name) {
-        this(name, new DoubleArrayListWrapper(new DoubleArrayList()));
+        this(name, new ArrayListWrapperDouble(new DoubleArrayList()));
+    }
+
+    public void set(int index, double value) throws UnsupportedOperationException {
+        data.set(index, value);
     }
 
     public void append(double value) throws UnsupportedOperationException {
         data.add(value);
     }
 
-    @Override
-    public void append(Column col) throws IllegalArgumentException {
-        if(col.type() == type) {
-            DoubleColumn dc = (DoubleColumn) col;
-            try {
-                data.add(dc.data.toArray());
-                return;
-            } catch (UnsupportedOperationException ex) {
-                // do nothing
-            }
-        }
-        try{
-            for (int i = 0; i < col.size(); i++) {
-                data.add(col.value(i));
-            }
-        } catch (UnsupportedOperationException ex1) {
-            DoubleSeries dataJoined = new DoubleSeries() {
-                int size1 = size();
-                int size2 = col.size();
-                int size =  size1 + size2;
-                @Override
-                public int size() {
-                    return size;
-                }
-
-                @Override
-                public double get(int index) {
-                    if(index < size1) {
-                        return data.get(index);
-                    } else {
-                        return col.value(index - size1);
-                    }
-                }
-            };
-            data = new BaseDoubleEditableSeries(dataJoined);
-        }
+    public void append(double[] values) throws UnsupportedOperationException {
+        data.add(values);
     }
+
+    @Override
+    public Column append(int from, int length, Column colToAppend, int colToAppendFrom, int colToAppendLength) throws IllegalArgumentException {
+        checkBounds(from, length, size());
+        checkBounds(colToAppendFrom, colToAppendLength, colToAppend.size());
+        DoubleColumn resultantColumn = new DoubleColumn(name);
+        try {
+            resultantColumn.append(data.toArray(from, length));
+        } catch (UnsupportedOperationException ex) {
+            int till = from + length;
+            for (int i = from; i < till; i++) {
+                resultantColumn.append(data.get(i));
+            }
+        }
+        if(colToAppend.type() == type) {
+            DoubleColumn doubleColToAppend = (DoubleColumn) colToAppend;
+            try {
+                resultantColumn.append(doubleColToAppend.data.toArray(colToAppendFrom, colToAppendLength));
+                return resultantColumn;
+            } catch (UnsupportedOperationException ex) {
+              // do nothing;
+            }
+        }
+        int colToAppendTill = colToAppendFrom + colToAppendLength;
+        for (int i = colToAppendFrom; i < colToAppendTill; i++) {
+            resultantColumn.append(colToAppend.value(i));
+        }
+        return resultantColumn;
+    }
+
 
     @Override
     public Column emptyCopy() {
@@ -105,34 +116,32 @@ public class DoubleColumn implements Column {
     }
 
     @Override
-    public double[] minMax() {
-        double min = Integer.MAX_VALUE;
-        double max = Integer.MIN_VALUE;
+    public double[] minMax(int from, int length) throws IndexOutOfBoundsException {
+        checkBounds(from, length, size());
+        double min = Double.MAX_VALUE;
+        double max = Double.MIN_VALUE;
         double value;
-        if(size() > 0) {
-            for (int i = 0; i < size(); i++) {
-                value = data.get(i);
-                if(min > value) {
-                    min = value;
-                }
-                if(max < value) {
-                    max = value;
-                }
+        int till = from + length;
+        for (int i = from; i < till; i++) {
+            value = data.get(i);
+            if(min > value) {
+                min = value;
             }
-            double[] minMax  = {min, max};
-            return minMax;
+            if(max < value) {
+                max = value;
+            }
         }
-        return null;
-
+        double[] minMax  = {min, max};
+        return minMax;
     }
 
     @Override
-    public Column view(int from, int length) {
+    public Column view(int from, int length) throws IndexOutOfBoundsException {
+        checkBounds(from, length, size());
         DoubleSeries subSequence = new DoubleSeries() {
-            int size = Math.min(data.size() - from, length);
             @Override
             public int size() {
-                return size;
+                return length;
             }
 
             @Override
@@ -161,29 +170,48 @@ public class DoubleColumn implements Column {
     }
 
     @Override
-    public int[] sort(boolean isParallel) {
-        return SeriesUtils.sort(data, 0, data.size(), isParallel);
+    public int[] sort(int from, int length, boolean isParallel) throws IndexOutOfBoundsException  {
+        checkBounds(from, length, size());
+        return SeriesUtils.sort(data, from, length, isParallel);
     }
 
     @Override
-    public int bisect(double value) {
-        return SeriesUtils.bisect(data, value, 0, data.size());
+    public int bisect(double value, int from, int length) throws IndexOutOfBoundsException {
+        checkBounds(from, length, size());
+        return SeriesUtils.bisect(data, value, from, length);
     }
 
     @Override
-    public int bisectLeft(double value) {
-        return SeriesUtils.bisectLeft(data, value, 0, data.size());
+    public int bisectLeft(double value, int from, int length) throws IndexOutOfBoundsException  {
+        checkBounds(from, length, size());
+        return SeriesUtils.bisectLeft(data, value, from, length);
+
     }
 
     @Override
-    public int bisectRight(double value) {
-        return SeriesUtils.bisectRight(data, value, 0, data.size());
+    public int bisectRight(double value, int from, int length) throws IndexOutOfBoundsException  {
+        checkBounds(from, length, size());
+        return SeriesUtils.bisectRight(data, value, from, length);
     }
 
-    static class BaseDoubleEditableSeries implements DoubleEditableSeries {
+    private static void checkBounds(int from, int length, int size) throws IndexOutOfBoundsException {
+        if(from < 0 || length < 0 || from + length > size) {
+            String msg = "from: " + from + ", length: " + length + ", size: " + size;
+            throw new IndexOutOfBoundsException(msg);
+        }
+    }
+
+    public interface EditableDoubleSeries extends DoubleSeries {
+        void add(double value) throws UnsupportedOperationException;
+        void add(double[] values) throws UnsupportedOperationException;
+        void set(int index, double value) throws UnsupportedOperationException;
+        double[] toArray(int from, int length) throws UnsupportedOperationException;
+    }
+
+    static class BaseEditableDoubleSeries implements EditableDoubleSeries {
         DoubleSeries sequence;
 
-        public BaseDoubleEditableSeries(DoubleSeries sequence) {
+        public BaseEditableDoubleSeries(DoubleSeries sequence) {
             this.sequence = sequence;
         }
 
@@ -203,7 +231,7 @@ public class DoubleColumn implements Column {
         }
 
         @Override
-        public void add(double... values) throws UnsupportedOperationException {
+        public void add(double[] values) throws UnsupportedOperationException {
             throw new UnsupportedOperationException();
         }
 
@@ -213,15 +241,15 @@ public class DoubleColumn implements Column {
         }
 
         @Override
-        public double[] toArray() throws UnsupportedOperationException {
+        public double[] toArray(int from, int length) throws UnsupportedOperationException {
             throw new UnsupportedOperationException();
         }
     }
 
-    static class DoubleArrayListWrapper implements DoubleEditableSeries {
+    static class ArrayListWrapperDouble implements EditableDoubleSeries {
         private final DoubleArrayList doubleArrayList;
 
-        public DoubleArrayListWrapper(DoubleArrayList doubleArrayList) {
+        public ArrayListWrapperDouble(DoubleArrayList doubleArrayList) {
             this.doubleArrayList = doubleArrayList;
         }
 
@@ -241,8 +269,8 @@ public class DoubleColumn implements Column {
         }
 
         @Override
-        public double[] toArray() throws UnsupportedOperationException {
-            return doubleArrayList.toArray();
+        public double[] toArray(int from, int length) throws UnsupportedOperationException {
+            return doubleArrayList.toArray(from, length);
         }
 
         @Override

@@ -19,7 +19,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 
-public class BiosignalFrame extends JFrame {
+public class TestFrame extends JFrame {
     private static final Color BG_COLOR = Color.BLACK;
     private static final Color MENU_BG_COLOR = Color.LIGHT_GRAY;
     private static final Color MENU_TEXT_COLOR = Color.BLACK;
@@ -35,7 +35,7 @@ public class BiosignalFrame extends JFrame {
     private long endTimeMs = 1000;
     private RecorderView recorderPanel;
 
-    public BiosignalFrame(Facade facade) {
+    public TestFrame(Facade facade) {
         super("Biosignal");
         this.facade = facade;
 
@@ -51,7 +51,7 @@ public class BiosignalFrame extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 File file = chooseFileToRead(facade);
                 if (file != null) {
-                    facade.chooseFileDataProvider(file, true);
+                    facade.chooseFileDataProvider(file,true);
                     if(recorderPanel != null) {
                         recorderPanel.stop();
                     }
@@ -68,10 +68,10 @@ public class BiosignalFrame extends JFrame {
             public void actionPerformed(ActionEvent event) {
                 if(recorderPanel == null) {
                     recorderPanel = new RecorderView(facade.chooseRecorderDataProvider());
-                    recorderPanel.setParentWindow(BiosignalFrame.this);
+                    recorderPanel.setParentWindow(TestFrame.this);
                 }
                 setTitle("BioRecorder");
-                JDialog recorderDialog = new BioRecorderDialog(recorderPanel, BiosignalFrame.this);
+                JDialog recorderDialog = new BioRecorderDialog(recorderPanel, TestFrame.this);
             }
         });
         add(menu, BorderLayout.NORTH);
@@ -86,7 +86,7 @@ public class BiosignalFrame extends JFrame {
         Dimension d = tk.getScreenSize();
         Insets insets = tk.getScreenInsets(getGraphicsConfiguration());
         setPreferredSize(new Dimension(d.width - insets.left - insets.right, d.height - insets.top - insets.bottom));
-       // setPreferredSize(new Dimension(1300,1000 ));
+        // setPreferredSize(new Dimension(1300,1000 ));
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
@@ -110,7 +110,7 @@ public class BiosignalFrame extends JFrame {
                 chartPanel.repaint();
             }
         });
-       // addKeyListener(new LetterKeyListener());
+        // addKeyListener(new LetterKeyListener());
         //Вызов менеджера раскладки по умолчанию
         pack();
         setVisible(true);
@@ -126,7 +126,7 @@ public class BiosignalFrame extends JFrame {
 
     private static BiChartPanel createChartPanel(Facade facade, ProcessingConfig processingConfig) {
         if(processingConfig == null) {
-           processingConfig = new ProcessingConfig();
+            processingConfig = new ProcessingConfig();
         }
         boolean isTimeXAxis = facade.isDateTime(); // XAxis: false - index; true - time
         boolean scrollsAtEnd = true;
@@ -134,44 +134,53 @@ public class BiosignalFrame extends JFrame {
         int[] chartDataChannels1 = facade.getChartDataChannels1();
         int[] chartDataChannels2 = facade.getChartDataChannels2();
         int[] navDataChannels = facade.getNavigatorDataChannels();
+        int channelsCount = 0;
+        if(navDataChannels.length > 0) {
+            channelsCount = 4;
+        }
 
         boolean isYOpposite = false;
         boolean isXOpposite;
         for (int i = 0; i < chartDataChannels1.length; i++) {
             isXOpposite = false;
-            int channel = chartDataChannels1[i];
-            XYData xyData = facade.getData(channel);
-            GroupingApproximation grApprox = facade.getDataGroupingApproximation(channel);
+            int[] channels = {chartDataChannels1[i], chartDataChannels1[i] + channelsCount};
+            for (int channel : channels) {
+                XYData xyData = facade.getData(channel);
+                GroupingApproximation grApprox = facade.getDataGroupingApproximation(channel);
+                LineTraceConfig lineConfig = new LineTraceConfig();
+                lineConfig.setLineWidth(1);
+                lineConfig.setMarkSize(3);
+                chartPanel.addChartTrace(xyData.getName(), xyData, grApprox, new LineTracePainter(lineConfig), isXOpposite, isYOpposite);
 
+            }
             if (i > 0) {
                 chartPanel.addChartStack();
             }
-            LineTraceConfig lineConfig = new LineTraceConfig();
-            lineConfig.setLineWidth(1);
-            lineConfig.setMarkSize(3);
-            chartPanel.addChartTrace(xyData.getName(), xyData, grApprox, new LineTracePainter(lineConfig), isXOpposite, isYOpposite);
         }
 
         for (int i = 0; i < chartDataChannels2.length; i++) {
             isXOpposite = true;
-            int channel = chartDataChannels2[i];
-            XYData xyData = facade.getData(channel);
-            GroupingApproximation grApprox = facade.getDataGroupingApproximation(channel);
-            chartPanel.addChartStack();
-            LineTraceConfig lineConfig = new LineTraceConfig();
-            lineConfig.setLineWidth(1);
-            lineConfig.setMarkSize(3);
-            chartPanel.addChartTrace(xyData.getName(), xyData, grApprox, new LineTracePainter(lineConfig), isXOpposite, isYOpposite);
+            int[] channels = {chartDataChannels2[i], chartDataChannels2[i] + channelsCount};
+            for (int channel : channels) {
+                XYData xyData = facade.getData(channel);
+                GroupingApproximation grApprox = facade.getDataGroupingApproximation(channel);
+                LineTraceConfig lineConfig = new LineTraceConfig();
+                lineConfig.setLineWidth(1);
+                lineConfig.setMarkSize(3);
+                chartPanel.addChartTrace(xyData.getName(), xyData, grApprox, new LineTracePainter(lineConfig), isXOpposite, isYOpposite);
+            }
         }
 
         for (int i = 0; i < navDataChannels.length; i++) {
-            int channel = navDataChannels[i];
-            XYData xyData = facade.getData(channel);
-            GroupingApproximation grApprox = facade.getDataGroupingApproximation(channel);
-            if (i > 0) {
+            int[] channels = {navDataChannels[i], navDataChannels[i] +channelsCount};
+            for (int channel : channels) {
+                System.out.println("nav ch "+channel);
                 chartPanel.addNavigatorStack();
+                XYData xyData = facade.getData(channel);
+                GroupingApproximation grApprox = facade.getDataGroupingApproximation(channel);
+                chartPanel.addNavigatorTrace(xyData.getName(), xyData, grApprox, new VerticalLinePainter());
+
             }
-            chartPanel.addNavigatorTrace(xyData.getName(), xyData, grApprox, new VerticalLinePainter());
         }
 
         return chartPanel;

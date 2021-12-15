@@ -91,19 +91,15 @@ public class RecorderView extends JPanel implements ProgressListener, StateChang
     private JComponent[] channelsHeaders = {new JLabel(" "), new JLabel(" "), new JLabel("Name", SwingConstants.CENTER), new JLabel("Frequency", SwingConstants.CENTER),
             new JLabel("Mode", SwingConstants.CENTER), new JLabel("Gain", SwingConstants.CENTER), filterOrContactsLabel};
 
-    private final Window parentFrame;
+    private Window parentWindow;
 
-    public RecorderView(RecorderViewModel recorder, Window parentFrame) {
+    public RecorderView(RecorderViewModel recorder) {
         this.recorder = recorder;
-        this.parentFrame = parentFrame;
         startRecordingButton.setForeground(COLOR_BRAND);
         stopButton.setForeground(COLOR_BRAND);
         checkContactsButton.setForeground(COLOR_BRAND);
-
         settings = recorder.getInitialSettings();
         availableComports = settings.getAvailableComports();
-
-
         startRecordingButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
@@ -129,11 +125,19 @@ public class RecorderView extends JPanel implements ProgressListener, StateChang
         advanceButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new RecorderAdvancedView(settings, parentFrame);
+                new RecorderAdvancedView(settings, parentWindow);
             }
         });
 
         loadDataFromSettings();
+
+        recorder.addProgressListener(this);
+        recorder.addAvailableComportsListener(this);
+        recorder.addStateChangeListener(this);
+    }
+
+    public void setParentWindow(Window parentWindow) {
+        this.parentWindow = parentWindow;
     }
 
 
@@ -222,7 +226,9 @@ public class RecorderView extends JPanel implements ProgressListener, StateChang
         });
 
         arrangeFields();
-        parentFrame.pack();
+        if(parentWindow != null) {
+            parentWindow.pack();
+        }
     }
 
     private void saveDataToSettings() {
@@ -450,7 +456,6 @@ public class RecorderView extends JPanel implements ProgressListener, StateChang
                 }
             }
         });
-
     }
 
     @Override
@@ -533,10 +538,6 @@ public class RecorderView extends JPanel implements ProgressListener, StateChang
         if (!actionResult.isMessageEmpty()) {
             showMessage(actionResult.getMessage().getMessage());
         }
-    }
-
-    private void stop() {
-        recorder.stop();
     }
 
     private void changeDeviceType() {
@@ -685,5 +686,9 @@ public class RecorderView extends JPanel implements ProgressListener, StateChang
     public void close() {
         saveDataToSettings();
         recorder.closeApplication(settings);
+    }
+
+    public void stop() {
+        recorder.stop();
     }
 }

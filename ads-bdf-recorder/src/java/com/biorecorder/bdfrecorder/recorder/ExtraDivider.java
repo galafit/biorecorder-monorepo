@@ -1,4 +1,4 @@
-package com.biorecorder.bdfrecorder;
+package com.biorecorder.bdfrecorder.recorder;
 
 /**
  * Created by galafit on 6/10/18.

@@ -6,15 +6,33 @@ import java.util.List;
 public class DataTable {
     private String name;
     private List<Column> columns = new ArrayList<>();
+    private volatile int size = 0;
 
     public DataTable(String name) {
         this.name = name;
     }
+
     public DataTable(String name, Column... columns) {
         this.name = name;
         for (Column col : columns) {
             this.columns.add(col);
         }
+        size = calculateSize(this.columns);
+    }
+
+    private static int calculateSize(List<Column> columns) {
+        if(columns.size() == 0) {
+            return 0;
+        }
+        int minColSize = Integer.MAX_VALUE;
+        for (Column col : columns) {
+            minColSize = Math.min(minColSize, col.size());
+        }
+        return minColSize;
+    }
+
+    public void updateSize() {
+        size = calculateSize(columns);
     }
 
     public String getName() {
@@ -25,33 +43,26 @@ public class DataTable {
         this.name = name;
     }
 
-    public void removeColumns() {
-        columns.clear();
+    public void removeColumn(int columnNumber) {
+        columns.remove(columnNumber);
+        size = calculateSize(columns);
     }
 
     public void addColumns(Column... columns) {
         for (Column col : columns) {
             this.columns.add(col);
         }
+        size = calculateSize(this.columns);
     }
 
-    public void addColumn(int position, Column col) {
-        columns.add(position, col);
-    }
 
     public Column getColumn(int index) {
         return columns.get(index);
     }
 
-    public void removeColumn(int columnNumber) {
-        columns.remove(columnNumber);
-    }
 
     public int rowCount() {
-        if(columns.size() > 0) {
-            return columns.get(0).size();
-        }
-        return 0;
+        return size;
     }
 
     public int columnCount() {
@@ -85,17 +96,17 @@ public class DataTable {
             column = column.view(sorter);
         }
         int length1 = rowCount();
-        return column.bisect(value);
+        return column.bisect(value, 0, size);
     }
 
     public int bisectLeft(int columnNumber, double value) {
         Column column = columns.get(columnNumber);
-        return column.bisectLeft(value);
+        return column.bisectLeft(value, 0, size);
     }
 
     public int bisectRight(int columnNumber, double value) {
         Column column = columns.get(columnNumber);
-        return column.bisectRight(value);
+        return column.bisectRight(value, 0, size);
     }
 
     public String getColumnName(int columnNumber) {
@@ -103,7 +114,10 @@ public class DataTable {
     }
 
     public double[] minMax(int columnNumber) {
-        return columns.get(columnNumber).minMax();
+        if(size == 0) {
+            return null;
+        }
+        return columns.get(columnNumber).minMax(0, size);
     }
 
     /**
@@ -111,8 +125,8 @@ public class DataTable {
      * without modifying the order of the underlying data.
      * (like JTable sortedIndices in java)
      */
-    public DataTable sort(int sortColumnNumber) {
-        return view(sortedIndices(sortColumnNumber));
+    public DataTable sort(int columnNumber) {
+        return view(sortedIndices(columnNumber));
     }
 
     /**
@@ -125,13 +139,13 @@ public class DataTable {
      */
     public int[] sortedIndices(int sortColumnNumber) {
         boolean isParallel = false;
-        return columns.get(sortColumnNumber).sort(isParallel);
+        return columns.get(sortColumnNumber).sort( 0, size, isParallel);
     }
 
     public DataTable view(int[] rowOrder) {
         DataTable resultantTable = new DataTable(name);
         for (int i = 0; i < columns.size(); i++) {
-            resultantTable.columns.add(columns.get(i).view(rowOrder));
+            resultantTable.addColumns(columns.get(i).view(rowOrder));
         }
         return resultantTable;
     }
@@ -139,20 +153,25 @@ public class DataTable {
     public DataTable view(int from, int length) {
         DataTable resultantTable = new DataTable(name);
         for (int i = 0; i < columns.size(); i++) {
-            resultantTable.columns.add(columns.get(i).view(from, length));
+            resultantTable.addColumns(columns.get(i).view(from, length));
         }
         return resultantTable;
     }
 
+    /**
+     * This method do not change the original table neither tableToAppend!
+     * But create a new table and put in it joined data from both tables
+     */
     public DataTable append(DataTable tableToAppend) throws IllegalArgumentException {
         if(!isCompatible(this, tableToAppend)) {
             String msg = "Table to append is incompatible";
             throw new IllegalArgumentException(msg);
         }
+        DataTable resultantTable = new DataTable(name);
         for (int i = 0; i < tableToAppend.columnCount(); i++) {
-            columns.get(i).append(tableToAppend.columns.get(i));
+            resultantTable.addColumns(columns.get(i).append(0, size, tableToAppend.getColumn(i), 0, tableToAppend.rowCount()));
         }
-        return this;
+        return resultantTable;
     }
 
     public static boolean isCompatible(DataTable table1, DataTable table2) {

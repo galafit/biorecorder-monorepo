@@ -88,11 +88,11 @@ public class Resampler {
         return resampleAndAppend(tableToResample, 0, tableToResample.rowCount());
     }
 
-    public DataTable resampleAndAppend(DataTable tableToResample, int from, int length) {
-        if(length <= 0) {
-            return resultantTable;
+    public DataTable resampleAndAppend(DataTable tableToResample, int from, int length) throws IndexOutOfBoundsException {
+        checkBounds(from, length, tableToResample.rowCount());
+        if(resultantTable == null) {
+            resultantTable = new DataTable(tableToResample.getName());
         }
-        resultantTable = new DataTable(tableToResample.getName());
         IntSeries groups = binning.group(tableToResample.getColumn(0), from, length);
         for (int i = 0; i < tableToResample.columnCount(); i++) {
             Aggregation[] aggregations = columnsToAgg.get(i);
@@ -112,6 +112,13 @@ public class Resampler {
             }
         }
         return resultantTable;
+    }
+
+    private static void checkBounds(int from, int length, int size) throws IndexOutOfBoundsException {
+        if(from < 0 || length < 0 || from + length > size) {
+            String msg = "from: " + from + ", length: " + length + ", size: " + size;
+            throw new IndexOutOfBoundsException(msg);
+        }
     }
 
     interface Binning {
@@ -333,7 +340,7 @@ public class Resampler {
                 data1[j] = i * size + j;
             }
             DataTable dataTable1 = new DataTable("ResTable");
-            dataTable1.addColumns(new RegularColumn("", size * i, 1, size));
+            dataTable1.addColumns(new RegularColumn("", size * i, 1));
             //dataTable1.addColumn(new DoubleColumn("x", data1));
             dataTable1.addColumns(new DoubleColumn("y", data1));
             aggPoints2.resampleAndAppend(dataTable1);

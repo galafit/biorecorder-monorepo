@@ -8,9 +8,5 @@ public class Start {
         JsonPreferences preferences = new JsonPreferences();
         RecorderViewModel bdfRecorder = new RecorderViewModelImpl(new EdfBioRecorderApp(), preferences);
         MainFrame recorderView = new MainFrame(bdfRecorder);
-        bdfRecorder.addProgressListener(recorderView);
-        bdfRecorder.addAvailableComportsListener(recorderView);
-        bdfRecorder.addStateChangeListener(recorderView);
-
     }
 }

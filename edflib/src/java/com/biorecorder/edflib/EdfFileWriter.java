@@ -5,6 +5,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * EdfWriter permits to write digital or physical samples
@@ -29,7 +32,7 @@ import java.nio.channels.FileChannel;
  * to 3 LITTLE_ENDIAN ordered bytes (24 bits) for BDF files
  * and in this form written to the file.
  */
-public class EdfWriter implements DataRecordStream {
+public class EdfFileWriter implements DataRecordStream {
     private final String CLOSED_MSG = "File was closed. Data can not be written";
     private final String NUMBER_OF_SIGNALS_ZERO = "Number of signals is 0. Data can not be written";
     private final String RECORD_INCOMPLETE = "Last data record is incomplete. Incorrect use of method: writeSamples/writePhysicalSamples.";
@@ -37,7 +40,6 @@ public class EdfWriter implements DataRecordStream {
 
     private DataHeader header;
     private final File file;
-
     private volatile boolean isClosed = false;
     private volatile boolean isWriting = false;
     private volatile long sampleCount;
@@ -46,7 +48,7 @@ public class EdfWriter implements DataRecordStream {
     private int recordSize; // helper field to avoid unnecessary calculations
     private int currentSignal;
 
-    public EdfWriter(File file) throws FileNotFoundException {
+    public EdfFileWriter(File file) throws FileNotFoundException {
         this.file = file;
         fileOutputStream = new FileOutputStream(file);
     }
@@ -63,12 +65,16 @@ public class EdfWriter implements DataRecordStream {
      * than a regular file, does not exist but cannot be created,
      * or cannot be opened for any other reason
      */
-    public EdfWriter(File file, DataHeader header) throws FileNotFoundException {
+    public EdfFileWriter(File file, DataHeader header) throws FileNotFoundException {
         this.header = new DataHeader(header);
         this.file = file;
         fileOutputStream = new FileOutputStream(file);
         recordSize = header.getRecordSize();
         this.header.setNumberOfDataRecords(-1);
+    }
+
+    public File getFile() {
+        return file;
     }
 
     @Override
@@ -262,22 +268,29 @@ public class EdfWriter implements DataRecordStream {
         }
     }
 
-
     /**
      * Gets the number of received data records (data packages).
      * @return number of received data records
      */
-    public long getNumberOfReceivedDataRecords() {
+    public int getNumberOfReceivedDataRecords() {
         if(recordSize == 0) {
             return 0;
         }
         return (int) (sampleCount / recordSize);
     }
 
+    public String getWritingInfo() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("Start recording time = "  + dateFormat.format(new Date(header.getRecordingStartTimeMs())) + "\n");
+        stringBuilder.append("Duration of data records(sec) = " + header.getDurationOfDataRecordSec()+ "\n");
+        stringBuilder.append("Number of data records = " + header.getNumberOfDataRecords());
+        return stringBuilder.toString();
+    }
+
     public boolean isClosed() {
         return isClosed;
     }
-
 
     private void writeDataToFile(int[] samples, int length) throws IllegalStateException, IORuntimeException {
         isWriting = true;
@@ -308,9 +321,9 @@ public class EdfWriter implements DataRecordStream {
     }
 
     private void writeHeaderToFile() throws IORuntimeException {
-        Long numberOfReceivedRecords = getNumberOfReceivedDataRecords();
+        int numberOfReceivedRecords = getNumberOfReceivedDataRecords();
         if(numberOfReceivedRecords > 0 && numberOfReceivedRecords < MAX_RECORD_NUMBER) {
-            header.setNumberOfDataRecords(numberOfReceivedRecords.intValue());
+            header.setNumberOfDataRecords(numberOfReceivedRecords);
         }
 
         FileChannel fileChannel = fileOutputStream.getChannel();

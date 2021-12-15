@@ -1,7 +1,7 @@
 package com.biorecorder.edflib.example;
 
 import com.biorecorder.edflib.EdfReader;
-import com.biorecorder.edflib.EdfWriter;
+import com.biorecorder.edflib.EdfFileWriter;
 import com.biorecorder.edflib.DataHeader;
 
 import java.io.File;
@@ -36,7 +36,7 @@ public class EdfExample {
  *****************************************************************************************/
         File resultantFile1 = new File(recordsDir, "copy1"+originalFilename);
         try {
-            EdfWriter fileWriter1 = new EdfWriter(resultantFile1, header);
+            EdfFileWriter fileWriter1 = new EdfFileWriter(resultantFile1, header);
             int originalDataRecordLength = header.getRecordSize();
             int[] intBuffer = new int[originalDataRecordLength];
             while (originalFileReader.readDataRecords(1, intBuffer) > 0) {
@@ -74,7 +74,7 @@ public class EdfExample {
  *****************************************************************************************/
         File resultantFile2 = new File(recordsDir, "copy2"+originalFilename);
         try {
-            EdfWriter fileWriter2 = new EdfWriter(resultantFile2, header);
+            EdfFileWriter fileWriter2 = new EdfFileWriter(resultantFile2, header);
             // set DataRecord and signals positions to 0;
             originalFileReader.reset();
             int signals = header.numberOfSignals();

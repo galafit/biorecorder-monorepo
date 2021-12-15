@@ -6,9 +6,9 @@ import com.biorecorder.datalyb.datatable.IntColumn;
 import com.biorecorder.datalyb.datatable.RegularColumn;
 
 public class XYSeries implements ChartData {
-    DataTable dataTable = new DataTable("XYData");
-    GroupingApproximation groupingApproximationX = GroupingApproximation.OPEN;
-    GroupingApproximation groupingApproximationY = GroupingApproximation.AVERAGE;
+    private DataTable dataTable = new DataTable("XYData");
+    private GroupingApproximation groupingApproximationX = GroupingApproximation.OPEN;
+    private GroupingApproximation groupingApproximationY = GroupingApproximation.AVERAGE;
 
     public XYSeries(DataTable dataTable) {
         this.dataTable = dataTable;
@@ -20,7 +20,7 @@ public class XYSeries implements ChartData {
     }
 
     public XYSeries(double startValue, double step, int[] yData) {
-        dataTable.addColumns(new RegularColumn("x",startValue, step, yData.length));
+        dataTable.addColumns(new RegularColumn("x",startValue, step));
         dataTable.addColumns(new IntColumn("y", yData));
     }
 
@@ -41,6 +41,10 @@ public class XYSeries implements ChartData {
         copy.groupingApproximationX = groupingApproximationX;
         copy.groupingApproximationY = groupingApproximationY;
         return copy;
+    }
+
+    public void updateSize() {
+        dataTable.updateSize();
     }
 
     public GroupingApproximation getGroupingApproximationX() {
@@ -76,7 +80,7 @@ public class XYSeries implements ChartData {
     }
 
     public void appendData(XYSeries dataToAppend) {
-        dataTable.append(dataToAppend.dataTable);
+        dataTable = dataTable.append(dataToAppend.dataTable);
     }
 
     public XYSeries view(int from, int length) {
@@ -136,7 +140,4 @@ public class XYSeries implements ChartData {
     public int bisect(int columnIndex, double value, int[] sorter) {
         return dataTable.bisect(columnIndex, value, sorter);
     }
-
-
-
 }

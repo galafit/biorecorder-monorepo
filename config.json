@@ -1,16 +1,11 @@
 {
-  "durationOfDataRecord" : 1.0,
-  "isDurationOfDataRecordAdjustable" : true,
   "patientIdentification" : "Default patient",
   "recordingIdentification" : "Default record",
   "filter50HzMask" : [ true, true, true, true, true, true, true, true ],
-  "channelsExtraDividers" : [ "D1", "D1", "D1", "D1", "D1", "D1", "D1", "D1" ],
-  "accelerometerExtraDivider" : "D1",
   "isLabStreamingEnabled" : false,
   "comportName" : "/dev/tty.usbserial-AH0604FV",
   "dirToSave" : "/Users/galafit/IdeaProjects/biorecorder-monorepo/records",
   "recorderConfig" : {
-    "batteryVoltageChannelDeletingEnable" : true,
     "adsConfig" : {
       "adsType" : "ADS_2",
       "sps" : "S500",
@@ -21,7 +16,7 @@
       "accelerometerDivider" : "D10",
       "adsChannels" : [ {
         "name" : "Channel 1",
-        "divider" : "D1",
+        "divider" : "D10",
         "gain" : "G2",
         "commutator" : "INPUT",
         "isEnabled" : true,
@@ -29,7 +24,7 @@
         "isRldSenseEnabled" : false
       }, {
         "name" : "Channel 2",
-        "divider" : "D1",
+        "divider" : "D10",
         "gain" : "G2",
         "commutator" : "INPUT",
         "isEnabled" : true,
@@ -84,6 +79,11 @@
         "isLoffEnable" : false,
         "isRldSenseEnabled" : false
       } ]
-    }
+    },
+    "isDurationOfDataRecordAdjustable" : true,
+    "durationOfDataRecord" : 1.0,
+    "batteryVoltageChannelDeletingEnable" : true,
+    "channelsExtraDividers" : [ "D1", "D1", "D1", "D1", "D1", "D1", "D1", "D1" ],
+    "accelerometerExtraDivider" : "D1"
   }
 }

@@ -9,14 +9,9 @@ import java.io.File;
  * Class containing all the necessary settings for running the application
  */
 public class AppConfig {
-
-    private double durationOfDataRecord = 1; // sec
-    private boolean isDurationOfDataRecordAdjustable = true;
     private String patientIdentification = "Default patient";
     private String recordingIdentification = "Default record";
     private boolean[] filter50HzMask;
-    private ExtraDivider[] channelsExtraDividers;
-    private ExtraDivider accelerometerExtraDivider = ExtraDivider.D1;
 
     private boolean isLabStreamingEnabled = false;
     private String comportName;
@@ -31,17 +26,11 @@ public class AppConfig {
         for (int i = 0; i < filter50HzMask.length; i++) {
             filter50HzMask[i] = true;
         }
-        channelsExtraDividers = new ExtraDivider[RecorderType.getMaxChannelsCount()];
-        for (int i = 0; i < channelsExtraDividers.length; i++) {
-            channelsExtraDividers[i] = ExtraDivider.D1;
-        }
     }
 
     public AppConfig(AppConfig configToCopy) {
         recorderConfig = new RecorderConfig(configToCopy.recorderConfig);
-        durationOfDataRecord = configToCopy.durationOfDataRecord;
-        isDurationOfDataRecordAdjustable = configToCopy.isDurationOfDataRecordAdjustable;
-        patientIdentification = configToCopy.patientIdentification;
+         patientIdentification = configToCopy.patientIdentification;
         recordingIdentification = configToCopy.recordingIdentification;
         comportName = configToCopy.comportName;
         dirToSave = configToCopy.dirToSave;
@@ -49,13 +38,7 @@ public class AppConfig {
         for (int i = 0; i < filter50HzMask.length; i++) {
             filter50HzMask[i] = configToCopy.filter50HzMask[i];
         }
-        accelerometerExtraDivider = configToCopy.accelerometerExtraDivider;
-        channelsExtraDividers = new ExtraDivider[configToCopy.channelsExtraDividers.length];
-        for (int i = 0; i < channelsExtraDividers.length; i++) {
-            channelsExtraDividers[i] = configToCopy.channelsExtraDividers[i];
-        }
     }
-
 
     public RecorderConfig getRecorderConfig() {
         return recorderConfig;
@@ -98,30 +81,6 @@ public class AppConfig {
          filter50HzMask[channelNumber] = is50HzFilterEnabled;
     }
 
-    public ExtraDivider getChannelExtraDivider(int channelNumber) {
-        return channelsExtraDividers[channelNumber];
-    }
-
-    public void setChannelExtraDivider(int channelNumber, ExtraDivider extraDivider) {
-        channelsExtraDividers[channelNumber] = extraDivider;
-    }
-
-    public ExtraDivider getAccelerometerExtraDivider() {
-        return accelerometerExtraDivider;
-    }
-
-    public void setAccelerometerExtraDivider(ExtraDivider accelerometerExtraDivider) {
-        this.accelerometerExtraDivider = accelerometerExtraDivider;
-    }
-
-    public boolean isDurationOfDataRecordAdjustable() {
-        return isDurationOfDataRecordAdjustable;
-    }
-
-    public void setDurationOfDataRecordAdjustable(boolean durationOfDataRecordAdjustable) {
-        isDurationOfDataRecordAdjustable = durationOfDataRecordAdjustable;
-    }
-
     public String getComportName() {
         return comportName;
     }
@@ -159,21 +118,5 @@ public class AppConfig {
 
     public void setFileName(String fileName) {
         this.fileName = fileName;
-    }
-
-    int getNumberOfRecordsToJoin() {
-        int numberOfRecordsToJoin = (int) (durationOfDataRecord / recorderConfig.getDurationOfDataRecord());
-        if(numberOfRecordsToJoin > 1) {
-            return numberOfRecordsToJoin;
-        }
-        return 1;
-    }
-
-    public double getDurationOfDataRecord() {
-        return recorderConfig.getDurationOfDataRecord() * getNumberOfRecordsToJoin();
-    }
-
-    public void setDurationOfDataRecord(double durationOfDataRecord) {
-        this.durationOfDataRecord = durationOfDataRecord;
     }
 }

@@ -51,12 +51,6 @@ public class YPipe implements YReceiver, Pipe {
         return dataSink.getXYData();
     }
 
-    public void put(int[] values) {
-        for (int v : values) {
-           put(v);
-        }
-    }
-
     @Override
     public void put(int value) {
         int filteredValue = filter.apply(value);
@@ -70,20 +64,20 @@ public class YPipe implements YReceiver, Pipe {
     }
 
     static class YSink implements YReceiver {
-        RegularColumn xData;
-        IntColumn yData = new IntColumn("y");
+        private XYData xyData;
+        private IntColumn yData = new IntColumn("y");
 
         public YSink(double startValue, double step) {
-            xData = new RegularColumn("x", startValue, step, 0);
+            RegularColumn xData = new RegularColumn("x", startValue, step);
+            xyData = new XYData("XYData", xData, yData);
         }
 
         public XYData getXYData() {
-           return new XYData("XYData", xData, yData);
+           return xyData;
         }
 
         @Override
         public void put(int value) {
-            xData.append();
             yData.append(value);
         }
     }

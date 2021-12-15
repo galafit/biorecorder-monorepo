@@ -1,24 +1,10 @@
 package biosignal.application;
 
 public class NullDataProvider implements DataProvider{
-    @Override
-    public void start() {
-
-    }
-
-    @Override
-    public void stop() {
-
-    }
 
     @Override
     public void finish() {
 
-    }
-
-    @Override
-    public int signalsCount() {
-        return 0;
     }
 
     @Override
@@ -27,12 +13,7 @@ public class NullDataProvider implements DataProvider{
     }
 
     @Override
-    public double signalSampleRate(int signal) {
-        return 1;
-    }
+    public void addConfigListener(ProviderConfigListener l) {
 
-    @Override
-    public long getRecordingStartTimeMs() {
-        return 0;
     }
 }

@@ -18,13 +18,13 @@ import org.apache.commons.logging.LogFactory;
  * возможно стоит методы writeByte, writeBytes и close сделать synchronized
  * для надежности
  */
-class ComportJSCC implements SerialPortEventListener, Comport {
+public class ComportJSCC implements SerialPortEventListener, Comport {
     private static Log log = LogFactory.getLog(ComportJSCC.class);
     private final SerialPort serialPort;
     private final String comportName;
     private ComportListener comportListener;
 
-    ComportJSCC(String comportName, int speed) throws ComportRuntimeException {
+    public ComportJSCC(String comportName, int speed) throws ComportRuntimeException {
         comportListener = new NullComportListener();
         this.comportName = comportName;
         try {

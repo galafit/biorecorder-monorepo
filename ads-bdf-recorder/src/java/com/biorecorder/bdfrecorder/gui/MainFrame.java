@@ -13,14 +13,14 @@ import java.awt.event.WindowEvent;
 /**
  * Created by galafit on 31/7/18.
  */
-public class MainFrame extends JFrame implements ProgressListener, StateChangeListener, AvailableComportsListener {
+public class MainFrame extends JFrame {
     private static final String TITLE = "BioRecorder";
-
-    RecorderView recorderView;
+    private final RecorderView recorderView;
 
     public MainFrame(RecorderViewModel recorder) throws HeadlessException {
         setTitle(TITLE);
-        recorderView = new RecorderView(recorder, this);
+        recorderView = new RecorderView(recorder);
+        recorderView.setParentWindow(this);
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent windowEvent) {
@@ -32,21 +32,5 @@ public class MainFrame extends JFrame implements ProgressListener, StateChangeLi
         // place the window to the screen center
         setLocationRelativeTo(null);
         setVisible(true);
-
-    }
-
-    @Override
-    public void onProgress() {
-        recorderView.onProgress();
-    }
-
-    @Override
-    public void onAvailableComportsChanged(String[] availableComports) {
-        recorderView.onAvailableComportsChanged(availableComports);
-    }
-
-    @Override
-    public void onStateChanged(Message message) {
-        recorderView.onStateChanged(message);
     }
 }

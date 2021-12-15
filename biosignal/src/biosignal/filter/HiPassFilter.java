@@ -8,6 +8,12 @@ public class HiPassFilter implements Filter {
         buffer = new CircularFifoBuffer(bufferSize);
     }
 
+    public HiPassFilter(double cutOffIntervalSec, double dataSampleRate) {
+        double sampleStep = 1 / dataSampleRate;
+        int bufferSize = (int)(cutOffIntervalSec / sampleStep);
+        buffer = new CircularFifoBuffer(bufferSize);
+    }
+
     @Override
     public int apply(int value) {
         if (buffer.size() < buffer.maxSize()){

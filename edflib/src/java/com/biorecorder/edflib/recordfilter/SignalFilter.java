@@ -3,7 +3,6 @@ package com.biorecorder.edflib.recordfilter;
 import com.biorecorder.filters.digitalfilter.IntDigitalFilter;
 import com.biorecorder.filters.digitalfilter.IntMovingAverage;
 import com.biorecorder.edflib.DataHeader;
-import com.biorecorder.edflib.DataRecordStream;
 import com.biorecorder.edflib.FormatVersion;
 
 import java.util.ArrayList;
@@ -16,10 +15,9 @@ import java.util.Map;
  * transformation  with the data samples belonging to the signals
  */
 public class SignalFilter extends FilterRecordStream {
-    private Map<Integer, List<NamedFilter>> filters = new HashMap<Integer, List<NamedFilter>>();
+    private Map<Integer, List<NamedFilter>> signalsToFilters = new HashMap<Integer, List<NamedFilter>>();
     private int[] offsets; // gain and offsets to convert dig value to phys one
-
-    public SignalFilter(DataRecordStream outStream) {
+    public SignalFilter(com.biorecorder.edflib.DataRecordStream outStream) {
         super(outStream);
     }
 
@@ -35,28 +33,25 @@ public class SignalFilter extends FilterRecordStream {
     /**
      * Indicates that the given filter should be applied to the samples
      * belonging to the given signal. This method can be called only
-     * before adding a listener!
+     * before setHeader()!
      *
      * @param signalFilter digital filter that will be applied to the samples
      * @param signalNumber number of the signal to whose samples
      *                     the filter should be applied to. Numbering starts from 0.
      */
     public void addSignalFilter(int signalNumber, IntDigitalFilter signalFilter, String filterName) {
-        List<NamedFilter> signalFilters = filters.get(signalNumber);
+        List<NamedFilter> signalFilters = signalsToFilters.get(signalNumber);
         if(signalFilters == null) {
             signalFilters = new ArrayList<NamedFilter>();
-            filters.put(signalNumber, signalFilters);
+            signalsToFilters.put(signalNumber, signalFilters);
         }
         signalFilters.add(new NamedFilter(signalFilter, filterName));
-        if(inConfig != null) {
-            outStream.setHeader(getOutConfig());
-        }
     }
 
 
     public String getSignalFiltersName(int signalNumber) {
         StringBuilder name = new StringBuilder("");
-        List<NamedFilter> signalFilters = filters.get(signalNumber);
+        List<NamedFilter> signalFilters = signalsToFilters.get(signalNumber);
         if(signalFilters != null) {
             for (NamedFilter filter : signalFilters) {
                 name.append(filter.getFilterName()).append(";");
@@ -80,30 +75,25 @@ public class SignalFilter extends FilterRecordStream {
 
     @Override
     public void writeDataRecord(int[] inputRecord)  {
-        int[] outRecord = new int[inputRecord.length];
-        int signalNumber = 0;
-        int signalStartSampleNumber = 0;
-        for (int i = 0; i < inRecordSize; i++) {
-
-            if(i >= signalStartSampleNumber + inConfig.getNumberOfSamplesInEachDataRecord(signalNumber)) {
-                signalStartSampleNumber += inConfig.getNumberOfSamplesInEachDataRecord(signalNumber);
-                signalNumber++;
-            }
-
-            List<NamedFilter> signalFilters = filters.get(signalNumber);
+        int signalStart = 0;
+        for (int signalNumber = 0; signalNumber < inConfig.numberOfSignals(); signalNumber++) {
+            int signalSamples = inConfig.getNumberOfSamplesInEachDataRecord(signalNumber);
+            List<NamedFilter> signalFilters = signalsToFilters.get(signalNumber);
             if(signalFilters != null) {
-                // for filtering we use (digValue + offset) that is proportional physValue !!!
-                int digValue = inputRecord[i] + offsets[signalNumber];
-                for (IntDigitalFilter filter : signalFilters) {
-                    digValue = filter.filteredValue(digValue);
+                for (int i = 0; i < signalSamples; i++) {
+                    // for filtering we use (digValue + offset) that is proportional physValue !!!
+                    int digValue = inputRecord[signalStart + i] + offsets[signalNumber];
+                    for (IntDigitalFilter filter : signalFilters) {
+                        digValue = filter.filteredValue(digValue);
+                    }
+                    outRecord[signalStart + i] = (int)(digValue - offsets[signalNumber]);
                 }
-                outRecord[i] = (int)(digValue - offsets[signalNumber]);
             } else {
-                outRecord[i] = inputRecord[i];
+                System.arraycopy(inputRecord, signalStart, outRecord, signalStart, signalSamples);
             }
-
+            signalStart += signalSamples;
         }
-        outStream.writeDataRecord(outRecord);
+        sendData(outRecord);
     }
 
     class NamedFilter implements IntDigitalFilter {

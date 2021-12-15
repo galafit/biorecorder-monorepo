@@ -9,6 +9,8 @@ class Tooltip {
     private int pointIndex = -1;
     private TooltipData tooltipData;
     private TooltipConfig config;
+    private AxisWrapper xAxis;
+    private AxisWrapper yAxis;
 
     public Tooltip(TooltipConfig tooltipConfig) {
         this.config = tooltipConfig;
@@ -21,11 +23,13 @@ class Tooltip {
     /**
      * @return true if hoverPoint changed and false if new hoverPoint equal this.hoverPoint
      */
-    public boolean setHoverPoint(int traceNumber, int pointIndex, TooltipData tooltipData) {
+    public boolean setHoverPoint(int traceNumber, int pointIndex, TooltipData tooltipData, AxisWrapper xAxis, AxisWrapper yAxis ) {
         if(this.traceNumber != traceNumber || this.pointIndex != pointIndex) {
             this.traceNumber = traceNumber;
             this.pointIndex = pointIndex;
             this.tooltipData = tooltipData;
+            this.xAxis = xAxis;
+            this.yAxis = yAxis;
             return true;
         }
         return false;
@@ -46,8 +50,8 @@ class Tooltip {
         }
         // draw cross hair
 
-     //   xAxis.drawCrosshair(canvas, area, crossPoint.getX());
-     //   yAxis.drawCrosshair(canvas, area, crossPoint.getY());
+        xAxis.drawCrosshair(canvas, area, tooltipData.getCrossPoint().getX());
+        yAxis.drawCrosshair(canvas, area, tooltipData.getCrossPoint().getY());
         canvas.setTextStyle(config.getTextStyle());
         BDimension tooltipDimension  = getTextSize(canvas, tooltipData.getTooltipInfo());
         BPoint crossPoint = tooltipData.getCrossPoint();

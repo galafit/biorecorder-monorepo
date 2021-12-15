@@ -165,6 +165,16 @@ public class IntArrayList {
         return dest;
     }
 
+    public int[] toArray(int from, int length) throws IndexOutOfBoundsException {
+        if(from < 0 || length < 0 || from + length > size) {
+            String msg = "from: " + from + ", length: " + length + ", size: " + size;
+            throw new IndexOutOfBoundsException(msg);
+        }
+        int[] dest = new int[length];
+        System.arraycopy( data, from, dest, 0, length );
+        return dest;
+    }
+
     private static int hugeCapacity(int minCapacity) {
         if (minCapacity < 0) // overflow
             throw new OutOfMemoryError();

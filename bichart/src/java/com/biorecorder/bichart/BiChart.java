@@ -18,10 +18,10 @@ public class BiChart {
 
     private int gap = 0; // between Chart and Preview px
     private Insets spacing = new Insets(0);
-    private int navigatorHeightMin = 16; // px
+    private int navigatorHeightMin = 25; // px
     private BiChartConfig config;
-    private int width = 250;
-    private int height = 100;
+    private int width = 0;
+    private int height = 0;
     private boolean isPointToPointChart = false;
     protected Chart chart;
     protected Chart navigator;
@@ -94,6 +94,11 @@ public class BiChart {
         int height1 = height - top - bottom;
         if (height1 > gap) {
             height1 -= gap;
+        }
+        if(width1 <= 0 || height1 <= 0) {
+            chart.setBounds(0, 0, 0, 0);
+            navigator.setBounds(0, 0, 0, 0);
+            return;
         }
 
         int navigatorHeight;
@@ -342,8 +347,12 @@ public class BiChart {
     }
 
     public void draw(BCanvas canvas) {
+        if(width <= 0 || height <= 0) {
+            return;
+        }
         revalidate(canvas.getRenderContext());
         if (isDataChanged) {
+            dataProcessor.dataAppended();
             configure();
             isDataChanged = false;
         }
@@ -363,10 +372,6 @@ public class BiChart {
     }
 
     public void setSize(int width, int height) throws IllegalArgumentException {
-        if (width == 0 || height == 0) {
-            String errMsg = "Width and height must be > 0";
-            throw new IllegalArgumentException(errMsg);
-        }
         this.width = width;
         this.height = height;
         invalidate();
@@ -377,7 +382,6 @@ public class BiChart {
     }
 
     public void dataAppended() {
-        dataProcessor.dataAppended();
         isDataChanged = true;
     }
 

@@ -37,6 +37,7 @@ class FrameDecoder implements ComportListener {
     private int numberOf3ByteSamples;
     private int decodedFrameSizeInInt;
     private byte[] rawFrame;
+    private int[] decodedFrame;
     private int[] accPrev = new int[3];
     private final AdsConfig adsConfig;
     private volatile NumberedDataRecordListener dataListener = new NullDataListener();
@@ -51,6 +52,7 @@ class FrameDecoder implements ComportListener {
         rowFrameSizeInByte = getRawFrameSize();
         decodedFrameSizeInInt = getDecodedFrameSize();
         rawFrame = new byte[Math.max(rowFrameSizeInByte, MAX_MESSAGE_SIZE)];
+        decodedFrame = new int[decodedFrameSizeInInt];
         log.info("frame size: " + rowFrameSizeInByte + " bytes");
     }
 
@@ -183,7 +185,6 @@ class FrameDecoder implements ComportListener {
     }
 
     private void onDataRecordReceived() {
-        int[] decodedFrame = new int[decodedFrameSizeInInt];
         int rawFrameOffset = 4;
         int decodedFrameOffset = 0;
         for (int i = 0; i < numberOf3ByteSamples; i++) {

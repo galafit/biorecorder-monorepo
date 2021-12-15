@@ -8,9 +8,17 @@ import biosignal.filter.XYData;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FilterPipe implements DataListener {
+public class FilterPipe {
     private YPipe input;
     private List<Pipe> outputList = new ArrayList<>();
+
+    public FilterPipe() {
+        this(0, 1);
+    }
+
+    public FilterPipe(Filter f) {
+        this(0, 1, f);
+    }
 
     public FilterPipe(double startValue, double step) {
         this(startValue, step, new NullFilter());
@@ -21,9 +29,11 @@ public class FilterPipe implements DataListener {
         outputList.add(input);
     }
 
-    @Override
-    public void receiveData(int[] data) {
-        input.put(data);
+    public void receiveData(int[] data, int from, int length) {
+        int end = from + length;
+        for (int i = from; i < end; i++) {
+            input.put(data[i]);
+        }
     }
 
     public FilterPipe then(int branchNumber, Filter f) {

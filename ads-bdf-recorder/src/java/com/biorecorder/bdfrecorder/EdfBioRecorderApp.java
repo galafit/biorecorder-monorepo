@@ -1,5 +1,6 @@
 package com.biorecorder.bdfrecorder;
 
+import com.biorecorder.edflib.EdfFileWriter;
 import com.biorecorder.filters.digitalfilter.IntMovingAverage;
 import com.biorecorder.edflib.DataRecordStream;
 import com.biorecorder.edflib.DataHeader;
@@ -9,6 +10,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.*;
@@ -42,14 +44,23 @@ public class EdfBioRecorderApp {
     private volatile TimerTask startFutureHandlingTask;
     private volatile boolean isLoffDetecting;
     private volatile long lastNotificationTime;
+    private volatile int numberOfWrittenDataRecords;
 
-    private volatile LslStream lslStream;
-    private volatile EdfStream edfStream;
+    private List<DataRecordStream> dataListeners = new ArrayList<>(1);
+
 
     public EdfBioRecorderApp() {
         restartAvailableComportsTask();
         restartNotificationTask();
-     }
+    }
+
+    public void addDataListener(DataRecordStream dataRecordStream) {
+        dataListeners.add(dataRecordStream);
+    }
+
+    public void removeDataListeners() {
+        dataListeners.clear();
+    }
 
     public boolean connectToComport(String comportName) {
         if (comportName == null || comportName.isEmpty() || isRecording()) {
@@ -112,7 +123,7 @@ public class EdfBioRecorderApp {
 
         bioRecorder.addButteryLevelListener(new BatteryLevelListener() {
             public void onBatteryLevelReceived(int batteryLevel1) {
-               batteryLevel = batteryLevel1;
+                batteryLevel = batteryLevel1;
             }
         });
     }
@@ -135,13 +146,10 @@ public class EdfBioRecorderApp {
         if (bioRecorder != null && bioRecorder.isRecording()) {
             return new OperationResult(false, new Message(Message.TYPE_ALREADY_RECORDING));
         }
-
         String comportName = appConfig.getComportName();
-
         if (comportName == null || comportName.isEmpty()) {
             return new OperationResult(false, new Message(Message.TYPE_COMPORT_NULL));
         }
-
         // make a copy to safely change config
         RecorderConfig recorderConfig = new RecorderConfig(appConfig.getRecorderConfig());
         boolean isAllChannelsDisabled = true;
@@ -177,17 +185,12 @@ public class EdfBioRecorderApp {
             return new OperationResult(false, errMSg);
         }
 
-        lslStream = null;
-        edfStream = null;
-        bioRecorder.removeDataListener();
+        bioRecorder.removeDataListeners();
         // remove all previously added filters
         bioRecorder.removeChannelsFilters();
-
-        List<DataRecordStream> streams = new ArrayList<>(2);
-
+        List<DataRecordStream> streams = new ArrayList<>(2 + dataListeners.size());
         if (isLoffDetection) { // lead off detection
             leadOffBitMask = null;
-
             recorderConfig.setSampleRate(RecorderSampleRate.S500);
             recorderConfig.setAccelerometerEnabled(false);
             recorderConfig.setBatteryVoltageChannelDeletingEnable(false);
@@ -201,7 +204,6 @@ public class EdfBioRecorderApp {
             for (int i = 0; i < recorderConfig.getChannelsCount(); i++) {
                 // disable lead off detection
                 recorderConfig.setChannelLeadOffEnable(i, false);
-
                 if (appConfig.is50HzFilterEnabled(i)) {
                     // Apply MovingAverage filter to the channel to reduce 50Hz noise
                     int numberOfAveragingPoints = recorderConfig.getChannelSampleRate(i) / 50;
@@ -210,29 +212,13 @@ public class EdfBioRecorderApp {
                     }
                 }
             }
-
-            // check if dir name is ok and directory exist
-            String dirname = appConfig.getDirToSave();
-            if (dirname == null || dirname.isEmpty()) {
-                return new OperationResult(false, new Message(Message.TYPE_DIRECTORY_NAME_NULL));
-            }
-            File dir = new File(dirname);
-            if (!dir.exists() && !dir.isDirectory()) {
-                return new OperationResult(false, new Message(Message.TYPE_DIRECTORY_NOT_EXIST, dir.toString()));
-            }
-
-            // create edf file stream
-            File edfFile = new File(dirname, normalizeFilename(appConfig.getFileName()));
-
-            DataHeader dataHeader = bioRecorder.getDataHeader(recorderConfig);
-
             // create lab stream
             if (appConfig.isLabStreamingEnabled()) {
                 int numberOfAccChannels = 0;
                 int numberOfAdsChannels = 0;
 
                 for (int i = 0; i < appConfig.getRecorderConfig().getChannelsCount(); i++) {
-                    if(appConfig.getRecorderConfig().isChannelEnabled(i)) {
+                    if (appConfig.getRecorderConfig().isChannelEnabled(i)) {
                         numberOfAdsChannels++;
                     }
                 }
@@ -244,8 +230,7 @@ public class EdfBioRecorderApp {
                     }
                 }
                 try {
-                    lslStream = new LslStream(numberOfAdsChannels, numberOfAccChannels);
-                    lslStream.setHeader(dataHeader);
+                    DataRecordStream lslStream = new LslStream(numberOfAdsChannels, numberOfAccChannels);
                     streams.add(lslStream);
                 } catch (IllegalArgumentException ex) {
                     log.info("LabStreaming failed to start", ex);
@@ -253,47 +238,28 @@ public class EdfBioRecorderApp {
                 }
             }
 
-
-           // extra dividers
-            Map<Integer, Integer> extraDividers = new HashMap<>();
-            int enableChannelsCount = 0;
-            for (int i = 0; i < recorderConfig.getChannelsCount(); i++) {
-                if (recorderConfig.isChannelEnabled(i)) {
-                    int extraDivider = appConfig.getChannelExtraDivider(i).getValue();
-                    if (extraDivider > 1) {
-                        extraDividers.put(enableChannelsCount, extraDivider);
-                    }
-                    enableChannelsCount++;
-                }
+            // check if dir name is ok and directory exist
+            String dirname = appConfig.getDirToSave();
+            File dir = new File(dirname);
+            if (!dir.exists() && !dir.isDirectory()) {
+                return new OperationResult(false, new Message(Message.TYPE_DIRECTORY_NOT_EXIST, dir.toString()));
             }
-
-            if (recorderConfig.isAccelerometerEnabled()) {
-                Integer extraDivider = appConfig.getAccelerometerExtraDivider().getValue();
-                if(extraDivider > 1) {
-                    if (recorderConfig.isAccelerometerOneChannelMode()) {
-                        extraDividers.put(enableChannelsCount, extraDivider);
-                    } else {
-                        extraDividers.put(enableChannelsCount, extraDivider);
-                        extraDividers.put(enableChannelsCount + 1, extraDivider);
-                        extraDividers.put(enableChannelsCount + 2, extraDivider);
-                    }
-                }
-            }
-
+            // create edf file stream
+            File edfFile = new File(dirname, normalizeFilename(appConfig.getFileName()));
             try {
-                edfStream = new EdfStream(edfFile, appConfig.getNumberOfRecordsToJoin(), extraDividers, appConfig.isDurationOfDataRecordAdjustable());
-                dataHeader.setPatientIdentification(appConfig.getPatientIdentification());
-                dataHeader.setRecordingIdentification(appConfig.getRecordingIdentification());
-                edfStream.setHeader(dataHeader);
+                FileStream edfStream = new FileStream(edfFile);
                 streams.add(edfStream);
-            } catch (FileNotFoundRuntimeException ex) {
+            } catch (FileNotFoundException ex) {
                 log.error(ex);
                 return new OperationResult(false, new Message(Message.TYPE_FILE_NOT_ACCESSIBLE, edfFile.toString()));
             }
+            // add data listeners
+            for (DataRecordStream listener : dataListeners) {
+                streams.add(listener);
+            }
+            bioRecorder.addDataListener(new BioRecorderDataHandler(streams, appConfig));
         }
 
-
-        bioRecorder.addDataListener(new BioRecorderDataHandler(streams));
         Future startFuture = bioRecorder.startRecording(recorderConfig);
         startFutureHandlingTask = new StartFutureHandlingTask(startFuture, recorderConfig.getDeviceType(), streams);
         timer.schedule(startFutureHandlingTask, FUTURE_CHECKING_PERIOD_MS, FUTURE_CHECKING_PERIOD_MS);
@@ -301,18 +267,31 @@ public class EdfBioRecorderApp {
         return new OperationResult(true);
     }
 
-    class BioRecorderDataHandler implements DataRecordListener {
+    class BioRecorderDataHandler implements DataRecordStream {
         private final List<DataRecordStream> streams;
+        private final AppConfig appConfig;
 
-        public BioRecorderDataHandler(List<DataRecordStream> streams) {
+        public BioRecorderDataHandler(List<DataRecordStream> streams, AppConfig appConfig) {
             this.streams = streams;
+            this.appConfig = appConfig;
         }
 
-        public void onDataRecordReceived(int[] dataRecord) {
+        @Override
+        public void setHeader(DataHeader header) {
+            header.setPatientIdentification(appConfig.getPatientIdentification());
+            header.setRecordingIdentification(appConfig.getRecordingIdentification());
+            for (DataRecordStream stream : streams) {
+                stream.setHeader(header);
+            }
+        }
+
+        @Override
+        public void writeDataRecord(int[] dataRecord) {
             try {
                 for (DataRecordStream stream : streams) {
                     stream.writeDataRecord(dataRecord);
                 }
+                numberOfWrittenDataRecords++;
                 notifyProgressOnDataReceived();
             } catch (IORuntimeException ex) {
                 stop();
@@ -323,6 +302,19 @@ public class EdfBioRecorderApp {
                 // some records still can be received and IllegalStateException
                 // can be thrown.
                 log.info(ex);
+            }
+        }
+
+        @Override
+        public void close() {
+            try {
+                for (DataRecordStream stream : streams) {
+                    stream.close();
+                }
+            } catch (Exception ex) {
+                log.error(ex);
+                Message msg = new Message(Message.TYPE_FAILED_CLOSE_FILE, ex.getMessage());
+                notifyStateChange(msg);
             }
         }
     }
@@ -375,8 +367,8 @@ public class EdfBioRecorderApp {
         }
     }
 
-    private synchronized  RecorderType getConnectedRecorder() {
-        if(bioRecorder != null) {
+    private synchronized RecorderType getConnectedRecorder() {
+        if (bioRecorder != null) {
             return bioRecorder.getDeviceType();
         }
         return null;
@@ -411,53 +403,22 @@ public class EdfBioRecorderApp {
      */
     private void notifyProgressOnDataReceived() {
         long time = System.currentTimeMillis();
-        if(time - lastNotificationTime > NOTIFICATION_QUARTER_PERIOD_MS) {
+        if (time - lastNotificationTime > NOTIFICATION_QUARTER_PERIOD_MS) {
             notifyProgress();
             lastNotificationTime = time;
         }
     }
 
     private synchronized void stop1() {
-        RecordingInfo recordingInfo = null;
-
         if (bioRecorder != null) {
-            bioRecorder.removeDataListener();
-            recordingInfo = bioRecorder.stop();
+            bioRecorder.stop();
         }
         if (startFutureHandlingTask != null) {
             startFutureHandlingTask.cancel();
         }
-
-        Message msg = null;
-        if (edfStream != null) {
-            try {
-                edfStream.close(recordingInfo);
-                if (edfStream.getNumberOfWrittenDataRecords() > 0) {
-                    //msg = new Message(Message.TYPE_DATA_SUCCESSFULLY_SAVED, edfFile + "\n\n" + edfStream1.getWritingInfo());
-                    String logMsg = new Message(Message.TYPE_DATA_SUCCESSFULLY_SAVED, edfStream.getFile() + "\n\n" + edfStream.getWritingInfo()).getMessage();
-                    log.info(logMsg);
-                }
-                edfStream = null;
-            } catch (Exception ex) {
-                log.error(ex);
-                msg = new Message(Message.TYPE_FAILED_CLOSE_FILE, ex.getMessage());
-            }
-        }
-
-        if(lslStream != null) {
-            try {
-                lslStream.close();
-                lslStream = null;
-            } catch (Exception ex) {
-                log.error(ex);
-            }
-
-        }
-
         restartAvailableComportsTask();
         restartNotificationTask();
-
-        notifyStateChange(msg);
+        notifyStateChange(null);
     }
 
     public void stop() {
@@ -567,11 +528,8 @@ public class EdfBioRecorderApp {
         }
     }
 
-    public synchronized long getNumberOfWrittenDataRecords() {
-        if(edfStream != null) {
-            return edfStream.getNumberOfWrittenDataRecords();
-        }
-        return 0;
+    public long getNumberOfWrittenDataRecords() {
+        return numberOfWrittenDataRecords;
     }
 
 
@@ -609,6 +567,23 @@ public class EdfBioRecorderApp {
 
     private void notifyAvailableComports(String[] availableComports) {
         availableComportsListener.onAvailableComportsChanged(availableComports);
+    }
+
+    class NullDataRecordStream implements DataRecordStream {
+        @Override
+        public void setHeader(DataHeader header) {
+            // do nothing
+        }
+
+        @Override
+        public void writeDataRecord(int[] dataRecord) {
+            // do nothing
+        }
+
+        @Override
+        public void close() {
+            // do nothing
+        }
     }
 
     class NullProgressListener implements ProgressListener {

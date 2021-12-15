@@ -6,7 +6,6 @@ import java.util.ArrayList;
  * Class-structure to store info about Ads configuration
  */
 public class AdsConfig {
-
     private AdsType adsType = AdsType.ADS_8;
     private Sps sps = Sps.S500;     // samples per second (sample rate)
 

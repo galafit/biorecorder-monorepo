@@ -124,14 +124,18 @@ public class DataProcessor {
     }
 
     public void dataAppended() {
-        for (int i = 0; i < navigatorGroupedData.size(); i++) {
+        for (int i = 0; i < navigatorData.size(); i++) {
+            XYSeries navData = navigatorData.get(i);
+            navData.updateSize();
             GroupedData groupedData = navigatorGroupedData.get(i);
             if (groupedData != null) {
-                XYSeries rowData= navigatorData.get(i);
                 int from = groupedData.processedSampleCount();
-                int length = rowData.size() - from;
-                groupedData.appendData(rowData, from, length);
+                int length = navData.size() - from;
+                groupedData.appendData(navData, from, length);
             }
+        }
+        for (int i = 0; i < chartData.size(); i++) {
+           chartData.get(i).updateSize();
         }
     }
 
@@ -201,11 +205,7 @@ public class DataProcessor {
         if (indexTill > data.size()) {
             indexTill = data.size();
         }
-        int dataSize = indexTill - indexFrom;
-        if (dataSize < data.size()) {
-            return data.view(indexFrom, indexTill - indexFrom);
-        }
-        return data;
+        return data.view(indexFrom, indexTill - indexFrom);
     }
 
     private GroupedData groupData(XYSeries data, int markSize, double min, double max, int minMaxLength, double[] intervals, TimeInterval[] timeIntervals) {
@@ -215,9 +215,8 @@ public class DataProcessor {
         }
         // suppose that data is ordered
         double dataMin = data.getX(0);
-        double dataMax = data.getX(data.size() - 1);
-        int dataLength = getDataLength(data, min, max, minMaxLength);
-
+        double dataMax = data.getX(dataSize - 1);
+        int dataLength = getDataLength(dataMin, dataMax, min, max, minMaxLength);
         if (config.getGroupingType() == GroupingType.EQUAL_INTERVALS) {
             if(isDateTime) {
                 TimeInterval[] timeIntervals1 = normalizeTimeIntervals(timeIntervals, dataMin, dataMax, dataSize, dataLength, markSize);
@@ -265,16 +264,15 @@ public class DataProcessor {
             }
 
             if(pointsList.size() != 0) {
-               return GroupedData.groupDataByPoints(data, pointsList.toArray());
+                System.out.println(dataSize +" " +dataLength + " points "+pointsList.get(0));
+                //return GroupedData.groupDataByPoints(data, pointsList.toArray());
+                return GroupedData.groupDataByPoints(data, 6);
             }
         }
         return null;
     }
 
-    private int getDataLength(XYSeries data, double min, double max, int minMaxLength) {
-        // suppose that data is ordered
-        double dataMin = data.getX(0);
-        double dataMax = data.getX(data.size() - 1);
+    private int getDataLength(double dataMin,double dataMax,  double min, double max, int minMaxLength) {
         // prepare scale to calculate dataLength
         scale.setStartEnd(0, minMaxLength);
         scale.setMinMax(min, max);

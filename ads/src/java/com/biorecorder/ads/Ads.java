@@ -244,7 +244,7 @@ public class Ads {
             for (int i = 0; i < adsConfigCommand.length; i++) {
                 sb.append("\nbyte_"+(i + 1) + ":  "+String.format("%02X ", adsConfigCommand[i]));
             }
-            log.info(sb.toString());
+           // log.info(sb.toString());
 
             if(!comport.writeBytes(adsConfigCommand)) {
                 // if writing start command to comport was failed
@@ -404,8 +404,7 @@ public class Ads {
      * Ads permits to add only ONE RecordListener! So if a new listener added
      * the old one are automatically removed
      */
-    public void addDataListener(NumberedDataRecordListener listener) {
-
+    public void setDataListener(NumberedDataRecordListener listener) {
         if (listener != null) {
             dataListener = listener;
         }
@@ -415,7 +414,7 @@ public class Ads {
      * Ads permits to add only ONE MessageListener! So if a new listener added
      * the old one are automatically removed
      */
-    public void addMessageListener(MessageListener listener) {
+    public void setMessageListener(MessageListener listener) {
         if (listener != null) {
             messageListener = listener;
         }

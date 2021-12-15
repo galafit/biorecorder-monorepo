@@ -9,20 +9,32 @@ public class Aggregation {
     private RegularColumn rc;
     private AggFunction aggFunction;
     private AggPipe pipe;
+    private int aggSampleCount;
+    private int pointsInGroup;
 
     public Aggregation(AggFunction aggFunction) {
         this.aggFunction = aggFunction;
     }
 
-    public RegularColumn aggregate(RegularColumn columnToAgg, int pointsInGroup, int from, int length) {
+    public RegularColumn aggregate(RegularColumn columnToAgg, int pointsInGroup, int from, int length) throws IllegalArgumentException{
         if(rc == null) {
-            rc = new RegularColumn(columnToAgg.name(), columnToAgg.value(from), columnToAgg.getStep(), length);
-        } else {
-            rc.append(columnToAgg, from, length);
+            rc = new RegularColumn(columnToAgg.name(), columnToAgg.value(from), columnToAgg.getStep());
+            this.pointsInGroup = pointsInGroup;
+            aggSampleCount = 0;
         }
+        if(this.pointsInGroup != pointsInGroup) {
+            throw new IllegalArgumentException("Points in group: " + pointsInGroup +", expected: "+ this.pointsInGroup);
+        }
+        if(rc.getStep() != columnToAgg.getStep()) {
+            throw new IllegalArgumentException("RegularColumn step: " + columnToAgg.getStep() +", expected: "+ rc.getStep());
+        }
+        if(rc.value(aggSampleCount) != columnToAgg.value(from)) {
+            throw new IllegalArgumentException("RegularColumn startValue: " + columnToAgg.value(from) +", expected: "+ rc.value(aggSampleCount));
+        }
+        aggSampleCount += length;
         String name1 = rc.name() + "_" + aggFunction.name();
-        int resampledSize = rc.size() / pointsInGroup;
-        if(rc.size() % pointsInGroup == 0) {
+        int resampledSize = aggSampleCount / pointsInGroup;
+        if(aggSampleCount % pointsInGroup == 0) {
             resampledSize--;
         }
         if(resampledSize < 0) {

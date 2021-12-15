@@ -1,7 +1,6 @@
 package com.biorecorder.edflib.recordfilter;
 
 import com.biorecorder.edflib.DataHeader;
-import com.biorecorder.edflib.DataRecordStream;
 import com.biorecorder.edflib.FormatVersion;
 
 import java.util.ArrayList;
@@ -12,77 +11,67 @@ import java.util.List;
  */
 public class SignalRemover extends FilterRecordStream {
     private List<Integer> signalsToRemove = new ArrayList<Integer>();
-    private int outRecordSize;
+    private boolean[] signalsMask;
 
-    public SignalRemover(DataRecordStream outStream) {
+    public SignalRemover(com.biorecorder.edflib.DataRecordStream outStream) {
         super(outStream);
     }
 
     @Override
     public void setHeader(DataHeader header) {
+        signalsMask = new boolean[header.numberOfSignals()];
+        for (int i = 0; i < signalsMask.length; i++) {
+            signalsMask[i] = true;
+        }
+        for (int i = 0; i < signalsToRemove.size(); i++) {
+            int signalToRemove = signalsToRemove.get(i);
+            if(signalToRemove < signalsMask.length) {
+                signalsMask[signalToRemove] = false;
+            }
+        }
         super.setHeader(header);
-        outRecordSize = calculateOutRecordSize();
     }
 
     /**
      * Indicates that the samples from the given signal should be omitted in
      * out data records. This method can be called only
-     * before adding a listener!
+     * before method  setHeader()!
      *
      * @param signalNumber number of the signal
      *                     whose samples should be omitted. Numbering starts from 0.
      */
     public void removeSignal(int signalNumber) {
         signalsToRemove.add(signalNumber);
-        if(inConfig != null) {
-            outRecordSize = calculateOutRecordSize();
-            outStream.setHeader(getOutConfig());
-        }
     }
 
     @Override
-    public DataHeader getOutConfig() {
+    protected DataHeader getOutConfig() {
         DataHeader outConfig = new DataHeader(inConfig);
-
-        for (int i = inConfig.numberOfSignals() - 1; i >= 0 ; i--) {
-            if(signalsToRemove.contains(i)) {
-                outConfig.removeSignal(i);
-            }
+        for (int i = signalsMask.length - 1; i >=0 ; i--) {
+           if(! signalsMask[i]) {
+               outConfig.removeSignal(i);
+           }
         }
         return outConfig;
     }
-
-    private int calculateOutRecordSize() {
-        int size = inRecordSize;
-        for (Integer removedSignal : signalsToRemove) {
-            size -= inConfig.getNumberOfSamplesInEachDataRecord(removedSignal);
-        }
-        return size;
-    }
-
 
     /**
      * Omits data from the "deleted" channels and
      * create out array of samples
      */
     @Override
-    public void writeDataRecord(int[] inputRecord) {
-        int[] outRecord = new int[outRecordSize];
-
-        int signalNumber = 0;
-        int signalStart = 0;
-        int outSamples = 0;
-        for (int i = 0; i < inRecordSize; i++) {
-            if(i >= signalStart + inConfig.getNumberOfSamplesInEachDataRecord(signalNumber)) {
-               signalStart += inConfig.getNumberOfSamplesInEachDataRecord(signalNumber);
-               signalNumber++;
+    public void writeDataRecord(int[] inputRecord)  {
+        int signalStartInRecord = 0;
+        int signalStartOutRecord = 0;
+        for (int signalNumber = 0; signalNumber < signalsMask.length; signalNumber++) {
+            int signalSamples = inConfig.getNumberOfSamplesInEachDataRecord(signalNumber);
+            if(signalsMask[signalNumber]) {
+                System.arraycopy(inputRecord, signalStartInRecord, outRecord, signalStartOutRecord, signalSamples);
+                signalStartOutRecord += signalSamples;
             }
-            if(!signalsToRemove.contains(signalNumber)) {
-                outRecord[outSamples] = inputRecord[i];
-                outSamples++;
-            }
+            signalStartInRecord += signalSamples;
         }
-        outStream.writeDataRecord(outRecord);
+        sendData(outRecord);
     }
 
     /**

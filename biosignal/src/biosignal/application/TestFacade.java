@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class MainFacade implements Facade {
+public class TestFacade implements Facade {
     public static final String[] FILE_EXTENSIONS = {"bdf", "edf"};
     private DataProvider dataProvider = new NullDataProvider();
     private DataStore dataStore;
@@ -21,27 +21,20 @@ public class MainFacade implements Facade {
     private int numberOfSignalsWithListeners;
     private int dataCount;
 
-
-    public MainFacade(Configurator configurator, boolean isDateTime) {
+    public TestFacade(Configurator configurator, boolean isDateTime) {
         this.configurator = configurator;
         this.isDateTime = isDateTime;
     }
 
     @Override
     public void chooseFileDataProvider(File file, boolean isParallel) {
-        dataProvider.finish();
-        if(isParallel) {
-            FileDataProviderParallel fileDataProvider = new FileDataProviderParallel(file);
-            dataProvider = fileDataProvider;
-            configureDataProvide(dataProvider);
-            fileDataProvider.start();
-        } else {
-            FileDataProvider fileDataProvider = new FileDataProvider(file);
-            dataProvider = fileDataProvider;
-            configureDataProvide(dataProvider);
-            fileDataProvider.start();
-        }
-
+        dataStore = new DataStore();
+        FileDataProvider fileDataProvider1 = new FileDataProvider(file);
+        configureDataProvide(fileDataProvider1, false);
+        FileDataProviderParallel fileDataProvider2 = new FileDataProviderParallel(file);
+        configureDataProvide(fileDataProvider2, true);
+        fileDataProvider1.start();
+        fileDataProvider2.start();
     }
 
     @Override
@@ -49,15 +42,14 @@ public class MainFacade implements Facade {
         dataProvider.finish();
         RecorderDataProvider recorderDataProvider = new RecorderDataProvider();
         dataProvider = recorderDataProvider;
-        configureDataProvide(dataProvider);
+        configureDataProvide(dataProvider, true);
         return recorderDataProvider.getRecorderViewModel();
     }
 
-    private void configureDataProvide(DataProvider dataProvider1) {
+    private void configureDataProvide(DataProvider dataProvider1, boolean notify) {
         dataProvider1.addConfigListener(new ProviderConfigListener() {
             @Override
             public void receiveConfig(ProviderConfig providerConfig1) {
-                dataStore = new DataStore();
 
                 ProviderConfig providerConfig = providerConfig1;
                 if(!isDateTime) {
@@ -93,7 +85,8 @@ public class MainFacade implements Facade {
                             dataCount++;
                             fp.receiveData(data, from, length);
                             // to avoid multiple notifications
-                            if(dataCount % numberOfSignalsWithListeners == 0) {
+
+                            if(notify && dataCount % numberOfSignalsWithListeners == 0) {
                                 for (DataAppendListener l : dataAppendListeners) {
                                     l.onDataAppend();
                                 }
@@ -101,8 +94,10 @@ public class MainFacade implements Facade {
                         }
                     });
                 }
-                for (ProviderConfigListener configListener : configListeners) {
-                    configListener.receiveConfig(providerConfig);
+                if(notify) {
+                    for (ProviderConfigListener configListener : configListeners) {
+                        configListener.receiveConfig(providerConfig);
+                    }
                 }
             }
         });
@@ -162,15 +157,15 @@ public class MainFacade implements Facade {
 
 
     public void setReadInterval(int signal, long startPos, long samplesToRead) {
-      //  provider.setReadInterval(signal, startPos, samplesToRead);
+        //  provider.setReadInterval(signal, startPos, samplesToRead);
     }
 
     public void setReadTimeInterval(long readStartMs, long readIntervalMs) {
-      //  provider.setReadTimeInterval(readStartMs, readIntervalMs);
+        //  provider.setReadTimeInterval(readStartMs, readIntervalMs);
     }
 
     public void setFullReadInterval() {
-      //  provider.setFullReadInterval();
+        //  provider.setFullReadInterval();
     }
 
     public String copyReadIntervalToFile() {
