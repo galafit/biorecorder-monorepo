@@ -262,11 +262,8 @@ public class DataProcessor {
                     pointsList.add(bestPoints);
                 }
             }
-
             if(pointsList.size() != 0) {
-                System.out.println(dataSize +" " +dataLength + " points "+pointsList.get(0));
-                //return GroupedData.groupDataByPoints(data, pointsList.toArray());
-                return GroupedData.groupDataByPoints(data, 6);
+                return GroupedData.groupDataByPoints(data, pointsList.toArray());
             }
         }
         return null;
@@ -311,11 +308,7 @@ public class DataProcessor {
 
 
     private int intervalToPoints(double dataMin, double dataMax, int dataSize, double interval) {
-        double groups = (dataMax - dataMin) / interval;
-        if (groups < 1) {
-            groups = 1;
-        }
-        int pointsPerGroup = (int) Math.round(dataSize / groups);
+        int pointsPerGroup = (int) Math.round(interval *  dataSize / (dataMax - dataMin));
         return pointsPerGroup;
     }
 

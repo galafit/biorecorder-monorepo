@@ -18,7 +18,7 @@ public class BiChart {
 
     private int gap = 0; // between Chart and Preview px
     private Insets spacing = new Insets(0);
-    private int navigatorHeightMin = 25; // px
+    private int navigatorHeightMin = 50; // px
     private BiChartConfig config;
     private int width = 0;
     private int height = 0;

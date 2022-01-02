@@ -49,6 +49,6 @@ public class Max implements AggFunction {
 
     @Override
     public double getAggregatedRegularColumnStart(RegularColumn columnToAgg, int pointsInGroup) {
-        return columnToAgg.getStartValue() + (pointsInGroup - 1) * columnToAgg.getStep();
+        return columnToAgg.startValue() + (pointsInGroup - 1) * columnToAgg.step();
     }
 }

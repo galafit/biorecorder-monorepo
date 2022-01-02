@@ -8,7 +8,7 @@
   "recorderConfig" : {
     "adsConfig" : {
       "adsType" : "ADS_2",
-      "sps" : "S500",
+      "sps" : "S2000",
       "isBatteryVoltageMeasureEnabled" : true,
       "noiseDivider" : 2,
       "isAccelerometerEnabled" : true,

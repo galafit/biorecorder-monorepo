@@ -288,10 +288,10 @@ public class Ads {
         if (executorFuture != null && !executorFuture.isDone()) {
             executorFuture.cancel(true);
         }
-
         if (adsStateAtomicReference.get() == AdsState.RECORDING) {
             adsStateAtomicReference.set(AdsState.UNDEFINED);
         }
+
         // send stop command
         boolean isStopOk = comport.writeByte(STOP_REQUEST);
         if (isStopOk) {
@@ -314,19 +314,16 @@ public class Ads {
         if (!comport.isOpened()) {
             throw new IllegalStateException(DISCONNECTED_MSG);
         }
-
         return stop1();
     }
 
     public boolean disconnect() {
-        singleThreadExecutor.shutdownNow();
         if(adsStateAtomicReference.get() == AdsState.RECORDING) {
             stop1();
         }
         if (!comport.isOpened()) {
             return true;
         }
-
         if (comport.close()) {
             removeDataListener();
             removeMessageListener();

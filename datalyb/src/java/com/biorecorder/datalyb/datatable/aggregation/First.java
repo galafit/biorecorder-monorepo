@@ -50,6 +50,6 @@ public class First implements AggFunction {
 
     @Override
     public double getAggregatedRegularColumnStart(RegularColumn columnToAgg, int pointsInGroup) {
-        return columnToAgg.getStartValue();
+        return columnToAgg.startValue();
     }
 }

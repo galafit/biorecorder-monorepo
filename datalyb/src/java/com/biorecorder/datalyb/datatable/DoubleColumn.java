@@ -43,6 +43,11 @@ public class DoubleColumn implements Column {
         this(name, new ArrayListWrapperDouble(new DoubleArrayList()));
     }
 
+    @Override
+    public void clear() throws UnsupportedOperationException {
+        data.clear();
+    }
+
     public void set(int index, double value) throws UnsupportedOperationException {
         data.set(index, value);
     }
@@ -206,6 +211,7 @@ public class DoubleColumn implements Column {
         void add(double[] values) throws UnsupportedOperationException;
         void set(int index, double value) throws UnsupportedOperationException;
         double[] toArray(int from, int length) throws UnsupportedOperationException;
+        void clear() throws UnsupportedOperationException;
     }
 
     static class BaseEditableDoubleSeries implements EditableDoubleSeries {
@@ -242,6 +248,11 @@ public class DoubleColumn implements Column {
 
         @Override
         public double[] toArray(int from, int length) throws UnsupportedOperationException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void clear() throws UnsupportedOperationException {
             throw new UnsupportedOperationException();
         }
     }
@@ -281,6 +292,11 @@ public class DoubleColumn implements Column {
         @Override
         public double get(int index) {
             return doubleArrayList.get(index);
+        }
+
+        @Override
+        public void clear() throws UnsupportedOperationException {
+            doubleArrayList.clear();
         }
     }
 }

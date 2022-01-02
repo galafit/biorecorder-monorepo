@@ -35,6 +35,12 @@ public class DataTable {
         size = calculateSize(columns);
     }
 
+    public void clear() throws UnsupportedOperationException {
+        for (Column column : columns) {
+           column.clear();
+        }
+    }
+
     public String getName() {
         return name;
     }

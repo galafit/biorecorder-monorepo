@@ -50,6 +50,6 @@ public class Average implements AggFunction {
 
     @Override
     public double getAggregatedRegularColumnStart(RegularColumn columnToAgg, int pointsInGroup) {
-        return columnToAgg.getStartValue() + pointsInGroup * columnToAgg.getStep() / 2;
+        return columnToAgg.startValue() + pointsInGroup * columnToAgg.step() / 2;
     }
 }

@@ -146,7 +146,7 @@ public class FileDataProviderParallel implements DataProvider{
     }
 
     private void read() {
-        int readPortion = 3000; //samples
+        int readPortion = 100000; //samples
         for (int i = 0; i < dataListeners.length; i++) {
             boolean endFile = false;
             List<DataListener> signalListeners = dataListeners[i];

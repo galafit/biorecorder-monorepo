@@ -146,6 +146,7 @@ public class EdfBioRecorderApp {
         if (bioRecorder != null && bioRecorder.isRecording()) {
             return new OperationResult(false, new Message(Message.TYPE_ALREADY_RECORDING));
         }
+        numberOfWrittenDataRecords = 0;
         String comportName = appConfig.getComportName();
         if (comportName == null || comportName.isEmpty()) {
             return new OperationResult(false, new Message(Message.TYPE_COMPORT_NULL));

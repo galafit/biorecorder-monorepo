@@ -17,11 +17,11 @@ public class RegularColumn extends DoubleColumn {
 
     }
 
-    public double getStartValue() {
+    public double startValue() {
         return startValue;
     }
 
-    public double getStep() {
+    public double step() {
         return step;
     }
 
@@ -141,6 +141,11 @@ public class RegularColumn extends DoubleColumn {
                 arr[i] = get(i);
             }
             return arr;
+        }
+
+        @Override
+        public void clear() throws UnsupportedOperationException {
+            //vdo nothing
         }
     }
 

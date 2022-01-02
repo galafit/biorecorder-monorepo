@@ -46,6 +46,11 @@ public class IntColumn implements Column {
         return data.get(index);
     }
 
+    @Override
+    public void clear() throws UnsupportedOperationException {
+        data.clear();
+    }
+
     public void set(int index, int value) throws UnsupportedOperationException {
         data.set(index, value);
     }
@@ -220,6 +225,7 @@ public class IntColumn implements Column {
         void add(int[] values) throws UnsupportedOperationException;
         void set(int index, int value) throws UnsupportedOperationException;
         int[] toArray(int from, int length) throws UnsupportedOperationException;
+        void clear() throws UnsupportedOperationException;
     }
 
     static class BaseEditableIntSeries implements EditableIntSeries {
@@ -256,6 +262,11 @@ public class IntColumn implements Column {
 
         @Override
         public int[] toArray(int from, int length) throws UnsupportedOperationException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void clear() throws UnsupportedOperationException {
             throw new UnsupportedOperationException();
         }
     }
@@ -295,6 +306,11 @@ public class IntColumn implements Column {
         @Override
         public int get(int index) {
             return intArrayList.get(index);
+        }
+
+        @Override
+        public void clear() throws UnsupportedOperationException {
+            intArrayList.clear();
         }
     }
 }

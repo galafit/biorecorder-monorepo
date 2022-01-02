@@ -2,7 +2,7 @@ package com.biorecorder.bdfrecorder;
 
 import com.biorecorder.edflib.DataHeader;
 import com.biorecorder.edflib.DataRecordStream;
-import edu.ucsd.sccn.LSL;
+import com.biorecorder.bdfrecorder.edu.ucsd.sccn.LSL;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 

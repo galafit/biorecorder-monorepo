@@ -60,7 +60,6 @@ public class Chart {
         AxisWrapper topAxis = new AxisWrapper(new Axis(xScale.copy(), config.getXAxisConfig(), Orientation.TOP));
         xAxisList.add(bottomAxis);
         xAxisList.add(topAxis);
-        addStack();
         tooltip = new Tooltip(config.getTooltipConfig());
         traceList.addChangeListener(new ChangeListener() {
             @Override

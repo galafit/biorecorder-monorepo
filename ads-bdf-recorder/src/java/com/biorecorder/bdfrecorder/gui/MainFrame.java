@@ -14,6 +14,9 @@ import java.awt.event.WindowEvent;
  * Created by galafit on 31/7/18.
  */
 public class MainFrame extends JFrame {
+    private static final int SUCCESS_STATUS = 0;
+    private static final int ERROR_STATUS = 1;
+
     private static final String TITLE = "BioRecorder";
     private final RecorderView recorderView;
 
@@ -25,6 +28,7 @@ public class MainFrame extends JFrame {
             @Override
             public void windowClosing(WindowEvent windowEvent) {
                 recorderView.close();
+                System.exit(SUCCESS_STATUS);
             }
         });
         add(recorderView);

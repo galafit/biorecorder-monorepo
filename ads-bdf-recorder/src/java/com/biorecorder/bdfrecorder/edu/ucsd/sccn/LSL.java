@@ -1,4 +1,4 @@
-package edu.ucsd.sccn;
+package com.biorecorder.bdfrecorder.edu.ucsd.sccn;
 import com.sun.jna.Library;
 import com.sun.jna.Native;
 import com.sun.jna.Platform;
@@ -975,7 +975,7 @@ public class LSL {
     static {        
         switch (Platform.getOSType()) {
             case Platform.WINDOWS:
-                inst = (dll)Native.loadLibrary((Platform.is64Bit() ? "liblsl64.dll" : "liblsl32.dll"),dll.class);
+                inst = (dll)Native.loadLibrary((Platform.is64Bit() ? "com/biorecorder/bdfrecorder/edu/ucsd/sccn/liblsl64.dll" : "com/biorecorder/bdfrecorder/edu/ucsd/sccn/liblsl32.dll"),dll.class);
                 break;
             case Platform.MAC:
                 inst = (dll)Native.loadLibrary((Platform.is64Bit() ? "liblsl64.dylib" : "liblsl32.dylib"),dll.class);

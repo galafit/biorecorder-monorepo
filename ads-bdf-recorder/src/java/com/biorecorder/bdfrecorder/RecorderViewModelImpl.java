@@ -12,9 +12,6 @@ import java.io.File;
 public class RecorderViewModelImpl implements RecorderViewModel {
     private static final Log log = LogFactory.getLog(RecorderViewModel.class);
 
-    private static final int SUCCESS_STATUS = 0;
-    private static final int ERROR_STATUS = 1;
-
     private static final String FAILED_CREATE_DIR_MSG = "Directory: {0}\ncan not be created.";
     private static final String FAILED_SAVE_PREFERENCES = "Failed to save preferences";
 
@@ -197,6 +194,5 @@ public class RecorderViewModelImpl implements RecorderViewModel {
         } catch (Exception ex) {
             log.error(FAILED_SAVE_PREFERENCES, ex);
         }
-        System.exit(SUCCESS_STATUS);
     }
 }

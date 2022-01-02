@@ -54,6 +54,8 @@ public class BiosignalFrame extends JFrame {
                     facade.chooseFileDataProvider(file, true);
                     if(recorderPanel != null) {
                         recorderPanel.stop();
+                        recorderPanel.close();
+                        recorderPanel = null;
                     }
                     setTitle(file.getName());
                 }
@@ -128,13 +130,13 @@ public class BiosignalFrame extends JFrame {
         if(processingConfig == null) {
            processingConfig = new ProcessingConfig();
         }
+
         boolean isTimeXAxis = facade.isDateTime(); // XAxis: false - index; true - time
         boolean scrollsAtEnd = true;
         BiChartPanel chartPanel = new BiChartPanel(isTimeXAxis, processingConfig, scrollsAtEnd);
         int[] chartDataChannels1 = facade.getChartDataChannels1();
         int[] chartDataChannels2 = facade.getChartDataChannels2();
         int[] navDataChannels = facade.getNavigatorDataChannels();
-
         boolean isYOpposite = false;
         boolean isXOpposite;
         for (int i = 0; i < chartDataChannels1.length; i++) {
@@ -142,7 +144,6 @@ public class BiosignalFrame extends JFrame {
             int channel = chartDataChannels1[i];
             XYData xyData = facade.getData(channel);
             GroupingApproximation grApprox = facade.getDataGroupingApproximation(channel);
-
             if (i > 0) {
                 chartPanel.addChartStack();
             }
@@ -163,7 +164,6 @@ public class BiosignalFrame extends JFrame {
             lineConfig.setMarkSize(3);
             chartPanel.addChartTrace(xyData.getName(), xyData, grApprox, new LineTracePainter(lineConfig), isXOpposite, isYOpposite);
         }
-
         for (int i = 0; i < navDataChannels.length; i++) {
             int channel = navDataChannels[i];
             XYData xyData = facade.getData(channel);
@@ -173,7 +173,6 @@ public class BiosignalFrame extends JFrame {
             }
             chartPanel.addNavigatorTrace(xyData.getName(), xyData, grApprox, new VerticalLinePainter());
         }
-
         return chartPanel;
     }
 

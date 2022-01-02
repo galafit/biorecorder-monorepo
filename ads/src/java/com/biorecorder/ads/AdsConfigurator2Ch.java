@@ -3,14 +3,9 @@ package com.biorecorder.ads;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- *
- */
 class AdsConfigurator2Ch implements AdsConfigurator{
-
     public static final int NUMBER_OF_ADS_CHANNELS = 2;
     public static final int NUMBER_OF_ACCELEROMETER_CHANNELS = 3;
-
 
     @Override
     public byte[] getAdsConfigurationCommand(AdsConfig adsConfiguration) {

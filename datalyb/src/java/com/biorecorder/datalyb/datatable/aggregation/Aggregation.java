@@ -18,15 +18,15 @@ public class Aggregation {
 
     public RegularColumn aggregate(RegularColumn columnToAgg, int pointsInGroup, int from, int length) throws IllegalArgumentException{
         if(rc == null) {
-            rc = new RegularColumn(columnToAgg.name(), columnToAgg.value(from), columnToAgg.getStep());
+            rc = new RegularColumn(columnToAgg.name(), columnToAgg.value(from), columnToAgg.step());
             this.pointsInGroup = pointsInGroup;
             aggSampleCount = 0;
         }
         if(this.pointsInGroup != pointsInGroup) {
             throw new IllegalArgumentException("Points in group: " + pointsInGroup +", expected: "+ this.pointsInGroup);
         }
-        if(rc.getStep() != columnToAgg.getStep()) {
-            throw new IllegalArgumentException("RegularColumn step: " + columnToAgg.getStep() +", expected: "+ rc.getStep());
+        if(rc.step() != columnToAgg.step()) {
+            throw new IllegalArgumentException("RegularColumn step: " + columnToAgg.step() +", expected: "+ rc.step());
         }
         if(rc.value(aggSampleCount) != columnToAgg.value(from)) {
             throw new IllegalArgumentException("RegularColumn startValue: " + columnToAgg.value(from) +", expected: "+ rc.value(aggSampleCount));
@@ -40,7 +40,7 @@ public class Aggregation {
         if(resampledSize < 0) {
             resampledSize = 0;
         }
-        return new RegularColumn(name1, aggFunction.getAggregatedRegularColumnStart(rc, pointsInGroup) ,rc.getStep() * pointsInGroup , resampledSize);
+        return new RegularColumn(name1, aggFunction.getAggregatedRegularColumnStart(rc, pointsInGroup) ,rc.step() * pointsInGroup , resampledSize);
     }
 
     public Column aggregate(Column columnToAgg, IntSeries groups, int from, int length) {

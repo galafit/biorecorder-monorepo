@@ -4,6 +4,7 @@ import com.biorecorder.edflib.DataHeader;
 import com.biorecorder.edflib.DataRecordStream;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -16,10 +17,11 @@ public class FilterRecordStream implements com.biorecorder.edflib.DataRecordStre
     protected DataHeader inConfig;
     protected DataHeader outConfig;
     protected int[] outRecord;
-    protected com.biorecorder.edflib.DataRecordStream[] outStreams;
+    private DataRecordStream[] outStreams;
 
-    public FilterRecordStream(com.biorecorder.edflib.DataRecordStream... outStream) {
-        this.outStreams = outStream;
+    public FilterRecordStream(DataRecordStream... outStream) {
+        this.outStreams = new DataRecordStream[outStream.length];
+        System.arraycopy(outStream, 0, this.outStreams, 0, outStream.length);
     }
 
     protected void sendData(int[] dataRecord) {

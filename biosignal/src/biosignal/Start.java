@@ -14,8 +14,8 @@ public class Start {
         String originalFilename = "ecg_15-03-2021.bdf";
         File recordsDir = new File(System.getProperty("user.dir"), "records");
         File originalFile = new File(recordsDir, originalFilename);
-        new TestFrame(new TestFacade(new ConfiguratorECG(), false));
-        //new BiosignalFrame(new MainFacade(new ConfiguratorECG(), false));
+        //new TestFrame(new TestFacade(new ConfiguratorECG(), false));
+        new BiosignalFrame(new MainFacade(new ConfiguratorECG(), false));
 
     }
 

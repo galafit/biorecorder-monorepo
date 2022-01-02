@@ -8,6 +8,8 @@ public interface Column {
     String label(int index);
     double[] minMax(int from, int length);
 
+    // optional operation
+    void clear() throws UnsupportedOperationException;
     /**
      * This method do not change the original column neither colToAppend!
      * But create a new column and copy in it data from both columns
@@ -26,4 +28,5 @@ public interface Column {
     int bisect(double value, int from, int length);
     int bisectLeft(double value, int from, int length);
     int bisectRight(double value, int from, int length);
+
 }

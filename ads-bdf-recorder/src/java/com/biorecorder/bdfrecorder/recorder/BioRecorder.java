@@ -181,6 +181,7 @@ public class BioRecorder {
             resultantDataListener.setHeader(header);
         }
         resultantDataListener.close();
+        resultantDataListener = null;
         return stopOk;
     }
 
