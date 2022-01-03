@@ -21,7 +21,7 @@ public enum RecorderType {
     }
 
     public int getChannelsCount() {
-        return adsType.getAdsChannelsCount();
+        return adsType.adsChannelsCount();
     }
 
     public AdsType getAdsType() {

@@ -41,10 +41,6 @@ public class AdsConfig {
         }
     }
 
-    public byte[] getAdsConfigurationCommand() {
-        return getAdsType().getAdsConfigurationCommand(this);
-    }
-
     public boolean isLeadOffEnabled() {
         for (int i = 0; i < getAdsChannelsCount(); i++) {
             if (adsChannels.get(i).isEnabled() && adsChannels.get(i).isLoffEnable()) {
@@ -55,7 +51,7 @@ public class AdsConfig {
     }
 
     public int getAdsChannelsCount() {
-        return adsType.getAdsChannelsCount();
+        return adsType.adsChannelsCount();
     }
 
     public Sps getSampleRate() {

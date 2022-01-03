@@ -9,7 +9,7 @@ public class BioRecorderDialog extends JDialog {
 
     public BioRecorderDialog(RecorderView recorderPanel, Window dialogOwner) {
         super(dialogOwner);
-        setModal(true);
+        setModal(false);
         recorderPanel.setParentWindow(this);
         add(recorderPanel);
         pack();

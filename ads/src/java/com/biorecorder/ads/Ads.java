@@ -59,7 +59,6 @@ public class Ads {
     private static final int COMPORT_SPEED = 460800;
     private static final byte PING_COMMAND = (byte) (0xFB & 0xFF);
     private static final byte HELLO_REQUEST = (byte) (0xFD & 0xFF);
-    private static final byte STOP_REQUEST = (byte) (0xFF & 0xFF);
     private static final byte HARDWARE_REQUEST = (byte) (0xFA & 0xFF);
 
     private static final int PING_PERIOD_MS = 1000;
@@ -73,12 +72,11 @@ public class Ads {
     private static final String RECORDING_MSG = "Ads is recording. Stop it first";
     private static final String ALL_CHANNELS_DISABLED_MSG = "All Ads channels are disabled. Recording Impossible";
 
-
     private final Comport comport;
 
     private volatile long lastEventTime;
     private volatile boolean isDataReceived;
-    private volatile AdsType adsType;
+    private volatile AdsType adsType = AdsType.ADS_2;
 
     // we use AtomicReference to do atomic "compare and set"
     // from different threads: the main thread
@@ -127,9 +125,8 @@ public class Ads {
         }
         // create frame decoder to handle ads messages
         comport.addListener(createAndConfigureFrameDecoder(null));
-
         if (adsStateAtomicReference.get() == AdsState.UNDEFINED) {
-            comport.writeByte(STOP_REQUEST);
+            comport.writeBytes(adsType.adsStopCommand().getCommandBytes());
         }
         if (executorFuture != null) {
             executorFuture.cancel(true);
@@ -217,41 +214,39 @@ public class Ads {
                 }
             }
 
-            // 2) request adsType if it is unknown
-            if (adsType == null) {
-                comport.writeByte(HARDWARE_REQUEST);
-                Thread.sleep(SLEEP_TIME_MS * 2);
-            }
+            // 2) request adsType
+            comport.writeByte(HARDWARE_REQUEST);
+            Thread.sleep(SLEEP_TIME_MS * 2);
 
             // if adsType is wrong
-            if (adsType != null && adsType != config.getAdsType()) {
+            if (adsType != config.getAdsType()) {
                 String errMsg = "Wrong device type: "+ config.getAdsType() + " Connected: "+adsType;
                 throwException(errMsg);
             }
 
-            // 2) if adsType is ok try to stop ads first if it was not stopped before
-            if (stateBeforeStart == AdsState.UNDEFINED) {
-                if (comport.writeByte(STOP_REQUEST)) {
-                    // give the ads time to stop
-                    Thread.sleep(SLEEP_TIME_MS * 2);
+            // 2) if adsType is ok try to stop ads first
+            comport.writeBytes(adsType.adsStopCommand().getCommandBytes());
+            // give the ads time to stop
+            Thread.sleep(SLEEP_TIME_MS * 2);
+
+            // 3) write ads config commands with config info to comport
+            Command[] adsCommands = adsType.adsConfigurationCommands(config);
+            for (Command adsCommand : adsCommands) {
+                byte[] adsCommandBytes = adsCommand.getCommandBytes();
+                // write adsConfigCommand bytes to log
+                StringBuilder sb = new StringBuilder("Ads configuration command:");
+                for (int i = 0; i < adsCommandBytes.length; i++) {
+                    sb.append("\nbyte_"+(i + 1) + ":  "+String.format("%02X ", adsCommandBytes[i]));
                 }
-            }
+                // log.info(sb.toString());
 
-            // 3) write "start" command with config info to comport
-            byte[] adsConfigCommand = config.getAdsConfigurationCommand();
-            // write adsConfigCommand bytes to log
-            StringBuilder sb = new StringBuilder("Ads configuration command:");
-            for (int i = 0; i < adsConfigCommand.length; i++) {
-                sb.append("\nbyte_"+(i + 1) + ":  "+String.format("%02X ", adsConfigCommand[i]));
+                if(!comport.writeBytes(adsCommandBytes)) {
+                    // if writing start command to comport was failed
+                    String errMsg = "Failed to write start command to comport";
+                    throwException(errMsg);
+                }
+                Thread.sleep(25);
             }
-           // log.info(sb.toString());
-
-            if(!comport.writeBytes(adsConfigCommand)) {
-                // if writing start command to comport was failed
-                String errMsg = "Failed to write start command to comport";
-                throwException(errMsg);
-            }
-
 
             // 4) waiting for data
             while (!isDataReceived) {
@@ -274,7 +269,7 @@ public class Ads {
 
         private void throwException(String errMsg) {
             try {
-                comport.writeByte(STOP_REQUEST);
+                comport.writeBytes(adsType.adsStopCommand().getCommandBytes());
             } catch (Exception ex) {
                 // do nothing;
             }
@@ -293,7 +288,7 @@ public class Ads {
         }
 
         // send stop command
-        boolean isStopOk = comport.writeByte(STOP_REQUEST);
+        boolean isStopOk = comport.writeBytes(adsType.adsStopCommand().getCommandBytes());
         if (isStopOk) {
             // give ads time to stop
             try {

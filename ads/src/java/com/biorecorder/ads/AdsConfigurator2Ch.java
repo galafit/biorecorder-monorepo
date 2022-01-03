@@ -6,9 +6,15 @@ import java.util.List;
 class AdsConfigurator2Ch implements AdsConfigurator{
     public static final int NUMBER_OF_ADS_CHANNELS = 2;
     public static final int NUMBER_OF_ACCELEROMETER_CHANNELS = 3;
+    private static final byte STOP_REQUEST = (byte) 0xFF;
 
     @Override
-    public byte[] getAdsConfigurationCommand(AdsConfig adsConfiguration) {
+    public Command getAdsStopCommand() {
+        return new CommandBase(STOP_REQUEST);
+    }
+
+    @Override
+    public Command[] getAdsConfigurationCommands(AdsConfig adsConfiguration) {
         List<Byte> result = new ArrayList<Byte>();
         result.add((byte)32);       //длина пакета
 
@@ -82,7 +88,9 @@ class AdsConfigurator2Ch implements AdsConfigurator{
         for(int i = 0; i < resultArr.length; i++) {
             resultArr[i] = result.get(i);
         }
-        return resultArr;
+
+        CommandBase[] commands = {new CommandBase(resultArr)};
+        return commands;
     }
 
     private int getChanelRegisterValue(AdsConfig configuration, int adsChannelNumber) {

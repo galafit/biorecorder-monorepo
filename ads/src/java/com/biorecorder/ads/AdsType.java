@@ -4,16 +4,17 @@ package com.biorecorder.ads;
 public enum AdsType {
     ADS_2(2),
     ADS_8(8);
-
     private int numberOfAdsChannels;
-
     private AdsConfigurator adsConfigurator;
+
+    //если true работает новая прошивка Стаса, а если false то Сашина прошивка
+    private boolean isAdsNew = false;
 
     private AdsType(int numberOfAdsChannels) {
         this.numberOfAdsChannels = numberOfAdsChannels;
 
         if(numberOfAdsChannels == 2){
-            adsConfigurator = new AdsConfigurator2Ch();
+            adsConfigurator = isAdsNew ? new AdsConfigurator2ChNew() : new AdsConfigurator2Ch();
         } else if(numberOfAdsChannels == 8) {
             adsConfigurator =  new AdsConfigurator8Ch();
         } else {
@@ -28,7 +29,7 @@ public enum AdsType {
 
     public static AdsType valueOf(int channelsCount) throws IllegalArgumentException {
         for (AdsType adsType : AdsType.values()) {
-            if(adsType.getAdsChannelsCount() == channelsCount) {
+            if(adsType.adsChannelsCount() == channelsCount) {
                 return adsType;
             }
 
@@ -37,12 +38,16 @@ public enum AdsType {
         throw new IllegalArgumentException(msg);
     }
 
-    public int getAdsChannelsCount() {
+    public int adsChannelsCount() {
         return numberOfAdsChannels;
     }
 
-    byte[] getAdsConfigurationCommand(AdsConfig adsConfig){
-       return  adsConfigurator.getAdsConfigurationCommand(adsConfig);
+    Command[] adsConfigurationCommands(AdsConfig adsConfig){
+       return  adsConfigurator.getAdsConfigurationCommands(adsConfig);
+    }
+
+    Command adsStopCommand() {
+        return adsConfigurator.getAdsStopCommand();
     }
 
     public static int getMaxChannelsCount() {

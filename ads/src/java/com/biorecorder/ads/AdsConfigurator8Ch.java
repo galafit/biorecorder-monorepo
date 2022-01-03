@@ -5,9 +5,15 @@ import java.util.List;
 
 public class AdsConfigurator8Ch implements AdsConfigurator {
     public static final int NUMBER_OF_ADS_CHANNELS = 8;
+    private static final byte STOP_REQUEST = (byte) 0xFF;
 
     @Override
-    public byte[] getAdsConfigurationCommand(AdsConfig adsConfig) {
+    public Command getAdsStopCommand() {
+        return new CommandBase(STOP_REQUEST);
+    }
+
+    @Override
+    public Command[] getAdsConfigurationCommands(AdsConfig adsConfig) {
         //-----------------------------------------
         List<Byte> result = new ArrayList<Byte>();
         result.add((byte)51);       //длина пакета
@@ -76,7 +82,8 @@ public class AdsConfigurator8Ch implements AdsConfigurator {
         for(int i = 0; i < resultArr.length; i++) {
             resultArr[i] = result.get(i);
         }
-        return resultArr;
+        CommandBase[] commands = {new CommandBase(resultArr)};
+        return commands;
     }
 
     private int getRegister_1Value(AdsConfig adsConfig) {

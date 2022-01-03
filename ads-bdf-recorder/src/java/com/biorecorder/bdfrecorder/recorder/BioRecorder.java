@@ -171,7 +171,7 @@ public class BioRecorder {
         if(resultantDataListener == null) {
             return stopOk;
         }
-        if(recordsCount > 1) {
+       /* if(recordsCount > 1) {
             durationOfDataRecord = (lastRecordTime - firstRecordTime) / ((recordsCount - 1) * 1000.0);
             startTime = firstRecordTime - (long) (durationOfDataRecord * 1000);
             header.setRecordingStartTimeMs(startTime);
@@ -179,7 +179,7 @@ public class BioRecorder {
                 header.setDurationOfDataRecord(durationOfDataRecord);
             }
             resultantDataListener.setHeader(header);
-        }
+        }*/
         resultantDataListener.close();
         resultantDataListener = null;
         return stopOk;
