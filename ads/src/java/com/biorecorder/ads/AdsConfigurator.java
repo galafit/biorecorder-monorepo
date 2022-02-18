@@ -5,6 +5,9 @@ package com.biorecorder.ads;
  * 2 channels or 8 channels
  */
 interface AdsConfigurator {
-    public Command[] getAdsConfigurationCommands(AdsConfig adsConfig);
-    public Command getAdsStopCommand();
+    public Command[] getConfigurationCommands(AdsConfig adsConfig);
+    public Command getStopCommand();
+    public Command getHelloCommand();
+    public Command getPingCommand();
+    public Command getHardwareRequestCommand();
 }

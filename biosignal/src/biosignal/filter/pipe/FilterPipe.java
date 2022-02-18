@@ -1,6 +1,5 @@
 package biosignal.filter.pipe;
 
-import biosignal.application.DataListener;
 import biosignal.filter.BiFilter;
 import biosignal.filter.Filter;
 import biosignal.filter.XYData;

@@ -8,12 +8,17 @@ public class NullDataProvider implements DataProvider{
     }
 
     @Override
-    public void addDataListener(int signal, DataListener l) {
+    public void addSignalDataListener(int signal, SignalDataListener l) {
 
     }
 
     @Override
     public void addConfigListener(ProviderConfigListener l) {
+
+    }
+
+    @Override
+    public void addDataRecordListener(DataRecordListener l) {
 
     }
 }

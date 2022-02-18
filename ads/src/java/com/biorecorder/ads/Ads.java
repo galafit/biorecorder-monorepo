@@ -57,14 +57,11 @@ public class Ads {
     private static final Log log = LogFactory.getLog(Ads.class);
 
     private static final int COMPORT_SPEED = 460800;
-    private static final byte PING_COMMAND = (byte) (0xFB & 0xFF);
-    private static final byte HELLO_REQUEST = (byte) (0xFD & 0xFF);
-    private static final byte HARDWARE_REQUEST = (byte) (0xFA & 0xFF);
 
     private static final int PING_PERIOD_MS = 1000;
     private static final int MONITORING_PERIOD_MS = 1000;
-    private static final int SLEEP_TIME_MS = 1000;
-    private static final int ACTIVE_PERIOD_MS = 2 * SLEEP_TIME_MS;
+    private static final int SLEEP_TIME_MS = 100; //1000;
+    private static final int ACTIVE_PERIOD_MS = 2000;
 
     private static final int MAX_STARTING_TIME_MS = 30 * 1000;
 
@@ -205,7 +202,7 @@ public class Ads {
             long startTime = System.currentTimeMillis();
             // 1) check that ads is connected and "active"
             while (!isActive()) {
-                comport.writeByte(HELLO_REQUEST);
+                comport.writeBytes(adsType.adsHelloCommand().getCommandBytes());
                 Thread.sleep(SLEEP_TIME_MS);
 
                 // if message with Hello request do not come during too long time
@@ -215,7 +212,7 @@ public class Ads {
             }
 
             // 2) request adsType
-            comport.writeByte(HARDWARE_REQUEST);
+            comport.writeBytes(adsType.adsHardwareRequestCommand().getCommandBytes());
             Thread.sleep(SLEEP_TIME_MS * 2);
 
             // if adsType is wrong
@@ -731,7 +728,7 @@ public class Ads {
         public void run() {
             while (!Thread.currentThread().isInterrupted()) {
                 try {
-                    comport.writeByte(PING_COMMAND);
+                    comport.writeBytes(adsType.adsPingCommand().getCommandBytes());
                     Thread.sleep(PING_PERIOD_MS);
                 } catch (Exception ex) {
                     break;
@@ -745,7 +742,7 @@ public class Ads {
         public void run() {
             while (!Thread.currentThread().isInterrupted()) {
                 try {
-                    comport.writeByte(HELLO_REQUEST);
+                    comport.writeBytes(adsType.adsHelloCommand().getCommandBytes());
                     Thread.sleep(MONITORING_PERIOD_MS);
                 } catch (Exception ex) {
                     break;

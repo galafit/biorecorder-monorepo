@@ -87,16 +87,18 @@ public class MainFacade implements Facade {
                 numberOfSignalsWithListeners = signalToPipeFilter.keySet().size();
                 for (Integer signal : signalToPipeFilter.keySet()) {
                     FilterPipe fp = signalToPipeFilter.get(signal);
-                    dataProvider1.addDataListener(signal, new DataListener() {
+                    dataProvider1.addSignalDataListener(signal, new SignalDataListener() {
                         @Override
                         public void receiveData(int[] data, int from, int length) {
                             dataCount++;
                             fp.receiveData(data, from, length);
-                            // to avoid multiple notifications
-                            if(dataCount % numberOfSignalsWithListeners == 0) {
-                                for (DataAppendListener l : dataAppendListeners) {
-                                    l.onDataAppend();
-                                }
+                        }
+                    });
+                    dataProvider1.addDataRecordListener(new DataRecordListener() {
+                        @Override
+                        public void receiveData(int[] data) {
+                            for (DataAppendListener l : dataAppendListeners) {
+                                l.onDataAppend();
                             }
                         }
                     });

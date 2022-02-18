@@ -12,8 +12,9 @@ import java.util.List;
 
 public class FileDataProvider implements DataProvider {
     private File edfFile;
-    private List<DataListener>[] dataListeners;
+    private List<SignalDataListener>[] dataListeners;
     private List<ProviderConfigListener> providerConfigListeners = new ArrayList<>(1);
+    private DataRecordListener dataRecordListener = new NullDataRecordListener();
     private EdfReader edfReader;
     private long readStartMs; // Время начала чтения в мСек. Отсчитывается от старта записи
     private long readEndMs; // Время конца чтения в мСек. Отсчитывается от старта записи
@@ -47,12 +48,11 @@ public class FileDataProvider implements DataProvider {
     public void start() {
         notifyConfigListeners();
         read();
-
     }
 
     private void read() {
         for (int i = 0; i < dataListeners.length; i++) {
-            List<DataListener> signalListeners = dataListeners[i];
+            List<SignalDataListener> signalListeners = dataListeners[i];
             if(signalListeners.size() > 0) {
                 long startPos = timeMsToPosition(i, readStartMs);
                 long endPos = timeMsToPosition(i, readEndMs);
@@ -71,14 +71,15 @@ public class FileDataProvider implements DataProvider {
                 }
 
                 for (int j = 0; j < signalListeners.size(); j++) {
-                    DataListener l = signalListeners.get(j);
+                    SignalDataListener l = signalListeners.get(j);
                     l.receiveData(data, 0, data.length);
                 }
             }
         }
+        // заглушка
+        dataRecordListener.receiveData(null);
     }
 
-    
     public void stop() {
         try {
             edfReader.close();
@@ -120,10 +121,15 @@ public class FileDataProvider implements DataProvider {
     }
 
     @Override
-    public void addDataListener(int signal, DataListener dataListener) {
+    public void addDataRecordListener(DataRecordListener l) {
+        dataRecordListener = l;
+    }
+
+    @Override
+    public void addSignalDataListener(int signal, SignalDataListener signalDataListener) {
         if (signal < dataListeners.length) {
-            List<DataListener> signalListeners = dataListeners[signal];
-            signalListeners.add(dataListener);
+            List<SignalDataListener> signalListeners = dataListeners[signal];
+            signalListeners.add(signalDataListener);
         }
     }
 

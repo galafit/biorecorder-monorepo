@@ -14,8 +14,9 @@ import java.util.List;
 public class RecorderDataProvider implements DataProvider{
     private final RecorderViewModel recorderViewModel;
     private volatile DataHeader header;
-    private List<DataListener>[] dataListeners = new List[8];
+    private List<SignalDataListener>[] dataListeners = new List[8];
     private List<ProviderConfigListener> providerConfigListeners = new ArrayList<>(1);
+    private DataRecordListener dataRecordListener = new NullDataRecordListener();
 
     public RecorderDataProvider() {
         JsonPreferences preferences = new JsonPreferences();
@@ -38,13 +39,14 @@ public class RecorderDataProvider implements DataProvider{
                 }
                 int from = 0;
                 for (int i = 0; i < header.numberOfSignals(); i++) {
-                    List<DataListener> signalListeners = dataListeners[i];
+                    List<SignalDataListener> signalListeners = dataListeners[i];
                     int signalSamples = header.getNumberOfSamplesInEachDataRecord(i);
-                    for (DataListener l : signalListeners) {
+                    for (SignalDataListener l : signalListeners) {
                         l.receiveData(dataRecord, from, signalSamples);
                     }
                     from += signalSamples;
                 }
+                dataRecordListener.receiveData(dataRecord);
             }
 
             @Override
@@ -96,11 +98,15 @@ public class RecorderDataProvider implements DataProvider{
        recorderViewModel.stop();
     }
 
+    @Override
+    public void addDataRecordListener(DataRecordListener l) {
+        dataRecordListener = l;
+    }
 
     @Override
-    public void addDataListener(int signal, DataListener l) {
+    public void addSignalDataListener(int signal, SignalDataListener l) {
         if (signal < dataListeners.length) {
-            List<DataListener> signalListeners = dataListeners[signal];
+            List<SignalDataListener> signalListeners = dataListeners[signal];
             signalListeners.add(l);
         }
     }

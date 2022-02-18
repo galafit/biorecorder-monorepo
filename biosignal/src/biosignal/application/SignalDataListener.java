@@ -1,6 +1,6 @@
 package biosignal.application;
 
-public interface DataListener {
+public interface SignalDataListener {
     void receiveData(int[] data, int from, int length);
 }
 

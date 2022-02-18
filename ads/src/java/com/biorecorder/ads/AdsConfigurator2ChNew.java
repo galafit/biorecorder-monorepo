@@ -5,16 +5,34 @@ class AdsConfigurator2ChNew implements AdsConfigurator{
     public static final int NUMBER_OF_ACCELEROMETER_CHANNELS = 3;
 
     private static final byte FF = (byte) 0xFF;
-    private static final byte[] START_COMMAND = {0x06, 0x10, FF, 0x06, 0x08, FF};
-    private static final byte[] STOP_COMMAND = { 0x06, 0x11, FF, 0x06, 0x0A, FF};
+    private static final byte[] HELLO_COMMAND = {0x10, (byte)0xFD, FF};
+    private static final byte[] PING_COMMAND = {0x10, (byte)0xFC, FF};
+    private static final byte[] HARDWARE_COMMAND = {0x10, (byte)0xFA, FF};
+    private static final byte[] STOP_COMMAND = {0x06, 0x11, FF, 0x06, 0x0A, FF};
+    private static final byte[] START_COMMAND = {0x10, (byte)0xFB, FF};
 
     @Override
-    public Command getAdsStopCommand() {
+    public Command getHelloCommand() {
+        return new CommandBase(HELLO_COMMAND);
+    }
+
+    @Override
+    public Command getPingCommand() {
+        return new CommandBase(PING_COMMAND);
+    }
+
+    @Override
+    public Command getHardwareRequestCommand() {
+        return new CommandBase(HARDWARE_COMMAND);
+    }
+
+    @Override
+    public Command getStopCommand() {
         return new CommandBase(STOP_COMMAND);
     }
 
     @Override
-    public Command[] getAdsConfigurationCommands(AdsConfig adsConfiguration) {
+    public Command[] getConfigurationCommands(AdsConfig adsConfiguration) {
         //первый регистр 0-5 частота сэмплирования от 125 сэмплов до 4к
         // 0 => 125, 1 => 250, 2 => 500, 3 => 1000, 4 => 2000, 5 => 4000
         byte regNumber = 0x01;
@@ -23,6 +41,7 @@ class AdsConfigurator2ChNew implements AdsConfigurator{
             case S500: regValue = 0x02; break;
             case S1000: regValue = 0x03; break;
             case S2000: regValue = 0x04; break;
+            case S4000: regValue = 0x05; break;
         }
         Command command1 = new CommandOneRegister(regNumber, regValue);
         Command command2 = new CommandOneRegister((byte)0x02, (byte)0xA0);
@@ -45,7 +64,20 @@ class AdsConfigurator2ChNew implements AdsConfigurator{
         Command command9 = new CommandOneRegister((byte)0x09, (byte)0x02);
         Command command10 = new CommandOneRegister((byte)0x0A, (byte)0x03);
 
-        Command[] commands = {new CommandBase(STOP_COMMAND),
+        // активируем делители по каналу 0
+        signalNumber = 0;
+        byte divider = (byte) adsConfiguration.getAdsChannelDivider(signalNumber);
+        byte[] commandBytes0 = {0x01, 0x02, 0x02, divider, FF};
+        Command command11 = new CommandBase(commandBytes0);
+
+        // активируем делители по каналу 1
+        signalNumber = 1;
+        divider = (byte) adsConfiguration.getAdsChannelDivider(signalNumber);
+        byte[] commandBytes1 = {0x01, 0x03, 0x02, divider, FF};
+        Command command12 = new CommandBase(commandBytes1);
+
+        Command[] commands = {
+                //new CommandBase(STOP_COMMAND), //стоповая команда и так шлется в Ads перед запуском
                 command1,
                 command2,
                 command3,
@@ -56,6 +88,8 @@ class AdsConfigurator2ChNew implements AdsConfigurator{
                 command8,
                 command9,
                 command10,
+                command11,
+                command12,
                 new CommandBase(START_COMMAND)
         };
         return commands;

@@ -8,7 +8,7 @@
   "recorderConfig" : {
     "adsConfig" : {
       "adsType" : "ADS_2",
-      "sps" : "S500",
+      "sps" : "S2000",
       "isBatteryVoltageMeasureEnabled" : true,
       "noiseDivider" : 2,
       "isAccelerometerEnabled" : true,
@@ -16,7 +16,7 @@
       "accelerometerDivider" : "D10",
       "adsChannels" : [ {
         "name" : "Channel 1",
-        "divider" : "D10",
+        "divider" : "D1",
         "gain" : "G2",
         "commutator" : "INPUT",
         "isEnabled" : true,
@@ -24,7 +24,7 @@
         "isRldSenseEnabled" : false
       }, {
         "name" : "Channel 2",
-        "divider" : "D10",
+        "divider" : "D1",
         "gain" : "G2",
         "commutator" : "INPUT",
         "isEnabled" : true,
@@ -84,6 +84,6 @@
     "durationOfDataRecord" : 1.0,
     "batteryVoltageChannelDeletingEnable" : true,
     "channelsExtraDividers" : [ "D1", "D1", "D1", "D1", "D1", "D1", "D1", "D1" ],
-    "accelerometerExtraDivider" : "D1"
+    "accelerometerExtraDivider" : "D2"
   }
 }

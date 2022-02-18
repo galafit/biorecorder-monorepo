@@ -16,8 +16,9 @@ import java.util.concurrent.ThreadFactory;
 
 public class FileDataProviderParallel implements DataProvider{
     private File edfFile;
-    private List<DataListener>[] dataListeners;
+    private List<SignalDataListener>[] dataListeners;
     private List<ProviderConfigListener> providerConfigListeners = new ArrayList<>(1);
+    private DataRecordListener dataRecordListener = new NullDataRecordListener();
     private EdfReader edfReader;
     private long readStartMs; // Время начала чтения в мСек. Отсчитывается от старта записи
     private long readEndMs; // Время конца чтения в мСек. Отсчитывается от старта записи
@@ -114,10 +115,15 @@ public class FileDataProviderParallel implements DataProvider{
     }
 
     @Override
-    public void addDataListener(int signal, DataListener dataListener) {
+    public void addDataRecordListener(DataRecordListener l) {
+        dataRecordListener = l;
+    }
+
+    @Override
+    public void addSignalDataListener(int signal, SignalDataListener signalDataListener) {
         if (signal < dataListeners.length) {
-            List<DataListener> signalListeners = dataListeners[signal];
-            signalListeners.add(dataListener);
+            List<SignalDataListener> signalListeners = dataListeners[signal];
+            signalListeners.add(signalDataListener);
         }
     }
 
@@ -149,7 +155,7 @@ public class FileDataProviderParallel implements DataProvider{
         int readPortion = 100000; //samples
         for (int i = 0; i < dataListeners.length; i++) {
             boolean endFile = false;
-            List<DataListener> signalListeners = dataListeners[i];
+            List<SignalDataListener> signalListeners = dataListeners[i];
             if(signalListeners.size() > 0) {
                 long startPos = timeMsToPosition(i, readStartMs);
                 long endPos = timeMsToPosition(i, readEndMs);
@@ -172,7 +178,7 @@ public class FileDataProviderParallel implements DataProvider{
                         e.printStackTrace();
                     }
                     for (int j = 0; j < signalListeners.size(); j++) {
-                        DataListener l = signalListeners.get(j);
+                        SignalDataListener l = signalListeners.get(j);
                         l.receiveData(data, 0, data.length);
                     }
                    /* try {
@@ -183,6 +189,8 @@ public class FileDataProviderParallel implements DataProvider{
                 }
             }
         }
+        // заглушка
+        dataRecordListener.receiveData(null);
     }
 
     public void setReadInterval(int signal, long startPos, long samplesToRead) {

@@ -7,14 +7,33 @@ class AdsConfigurator2Ch implements AdsConfigurator{
     public static final int NUMBER_OF_ADS_CHANNELS = 2;
     public static final int NUMBER_OF_ACCELEROMETER_CHANNELS = 3;
     private static final byte STOP_REQUEST = (byte) 0xFF;
+    private static final byte PING_COMMAND = (byte) 0xFB;
+    private static final byte HELLO_REQUEST = (byte) 0xFD;
+    private static final byte HARDWARE_REQUEST = (byte) 0xFA;
+
 
     @Override
-    public Command getAdsStopCommand() {
+    public Command getStopCommand() {
         return new CommandBase(STOP_REQUEST);
     }
 
     @Override
-    public Command[] getAdsConfigurationCommands(AdsConfig adsConfiguration) {
+    public Command getHelloCommand() {
+        return new CommandBase(HELLO_REQUEST);
+    }
+
+    @Override
+    public Command getPingCommand() {
+        return new CommandBase(PING_COMMAND);
+    }
+
+    @Override
+    public Command getHardwareRequestCommand() {
+        return new CommandBase(HARDWARE_REQUEST);
+    }
+
+    @Override
+    public Command[] getConfigurationCommands(AdsConfig adsConfiguration) {
         List<Byte> result = new ArrayList<Byte>();
         result.add((byte)32);       //длина пакета
 

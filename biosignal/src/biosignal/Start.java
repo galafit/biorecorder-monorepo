@@ -15,7 +15,7 @@ public class Start {
         File recordsDir = new File(System.getProperty("user.dir"), "records");
         File originalFile = new File(recordsDir, originalFilename);
         //new TestFrame(new TestFacade(new ConfiguratorECG(), false));
-        new BiosignalFrame(new MainFacade(new ConfiguratorECG(), false));
+        new BiosignalFrame(new MainFacade(new ConfiguratorTest(), false));
 
     }
 

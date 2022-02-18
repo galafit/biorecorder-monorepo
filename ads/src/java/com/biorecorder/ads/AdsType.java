@@ -43,11 +43,23 @@ public enum AdsType {
     }
 
     Command[] adsConfigurationCommands(AdsConfig adsConfig){
-       return  adsConfigurator.getAdsConfigurationCommands(adsConfig);
+       return  adsConfigurator.getConfigurationCommands(adsConfig);
     }
 
     Command adsStopCommand() {
-        return adsConfigurator.getAdsStopCommand();
+        return adsConfigurator.getStopCommand();
+    }
+
+    Command adsPingCommand() {
+        return adsConfigurator.getPingCommand();
+    }
+
+    Command adsHelloCommand() {
+        return adsConfigurator.getHelloCommand();
+    }
+
+    Command adsHardwareRequestCommand() {
+        return adsConfigurator.getHardwareRequestCommand();
     }
 
     public static int getMaxChannelsCount() {
