@@ -1,38 +1,33 @@
 package com.biorecorder.ads;
 
+import java.util.ArrayList;
+import java.util.List;
+
 class AdsConfigurator2ChNew implements AdsConfigurator{
-    public static final int NUMBER_OF_ADS_CHANNELS = 2;
-    public static final int NUMBER_OF_ACCELEROMETER_CHANNELS = 3;
-
-    private static final byte FF = (byte) 0xFF;
-    private static final byte[] HELLO_COMMAND = {0x10, (byte)0xFD, FF};
-    private static final byte[] PING_COMMAND = {0x10, (byte)0xFC, FF};
-    private static final byte[] HARDWARE_COMMAND = {0x10, (byte)0xFA, FF};
-    private static final byte[] STOP_COMMAND = {0x06, 0x11, FF, 0x06, 0x0A, FF};
-    private static final byte[] START_COMMAND = {0x10, (byte)0xFB, FF};
 
     @Override
-    public Command getHelloCommand() {
-        return new CommandBase(HELLO_COMMAND);
+    public byte[] getHelloCommand() {
+        return AdsCommands.helloRequestCommand();
     }
 
     @Override
-    public Command getPingCommand() {
-        return new CommandBase(PING_COMMAND);
+    public byte[] getPingCommand() {
+        return AdsCommands.pingCommand();
     }
 
     @Override
-    public Command getHardwareRequestCommand() {
-        return new CommandBase(HARDWARE_COMMAND);
+    public byte[] getHardwareRequestCommand() {
+        return AdsCommands.hardwareRequestCommand(false);
     }
 
     @Override
-    public Command getStopCommand() {
-        return new CommandBase(STOP_COMMAND);
+    public byte[] getStopCommand() {
+        return AdsCommands.stopRecordingCommand();
     }
 
     @Override
-    public Command[] getConfigurationCommands(AdsConfig adsConfiguration) {
+    public List<byte[]> getConfigurationCommands(AdsConfig adsConfiguration) {
+        List<byte[]> commands = new ArrayList<>(11);
         //первый регистр 0-5 частота сэмплирования от 125 сэмплов до 4к
         // 0 => 125, 1 => 250, 2 => 500, 3 => 1000, 4 => 2000, 5 => 4000
         byte regNumber = 0x01;
@@ -43,55 +38,31 @@ class AdsConfigurator2ChNew implements AdsConfigurator{
             case S2000: regValue = 0x04; break;
             case S4000: regValue = 0x05; break;
         }
-        Command command1 = new CommandOneRegister(regNumber, regValue);
-        Command command2 = new CommandOneRegister((byte)0x02, (byte)0xA0);
-        Command command3 = new CommandOneRegister((byte)0x03, (byte)0x10);
+        commands.add(AdsCommands.writeAdsRegisterCommand(regNumber, regValue));
+        commands.add(AdsCommands.writeAdsRegisterCommand((byte)0x02, (byte)0xA0));
+        commands.add(AdsCommands.writeAdsRegisterCommand((byte)0x03, (byte)0x10));
 
         //4й регистр задаёт усиление в битах 4-6 для signal 0.
         int signalNumber = 0;
         regNumber = 0x04;
         regValue = getGainByte(adsConfiguration.getAdsChannelGain(signalNumber));
-        Command command4 = new CommandOneRegister(regNumber, regValue);
+        commands.add(AdsCommands.writeAdsRegisterCommand(regNumber, regValue));
 
         //5й регистр задаёт усиление в битах 4-6 для signal 1.
         signalNumber = 1;
         regNumber = 0x05;
         regValue = getGainByte(adsConfiguration.getAdsChannelGain(signalNumber));
-        Command command5 = new CommandOneRegister(regNumber, regValue);
-        Command command6 = new CommandOneRegister((byte)0x06, (byte)0x00);
-        Command command7 = new CommandOneRegister((byte)0x07, (byte)0x00);
-        Command command8 = new CommandOneRegister((byte)0x08, (byte)0x40);
-        Command command9 = new CommandOneRegister((byte)0x09, (byte)0x02);
-        Command command10 = new CommandOneRegister((byte)0x0A, (byte)0x03);
+        commands.add(AdsCommands.writeAdsRegisterCommand(regNumber, regValue));
+        commands.add(AdsCommands.writeAdsRegisterCommand((byte)0x06, (byte)0x00));
+        commands.add(AdsCommands.writeAdsRegisterCommand((byte)0x07, (byte)0x00));
+        commands.add(AdsCommands.writeAdsRegisterCommand((byte)0x08, (byte)0x40));
+        commands.add(AdsCommands.writeAdsRegisterCommand((byte)0x09, (byte)0x02));
+        commands.add(AdsCommands.writeAdsRegisterCommand((byte)0x0A, (byte)0x03));
 
-        // активируем делители по каналу 0
-        signalNumber = 0;
-        byte divider = (byte) adsConfiguration.getAdsChannelDivider(signalNumber);
-        byte[] commandBytes0 = {0x01, 0x02, 0x02, divider, FF};
-        Command command11 = new CommandBase(commandBytes0);
 
-        // активируем делители по каналу 1
-        signalNumber = 1;
-        divider = (byte) adsConfiguration.getAdsChannelDivider(signalNumber);
-        byte[] commandBytes1 = {0x01, 0x03, 0x02, divider, FF};
-        Command command12 = new CommandBase(commandBytes1);
-
-        Command[] commands = {
-                //new CommandBase(STOP_COMMAND), //стоповая команда и так шлется в Ads перед запуском
-                command1,
-                command2,
-                command3,
-                command4,
-                command5,
-                command6,
-                command7,
-                command8,
-                command9,
-                command10,
-                command11,
-                command12,
-                new CommandBase(START_COMMAND)
-        };
+        byte divider0 = (byte) adsConfiguration.getAdsChannelDivider(0);
+        byte divider1 = (byte) adsConfiguration.getAdsChannelDivider(1);
+        commands.add(AdsCommands.startRecordingCommand(divider0, divider1));
         return commands;
     }
 

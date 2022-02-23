@@ -13,27 +13,27 @@ public class AdsConfigurator8Ch implements AdsConfigurator {
 
 
     @Override
-    public Command getStopCommand() {
-        return new CommandBase(STOP_REQUEST);
+    public byte[] getStopCommand() {
+        return new byte[] {STOP_REQUEST};
     }
 
     @Override
-    public Command getHelloCommand() {
-        return new CommandBase(HELLO_REQUEST);
+    public byte[] getHelloCommand() {
+        return new byte[] {HELLO_REQUEST};
     }
 
     @Override
-    public Command getPingCommand() {
-        return new CommandBase(PING_COMMAND);
+    public byte[] getPingCommand() {
+        return new byte[] {PING_COMMAND};
     }
 
     @Override
-    public Command getHardwareRequestCommand() {
-        return new CommandBase(HARDWARE_REQUEST);
+    public byte[] getHardwareRequestCommand() {
+        return new byte[] {HARDWARE_REQUEST};
     }
 
     @Override
-    public Command[] getConfigurationCommands(AdsConfig adsConfig) {
+    public List<byte[]> getConfigurationCommands(AdsConfig adsConfig) {
         //-----------------------------------------
         List<Byte> result = new ArrayList<Byte>();
         result.add((byte)51);       //длина пакета
@@ -102,7 +102,8 @@ public class AdsConfigurator8Ch implements AdsConfigurator {
         for(int i = 0; i < resultArr.length; i++) {
             resultArr[i] = result.get(i);
         }
-        CommandBase[] commands = {new CommandBase(resultArr)};
+        List<byte[]> commands = new ArrayList(1);
+        commands.add(resultArr);
         return commands;
     }
 

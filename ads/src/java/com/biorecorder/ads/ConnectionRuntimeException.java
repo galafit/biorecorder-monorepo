@@ -1,7 +1,7 @@
 package com.biorecorder.ads;
 import com.biorecorder.comport.ComportRuntimeException;
 
-public class AdsConnectionRuntimeException extends RuntimeException {
+public class ConnectionRuntimeException extends RuntimeException {
     public static final String TYPE_PORT_ALREADY_OPENED = "Port already opened";
     public static final String TYPE_PORT_NOT_OPENED = "Port not opened";
     public static final String TYPE_CANT_SET_MASK = "Can't set mask";
@@ -18,26 +18,26 @@ public class AdsConnectionRuntimeException extends RuntimeException {
     private String portName;
     private String exceptionType;
 
-    public AdsConnectionRuntimeException(String message) {
+    public ConnectionRuntimeException(String message) {
         super(message);
     }
 
-    public AdsConnectionRuntimeException(String message, Throwable cause) {
+    public ConnectionRuntimeException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public AdsConnectionRuntimeException(Throwable cause) {
+    public ConnectionRuntimeException(Throwable cause) {
         super(cause);
     }
 
 
-    public AdsConnectionRuntimeException(ComportRuntimeException ex) {
+    public ConnectionRuntimeException(ComportRuntimeException ex) {
         super(ex.getMessage());
         this.portName = ex.getPortName();
         this.exceptionType = ex.getExceptionType();
     }
 
-    public AdsConnectionRuntimeException(String msg, ComportRuntimeException ex) {
+    public ConnectionRuntimeException(String msg, ComportRuntimeException ex) {
         super(msg, ex);
         this.portName = ex.getPortName();
         this.exceptionType = ex.getExceptionType();

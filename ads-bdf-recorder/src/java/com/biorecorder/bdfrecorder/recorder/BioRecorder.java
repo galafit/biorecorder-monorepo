@@ -51,7 +51,7 @@ public class BioRecorder {
     public BioRecorder(String comportName) throws ConnectionRuntimeException {
         try {
             ads = new Ads(comportName);
-        } catch (AdsConnectionRuntimeException ex) {
+        } catch (com.biorecorder.ads.ConnectionRuntimeException ex) {
             throw new ConnectionRuntimeException(ex);
         }
     }
@@ -273,8 +273,8 @@ public class BioRecorder {
         }
         ads.setMessageListener(new MessageListener() {
             @Override
-            public void onMessage(AdsMessageType messageType, String message) {
-                if (messageType == AdsMessageType.LOW_BATTERY) {
+            public void onMessageReceived(AdsMessage messageType, String message) {
+                if (messageType == AdsMessage.LOW_BATTERY) {
                     notifyEventsListeners();
                 }
             }

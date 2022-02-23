@@ -1,14 +1,15 @@
 package com.biorecorder.ads;
 
 import com.biorecorder.comport.ComportListener;
-import com.sun.istack.internal.Nullable;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+// TODO rename to InputDecoder ?
 class FrameDecoder implements ComportListener {
     private static final Log log = LogFactory.getLog(FrameDecoder.class);
     private static final byte START_FRAME_MARKER = (byte) (0xAA & 0xFF);
     private static final byte MESSAGE_MARKER = (byte) (0xA5 & 0xFF);
+    private static final byte COMMAND_MARKER = (byte) (0xB5 & 0xFF);
     private static final byte STOP_FRAME_MARKER = (byte) (0x55 & 0xFF);
 
     private static final byte MESSAGE_HARDWARE_CONFIG_MARKER = (byte) (0xA4 & 0xFF);
@@ -18,7 +19,8 @@ class FrameDecoder implements ComportListener {
     private static final byte MESSAGE_STOP_RECORDING_MARKER = (byte) (0xA5 & 0xFF);
     private static final byte MESSAGE_FIRMWARE_MARKER = (byte) (0xA1 & 0xFF);
 
-    private int MAX_MESSAGE_SIZE = 7;
+    private static int MAX_MESSAGE_SIZE = 8;
+    private static int MAX_COMMAND_SIZE = 16;
     /*******************************************************************
      * these fields we need to restore  data records numbers
      *  from short (sent by ads in 2 bytes) to int
@@ -30,7 +32,6 @@ class FrameDecoder implements ComportListener {
     private int startRecordNumber;
     private int shortBlocksCount;
     /***************************************************************/
-
     private int frameIndex;
     private int frameSize;
     private int rowFrameSizeInByte;
@@ -39,21 +40,41 @@ class FrameDecoder implements ComportListener {
     private byte[] rawFrame;
     private int[] decodedFrame;
     private int[] accPrev = new int[3];
-    private final AdsConfig adsConfig;
+
+    boolean isAccelerometerEnabled;
+    boolean isAccelerometerOneChannelMode;
+    boolean isBatteryVoltageMeasureEnabled;
+    boolean isLeadOffEnabled;
+    int adsChannelsCount;
+    int noiseDivider = 1;
+
     private volatile NumberedDataRecordListener dataListener = new NullDataListener();
     private volatile MessageListener messageListener = new NullMessageListener();
+    private volatile CommandListener commandListener = new NullCommandListener();
 
-    FrameDecoder(@Nullable AdsConfig configuration) {
-        if (configuration != null) {
-            durationOfShortBlockMs = (int) (configuration.getDurationOfDataRecord() * 1000 * SHORT_MAX);
-        }
-        adsConfig = configuration;
-        numberOf3ByteSamples = getNumberOf3ByteSamples();
-        rowFrameSizeInByte = getRawFrameSize();
-        decodedFrameSizeInInt = getDecodedFrameSize();
-        rawFrame = new byte[Math.max(rowFrameSizeInByte, MAX_MESSAGE_SIZE)];
+    void config(AdsConfig adsConfig) {
+        durationOfShortBlockMs = (int) (adsConfig.getDurationOfDataRecord() * 1000 * SHORT_MAX);
+        numberOf3ByteSamples = getNumberOf3ByteSamples(adsConfig);
+        rowFrameSizeInByte = getRawFrameSize(adsConfig);
+        decodedFrameSizeInInt = getDecodedFrameSize(adsConfig);
+        int maxSize = Math.max(MAX_COMMAND_SIZE, MAX_MESSAGE_SIZE);
+        maxSize = Math.max(rowFrameSizeInByte, maxSize);
+        rawFrame = new byte[maxSize];
         decodedFrame = new int[decodedFrameSizeInInt];
+        isAccelerometerEnabled = adsConfig.isAccelerometerEnabled();
+        isAccelerometerOneChannelMode = adsConfig.isAccelerometerOneChannelMode();
+        isBatteryVoltageMeasureEnabled = adsConfig.isBatteryVoltageMeasureEnabled();
+        isLeadOffEnabled = adsConfig.isLeadOffEnabled();
+        adsChannelsCount = adsConfig.getAdsChannelsCount();
+        noiseDivider = adsConfig.getNoiseDivider();
         log.info("frame size: " + rowFrameSizeInByte + " bytes");
+    }
+
+    void reset() {
+        rowFrameSizeInByte = 0;
+        decodedFrameSizeInInt = 0;
+        rawFrame = new byte[Math.max(MAX_COMMAND_SIZE, MAX_MESSAGE_SIZE)];
+        decodedFrame = null;
     }
 
     /**
@@ -61,9 +82,7 @@ class FrameDecoder implements ComportListener {
      * the old one are automatically removed
      */
     public void addDataListener(NumberedDataRecordListener l) {
-        if (l != null) {
-            dataListener = l;
-        }
+        dataListener = l;
     }
 
     /**
@@ -71,17 +90,17 @@ class FrameDecoder implements ComportListener {
      * the old one are automatically removed
      */
     public void addMessageListener(MessageListener l) {
+        messageListener = l;
+    }
+
+    /**
+     * Frame decoder permits to add only ONE CommandListener! So if a new listener added
+     * the old one are automatically removed
+     */
+    public void addCommandListener(CommandListener l) {
         if (l != null) {
-            messageListener = l;
+            commandListener = l;
         }
-    }
-
-    public void removeDataListener() {
-        dataListener = new NullDataListener();
-    }
-
-    public void removeMessageListener() {
-        messageListener = new NullMessageListener();
     }
 
     @Override
@@ -96,7 +115,11 @@ class FrameDecoder implements ComportListener {
         } else if (frameIndex == 1 && inByte == MESSAGE_MARKER) {  //receiving message
             rawFrame[frameIndex] = inByte;
             frameIndex++;
-        } else if (frameIndex == 2) {
+        } else if (frameIndex == 1 && inByte == COMMAND_MARKER) {  //receiving command
+            rawFrame[frameIndex] = inByte;
+            frameIndex++;
+        }
+        else if (frameIndex == 2) {
             rawFrame[frameIndex] = inByte;
             frameIndex++;
             if (rawFrame[1] == MESSAGE_MARKER) {   //message length
@@ -107,7 +130,18 @@ class FrameDecoder implements ComportListener {
 
                 } else {
                     String infoMsg = "Invalid message frame. Too big frame size. Received byte = " + byteToHexString(inByte) + ",  max message size: "+ MAX_MESSAGE_SIZE + ". Frame index = " + (frameIndex - 1);
-                    notifyMessageListeners(AdsMessageType.FRAME_BROKEN, infoMsg);
+                    notifyMessageListeners(AdsMessage.FRAME_BROKEN, infoMsg);
+                    frameIndex = 0;
+                }
+            } else if(rawFrame[1] == COMMAND_MARKER) { //command length
+                // create new rowFrame with length = command length
+                int cmnd_size = inByte & 0xFF;
+                if (cmnd_size <= MAX_COMMAND_SIZE) {
+                    frameSize = cmnd_size;
+
+                } else {
+                    String infoMsg = "Invalid command frame. Too big frame size. Received byte = " + byteToHexString(inByte) + ",  max command size: "+ MAX_COMMAND_SIZE + ". Frame index = " + (frameIndex - 1);
+                    notifyMessageListeners(AdsMessage.FRAME_BROKEN, infoMsg);
                     frameIndex = 0;
                 }
             }
@@ -122,77 +156,73 @@ class FrameDecoder implements ComportListener {
                 String infoMsg = "Invalid data frame. ";
                 if(rawFrame[1] == MESSAGE_MARKER) {
                     infoMsg = "Invalid message frame. ";
+                } else if(rawFrame[1] == COMMAND_MARKER) {
+                    infoMsg = "Invalid command frame. ";
                 }
                 infoMsg = infoMsg + "No stop frame marker. Received byte = " + byteToHexString(inByte) + ". Frame index = " + frameIndex;
-                notifyMessageListeners(AdsMessageType.FRAME_BROKEN, infoMsg);
+                notifyMessageListeners(AdsMessage.FRAME_BROKEN, infoMsg);
             }
             frameIndex = 0;
         } else {
             String infoMsg = "Unrecognized byte received: " + byteToHexString(inByte);
-            notifyMessageListeners(AdsMessageType.FRAME_BROKEN, infoMsg);
-
+            notifyMessageListeners(AdsMessage.FRAME_BROKEN, infoMsg);
             frameIndex = 0;
         }
     }
 
     private void onFrameReceived() {
-        // Frame = \xAA\xAA... => frame[0] and frame[1] = START_FRAME_MARKER - data
-        if (rawFrame[1] == START_FRAME_MARKER) {
+        if (rawFrame[1] == START_FRAME_MARKER) { // Frame = |START_FRAME_MARKER|START_FRAME_MARKER... => data
             onDataRecordReceived();
-        }
-        // Frame = \xAA\xA5... => frame[0] = START_FRAME_MARKER and frame[1] = MESSAGE_MARKER - massage
-        if (rawFrame[1] == MESSAGE_MARKER) {
+        } else if (rawFrame[1] == MESSAGE_MARKER) { // Frame = |START_FRAME_MARKER|MESSAGE_MARKER... => message
             onMessageReceived();
+        } else if(rawFrame[1] == COMMAND_MARKER) { // Frame = |START_FRAME_MARKER|COMMAND_MARKER... => command
+            onCommandReceived();
         }
     }
 
+    private void onCommandReceived() {
+
+    }
+
     private void onMessageReceived() {
-        // hardwareConfigMessage: xAA|xA5|x07|xA4|x02|x01|x55 =>
-        // START_FRAME|MESSAGE_MARKER|number_of_bytes|HARDWARE_CONFIG|number_of_ads_channels|???|STOP_FRAME
-        //  - reserved, power button, 2ADS channels, 1 accelerometer
+        // hardwareConfigMessage: xAA|xA5|x06|xA4|x02|x55 =>
+        // START_FRAME|MESSAGE_MARKER|number_of_bytes|HARDWARE_CONFIG|number_of_ads_channels|STOP_FRAME
 
         // stop recording message: \xAA\xA5\x05\xA5\x55
         // hello message: \xAA\xA5\x05\xA0\x55
-        AdsMessageType adsMessageType = null;
+        AdsMessage adsMessage = null;
         String info = "";
         if (rawFrame[3] == MESSAGE_HELLO_MARKER) {
-            adsMessageType = AdsMessageType.HELLO;
+            adsMessage = AdsMessage.HELLO;
             info = "Hello message received";
         } else if (rawFrame[3] == MESSAGE_STOP_RECORDING_MARKER) {
-            adsMessageType = AdsMessageType.STOP_RECORDING;
+            adsMessage = AdsMessage.STOP_RECORDING;
             info = "Stop recording message received";
-        } else if (rawFrame[3] == MESSAGE_FIRMWARE_MARKER) {
-            adsMessageType = AdsMessageType.FIRMWARE;
-            info = "Firmware version message received";
-        } else if (rawFrame[3] == MESSAGE_HARDWARE_CONFIG_MARKER && rawFrame[4] == MESSAGE_2CH_MARKER) {
-            adsMessageType = AdsMessageType.ADS_2_CHANNELS;
+        }  else if (rawFrame[3] == MESSAGE_HARDWARE_CONFIG_MARKER && rawFrame[4] == MESSAGE_2CH_MARKER) {
+            adsMessage = AdsMessage.ADS_2_CHANNELS;
             info = "Ads_2channel message received";
         } else if (rawFrame[3] == MESSAGE_HARDWARE_CONFIG_MARKER && rawFrame[4] == MESSAGE_8CH_MARKER) {
-            adsMessageType = AdsMessageType.ADS_8_CHANNELS;
+            adsMessage = AdsMessage.ADS_8_CHANNELS;
             info = "Ads_8channel message received";
         } else if (((rawFrame[3] & 0xFF) == 0xA3) && ((rawFrame[5] & 0xFF) == 0x01)) {
-            adsMessageType = AdsMessageType.LOW_BATTERY;
+            adsMessage = AdsMessage.LOW_BATTERY;
             info = "Low battery message received";
-        } else if (((rawFrame[3] & 0xFF) == 0xA2) && ((rawFrame[5] & 0xFF) == 0x04)) {
-            info = "TX fail message received";
-            adsMessageType = AdsMessageType.TX_FAIL;
         } else {
             info = "Unknown message received";
-            adsMessageType = AdsMessageType.UNKNOWN;
+            adsMessage = AdsMessage.UNKNOWN;
             log.info(info);
         }
-        notifyMessageListeners(adsMessageType, info);
+        notifyMessageListeners(adsMessage, info);
     }
 
     private void onDataRecordReceived() {
         int rawFrameOffset = 4;
         int decodedFrameOffset = 0;
         for (int i = 0; i < numberOf3ByteSamples; i++) {
-            decodedFrame[decodedFrameOffset++] = bytesToSignedInt(rawFrame[rawFrameOffset], rawFrame[rawFrameOffset + 1], rawFrame[rawFrameOffset + 2]) / adsConfig.getNoiseDivider();
+            decodedFrame[decodedFrameOffset++] = bytesToSignedInt(rawFrame[rawFrameOffset], rawFrame[rawFrameOffset + 1], rawFrame[rawFrameOffset + 2]) / noiseDivider;
             rawFrameOffset += 3;
         }
-
-        if (adsConfig.isAccelerometerEnabled()) {
+        if (isAccelerometerEnabled) {
             int[] accVal = new int[3];
             int accSum = 0;
             for (int i = 0; i < 3; i++) {
@@ -200,7 +230,7 @@ class FrameDecoder implements ComportListener {
                 accVal[i] = bytesToSignedInt(rawFrame[rawFrameOffset], rawFrame[rawFrameOffset + 1]);
                 rawFrameOffset += 2;
             }
-            if (adsConfig.isAccelerometerOneChannelMode()) {
+            if (isAccelerometerOneChannelMode) {
                 for (int i = 0; i < accVal.length; i++) {
                     accSum += Math.abs(accVal[i] - accPrev[i]);
                     accPrev[i] = accVal[i];
@@ -213,13 +243,13 @@ class FrameDecoder implements ComportListener {
             }
         }
 
-        if (adsConfig.isBatteryVoltageMeasureEnabled()) {
+        if (isBatteryVoltageMeasureEnabled) {
             decodedFrame[decodedFrameOffset++] = bytesToSignedInt(rawFrame[rawFrameOffset], rawFrame[rawFrameOffset + 1]);
             rawFrameOffset += 2;
         }
 
-        if (adsConfig.isLeadOffEnabled()) {
-            if (adsConfig.getAdsChannelsCount() == 8) {
+        if (isLeadOffEnabled) {
+            if (adsChannelsCount == 8) {
                 // 2 bytes for 8 channels
                 decodedFrame[decodedFrameOffset++] = bytesToSignedInt(rawFrame[rawFrameOffset], rawFrame[rawFrameOffset + 1]);
                 rawFrameOffset += 2;
@@ -270,13 +300,10 @@ class FrameDecoder implements ComportListener {
     }
 
 
-    private int getRawFrameSize() {
-        if (adsConfig == null) {
-            return 0;
-        }
+    private int getRawFrameSize(AdsConfig adsConfig) {
         int result = 2;//маркер начала фрейма
         result += 2; // счечик фреймов
-        result += 3 * getNumberOf3ByteSamples();
+        result += 3 * getNumberOf3ByteSamples(adsConfig);
         if (adsConfig.isAccelerometerEnabled()) {
             result += 6;
         }
@@ -294,12 +321,9 @@ class FrameDecoder implements ComportListener {
         return result;
     }
 
-    private int getDecodedFrameSize() {
-        if (adsConfig == null) {
-            return 0;
-        }
+    private int getDecodedFrameSize(AdsConfig adsConfig) {
         int result = 0;
-        result += getNumberOf3ByteSamples();
+        result += getNumberOf3ByteSamples(adsConfig);
         if (adsConfig.isAccelerometerEnabled()) {
             result = result + (adsConfig.isAccelerometerOneChannelMode() ? 1 : 3);
         }
@@ -313,10 +337,7 @@ class FrameDecoder implements ComportListener {
         return result;
     }
 
-    private int getNumberOf3ByteSamples() {
-        if (adsConfig == null) {
-            return 0;
-        }
+    private int getNumberOf3ByteSamples(AdsConfig adsConfig) {
         int result = 0;
 
         Divider[] dividers = Divider.values();
@@ -335,8 +356,8 @@ class FrameDecoder implements ComportListener {
 
     }
 
-    private void notifyMessageListeners(AdsMessageType adsMessageType, String additionalInfo) {
-        messageListener.onMessage(adsMessageType, additionalInfo);
+    private void notifyMessageListeners(AdsMessage adsMessage, String additionalInfo) {
+        messageListener.onMessageReceived(adsMessage, additionalInfo);
     }
 
     /* Java int BIG_ENDIAN, Byte order: LITTLE_ENDIAN  */
@@ -385,7 +406,7 @@ class FrameDecoder implements ComportListener {
 
     class NullMessageListener implements MessageListener {
         @Override
-        public void onMessage(AdsMessageType messageType, String message) {
+        public void onMessageReceived(AdsMessage messageType, String message) {
             // do nothing;
         }
     }
@@ -393,6 +414,13 @@ class FrameDecoder implements ComportListener {
     class NullDataListener implements NumberedDataRecordListener {
         @Override
         public void onDataRecordReceived(int[] dataRecord, int dataRecordNumber) {
+            // do nothing;
+        }
+    }
+
+    class NullCommandListener implements CommandListener {
+        @Override
+        public void onCommandReceived(byte[] commandBytes) {
             // do nothing;
         }
     }

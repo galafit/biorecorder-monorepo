@@ -1,15 +1,13 @@
 package com.biorecorder.ads;
 
 
-import com.biorecorder.comport.Comport;
 import com.biorecorder.comport.ComportFactory;
-import com.biorecorder.comport.ComportRuntimeException;
 import com.biorecorder.edflib.DataHeader;
 import com.biorecorder.edflib.FormatVersion;
-import com.sun.istack.internal.Nullable;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -56,8 +54,6 @@ import java.util.concurrent.atomic.AtomicReference;
 public class Ads {
     private static final Log log = LogFactory.getLog(Ads.class);
 
-    private static final int COMPORT_SPEED = 460800;
-
     private static final int PING_PERIOD_MS = 1000;
     private static final int MONITORING_PERIOD_MS = 1000;
     private static final int SLEEP_TIME_MS = 100; //1000;
@@ -69,8 +65,6 @@ public class Ads {
     private static final String RECORDING_MSG = "Ads is recording. Stop it first";
     private static final String ALL_CHANNELS_DISABLED_MSG = "All Ads channels are disabled. Recording Impossible";
 
-    private final Comport comport;
-
     private volatile long lastEventTime;
     private volatile boolean isDataReceived;
     private volatile AdsType adsType = AdsType.ADS_2;
@@ -81,19 +75,14 @@ public class Ads {
     private AtomicReference<AdsState> adsStateAtomicReference =
             new AtomicReference<AdsState>(AdsState.UNDEFINED);
 
-
+    private final CommunicationPort communicationPort;
     private final ExecutorService singleThreadExecutor;
     private volatile Future executorFuture;
-
     private volatile NumberedDataRecordListener dataListener;
     private volatile MessageListener messageListener;
 
-    public Ads(String comportName) throws AdsConnectionRuntimeException {
-        try {
-            comport = ComportFactory.getComport(comportName, COMPORT_SPEED);
-        } catch (ComportRuntimeException ex) {
-            throw new AdsConnectionRuntimeException(ex);
-        }
+
+    public Ads(String comportName) throws ConnectionRuntimeException {
         dataListener = new NullDataListener();
         messageListener = new NullMessageListener();
         ThreadFactory namedThreadFactory = new ThreadFactory() {
@@ -102,6 +91,42 @@ public class Ads {
             }
         };
         singleThreadExecutor = Executors.newSingleThreadExecutor(namedThreadFactory);
+        communicationPort = new CommunicationPort(comportName);
+        communicationPort.addDataListener(new NumberedDataRecordListener() {
+            @Override
+            public void onDataRecordReceived(int[] dataRecord, int recordNumber) {
+                lastEventTime = System.currentTimeMillis();
+                isDataReceived = true;
+                notifyDataListeners(dataRecord, recordNumber);
+            }
+        });
+        communicationPort.addMessageListener(new MessageListener() {
+            @Override
+            public void onMessageReceived(AdsMessage messageType, String message) {
+                if (messageType == AdsMessage.HELLO || messageType == AdsMessage.UNKNOWN) {
+                    lastEventTime = System.currentTimeMillis();
+                }
+                if (messageType == AdsMessage.ADS_2_CHANNELS) {
+                    adsType = AdsType.ADS_2;
+                    lastEventTime = System.currentTimeMillis();
+                }
+                if (messageType == AdsMessage.ADS_8_CHANNELS) {
+                    adsType = AdsType.ADS_8;
+                    lastEventTime = System.currentTimeMillis();
+                }
+                if (messageType == AdsMessage.STOP_RECORDING) {
+                    adsStateAtomicReference.compareAndSet(AdsState.UNDEFINED, AdsState.STOPPED);
+                    log.info(message);
+                }
+                if (messageType == AdsMessage.FRAME_BROKEN) {
+                    log.info(message);
+                }
+                if (messageType == AdsMessage.LOW_BATTERY) {
+                    log.info(message);
+                }
+                notifyMessageListeners(messageType, message);
+            }
+        });
     }
 
     /**
@@ -113,17 +138,15 @@ public class Ads {
      *                               or if it is recording and should be stopped first
      */
     public void startMonitoring() throws IllegalStateException {
-        if (!comport.isOpened()) {
+        if (!communicationPort.isOpened()) {
             throw new IllegalStateException(DISCONNECTED_MSG);
         }
 
         if (adsStateAtomicReference.get() == AdsState.RECORDING) {
             throw new IllegalStateException(RECORDING_MSG);
         }
-        // create frame decoder to handle ads messages
-        comport.addListener(createAndConfigureFrameDecoder(null));
         if (adsStateAtomicReference.get() == AdsState.UNDEFINED) {
-            comport.writeBytes(adsType.adsStopCommand().getCommandBytes());
+            communicationPort.sendCommand(adsType.adsStopCommand());
         }
         if (executorFuture != null) {
             executorFuture.cancel(true);
@@ -146,7 +169,7 @@ public class Ads {
      */
 
     public Future<Void> startRecording(AdsConfig config) throws IllegalStateException, IllegalArgumentException {
-        if (!comport.isOpened()) {
+        if (!communicationPort.isOpened()) {
             throw new IllegalStateException(DISCONNECTED_MSG);
         }
 
@@ -169,16 +192,12 @@ public class Ads {
         if(isAllChannelsDisabled) {
             throw new IllegalArgumentException(ALL_CHANNELS_DISABLED_MSG);
         }
-
         // stop monitoring
         if (executorFuture != null && !executorFuture.isDone()) {
             executorFuture.cancel(true);
         }
-
+        communicationPort.config(adsConfig);
         isDataReceived = false;
-        // create frame decoder corresponding to the configuration
-        // and set it as listener to comport
-        comport.addListener(createAndConfigureFrameDecoder(adsConfig));
         AdsState stateBeforeStart = adsStateAtomicReference.get();
         adsStateAtomicReference.set(AdsState.RECORDING);
         executorFuture = singleThreadExecutor.submit(new StartingTask(adsConfig, stateBeforeStart));
@@ -202,7 +221,7 @@ public class Ads {
             long startTime = System.currentTimeMillis();
             // 1) check that ads is connected and "active"
             while (!isActive()) {
-                comport.writeBytes(adsType.adsHelloCommand().getCommandBytes());
+                communicationPort.sendCommand(adsType.adsHelloCommand());
                 Thread.sleep(SLEEP_TIME_MS);
 
                 // if message with Hello request do not come during too long time
@@ -212,7 +231,7 @@ public class Ads {
             }
 
             // 2) request adsType
-            comport.writeBytes(adsType.adsHardwareRequestCommand().getCommandBytes());
+            communicationPort.sendCommand(adsType.adsHardwareRequestCommand());
             Thread.sleep(SLEEP_TIME_MS * 2);
 
             // if adsType is wrong
@@ -222,29 +241,26 @@ public class Ads {
             }
 
             // 2) if adsType is ok try to stop ads first
-            comport.writeBytes(adsType.adsStopCommand().getCommandBytes());
+            communicationPort.sendCommand(adsType.adsStopCommand());
             // give the ads time to stop
             Thread.sleep(SLEEP_TIME_MS * 2);
 
             // 3) write ads config commands with config info to comport
-            Command[] adsCommands = adsType.adsConfigurationCommands(config);
-            for (Command adsCommand : adsCommands) {
-                byte[] adsCommandBytes = adsCommand.getCommandBytes();
-                // write adsConfigCommand bytes to log
+            List<byte[]> configCommands = adsType.adsConfigurationCommands(config);
+            for (byte[] command : configCommands) {
+                // write command bytes to log
                 StringBuilder sb = new StringBuilder("Ads configuration command:");
-                for (int i = 0; i < adsCommandBytes.length; i++) {
-                    sb.append("\nbyte_"+(i + 1) + ":  "+String.format("%02X ", adsCommandBytes[i]));
+                for (int i = 0; i < command.length; i++) {
+                    sb.append("\nbyte_"+(i + 1) + ":  "+String.format("%02X ", command[i]));
                 }
-                // log.info(sb.toString());
-
-                if(!comport.writeBytes(adsCommandBytes)) {
+                log.info(sb.toString());
+                if(!communicationPort.sendCommand(command)) {
                     // if writing start command to comport was failed
                     String errMsg = "Failed to write start command to comport";
                     throwException(errMsg);
                 }
                 Thread.sleep(25);
             }
-
             // 4) waiting for data
             while (!isDataReceived) {
                 Thread.sleep(SLEEP_TIME_MS);
@@ -259,14 +275,13 @@ public class Ads {
             // ping timer permits Ads to detect bluetooth connection problems
             // and restart connection when it is necessary
             executorFuture = singleThreadExecutor.submit(new PingTask(), PING_PERIOD_MS);
-
             return null;
         }
 
 
         private void throwException(String errMsg) {
             try {
-                comport.writeBytes(adsType.adsStopCommand().getCommandBytes());
+                communicationPort.sendCommand(adsType.adsStopCommand());
             } catch (Exception ex) {
                 // do nothing;
             }
@@ -285,7 +300,7 @@ public class Ads {
         }
 
         // send stop command
-        boolean isStopOk = comport.writeBytes(adsType.adsStopCommand().getCommandBytes());
+        boolean isStopOk = communicationPort.sendCommand(adsType.adsStopCommand());
         if (isStopOk) {
             // give ads time to stop
             try {
@@ -303,7 +318,7 @@ public class Ads {
      * @throws IllegalStateException if Ads was disconnected and its work is finalised
      */
     public boolean stop() throws IllegalStateException {
-        if (!comport.isOpened()) {
+        if (!communicationPort.isOpened()) {
             throw new IllegalStateException(DISCONNECTED_MSG);
         }
         return stop1();
@@ -313,10 +328,10 @@ public class Ads {
         if(adsStateAtomicReference.get() == AdsState.RECORDING) {
             stop1();
         }
-        if (!comport.isOpened()) {
+        if (!communicationPort.isOpened()) {
             return true;
         }
-        if (comport.close()) {
+        if (communicationPort.close()) {
             removeDataListener();
             removeMessageListener();
             return true;
@@ -324,48 +339,6 @@ public class Ads {
         return false;
     }
 
-    FrameDecoder createAndConfigureFrameDecoder(@Nullable AdsConfig adsConfig) {
-        FrameDecoder frameDecoder = new FrameDecoder(adsConfig);
-        if (adsConfig != null) {
-            frameDecoder.addDataListener(new NumberedDataRecordListener() {
-                @Override
-                public void onDataRecordReceived(int[] dataRecord, int recordNumber) {
-                    lastEventTime = System.currentTimeMillis();
-                    isDataReceived = true;
-                    notifyDataListeners(dataRecord, recordNumber);
-                }
-            });
-        }
-
-        frameDecoder.addMessageListener(new MessageListener() {
-            @Override
-            public void onMessage(AdsMessageType messageType, String message) {
-                if (messageType == AdsMessageType.HELLO || messageType == AdsMessageType.UNKNOWN) {
-                    lastEventTime = System.currentTimeMillis();
-                }
-                if (messageType == AdsMessageType.ADS_2_CHANNELS) {
-                    adsType = AdsType.ADS_2;
-                    lastEventTime = System.currentTimeMillis();
-                }
-                if (messageType == AdsMessageType.ADS_8_CHANNELS) {
-                    adsType = AdsType.ADS_8;
-                    lastEventTime = System.currentTimeMillis();
-                }
-                if (messageType == AdsMessageType.STOP_RECORDING) {
-                    adsStateAtomicReference.compareAndSet(AdsState.UNDEFINED, AdsState.STOPPED);
-                    log.info(message);
-                }
-                if (messageType == AdsMessageType.FRAME_BROKEN) {
-                    log.info(message);
-                }
-                if (messageType == AdsMessageType.LOW_BATTERY) {
-                    log.info(message);
-                }
-                notifyMessageListeners(messageType, message);
-            }
-        });
-        return frameDecoder;
-    }
 
     /**
      * This method return true if last ads monitoring message (device_type)
@@ -422,12 +395,12 @@ public class Ads {
 
     }
 
-    private void notifyMessageListeners(AdsMessageType adsMessageType, String additionalInfo) {
-        messageListener.onMessage(adsMessageType, additionalInfo);
+    private void notifyMessageListeners(AdsMessage adsMessage, String additionalInfo) {
+        messageListener.onMessageReceived(adsMessage, additionalInfo);
     }
 
     public String getComportName() {
-        return comport.getComportName();
+        return communicationPort.getComportName();
     }
 
     public static String[] getAvailableComportNames() {
@@ -728,7 +701,7 @@ public class Ads {
         public void run() {
             while (!Thread.currentThread().isInterrupted()) {
                 try {
-                    comport.writeBytes(adsType.adsPingCommand().getCommandBytes());
+                    communicationPort.sendCommand(adsType.adsPingCommand());
                     Thread.sleep(PING_PERIOD_MS);
                 } catch (Exception ex) {
                     break;
@@ -742,7 +715,7 @@ public class Ads {
         public void run() {
             while (!Thread.currentThread().isInterrupted()) {
                 try {
-                    comport.writeBytes(adsType.adsHelloCommand().getCommandBytes());
+                    communicationPort.sendCommand(adsType.adsHelloCommand());
                     Thread.sleep(MONITORING_PERIOD_MS);
                 } catch (Exception ex) {
                     break;
@@ -754,7 +727,7 @@ public class Ads {
 
     class NullMessageListener implements MessageListener {
         @Override
-        public void onMessage(AdsMessageType messageType, String message) {
+        public void onMessageReceived(AdsMessage messageType, String message) {
             // do nothing;
         }
     }

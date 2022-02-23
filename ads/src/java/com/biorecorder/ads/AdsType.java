@@ -1,6 +1,8 @@
 package com.biorecorder.ads;
 
 
+import java.util.List;
+
 public enum AdsType {
     ADS_2(2),
     ADS_8(8);
@@ -8,7 +10,7 @@ public enum AdsType {
     private AdsConfigurator adsConfigurator;
 
     //если true работает новая прошивка Стаса, а если false то Сашина прошивка
-    private boolean isAdsNew = false;
+    private boolean isAdsNew = true;
 
     private AdsType(int numberOfAdsChannels) {
         this.numberOfAdsChannels = numberOfAdsChannels;
@@ -42,23 +44,23 @@ public enum AdsType {
         return numberOfAdsChannels;
     }
 
-    Command[] adsConfigurationCommands(AdsConfig adsConfig){
+    List<byte[]> adsConfigurationCommands(AdsConfig adsConfig){
        return  adsConfigurator.getConfigurationCommands(adsConfig);
     }
 
-    Command adsStopCommand() {
+    byte[] adsStopCommand() {
         return adsConfigurator.getStopCommand();
     }
 
-    Command adsPingCommand() {
+    byte[] adsPingCommand() {
         return adsConfigurator.getPingCommand();
     }
 
-    Command adsHelloCommand() {
+    byte[] adsHelloCommand() {
         return adsConfigurator.getHelloCommand();
     }
 
-    Command adsHardwareRequestCommand() {
+    byte[] adsHardwareRequestCommand() {
         return adsConfigurator.getHardwareRequestCommand();
     }
 

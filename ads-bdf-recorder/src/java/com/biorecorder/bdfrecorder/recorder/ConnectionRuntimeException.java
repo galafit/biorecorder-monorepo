@@ -1,8 +1,6 @@
 package com.biorecorder.bdfrecorder.recorder;
 
 
-import com.biorecorder.ads.AdsConnectionRuntimeException;
-
 /**
  * Created by galafit on 29/5/17.
  */
@@ -36,13 +34,13 @@ public class ConnectionRuntimeException extends RuntimeException {
     }
 
 
-    public ConnectionRuntimeException(AdsConnectionRuntimeException ex) {
+    public ConnectionRuntimeException(com.biorecorder.ads.ConnectionRuntimeException ex) {
         super(ex.getMessage());
         this.portName = ex.getPortName();
         this.exceptionType = ex.getExceptionType();
     }
 
-    public ConnectionRuntimeException(String msg, AdsConnectionRuntimeException ex) {
+    public ConnectionRuntimeException(String msg, com.biorecorder.ads.ConnectionRuntimeException ex) {
         super(msg, ex);
         this.portName = ex.getPortName();
         this.exceptionType = ex.getExceptionType();
