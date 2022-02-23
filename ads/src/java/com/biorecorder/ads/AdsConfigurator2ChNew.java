@@ -39,14 +39,18 @@ class AdsConfigurator2ChNew implements AdsConfigurator{
             case S4000: regValue = 0x05; break;
         }
         commands.add(AdsCommands.writeAdsRegisterCommand(regNumber, regValue));
-        commands.add(AdsCommands.writeAdsRegisterCommand((byte)0x02, (byte)0xA0));
+        regValue = (byte) 0xA0;
+        regValue = (byte) 0xA3;//test enabled 
+        commands.add(AdsCommands.writeAdsRegisterCommand((byte)0x02, regValue));
         commands.add(AdsCommands.writeAdsRegisterCommand((byte)0x03, (byte)0x10));
 
         //4й регистр задаёт усиление в битах 4-6 для signal 0.
         int signalNumber = 0;
         regNumber = 0x04;
         regValue = getGainByte(adsConfiguration.getAdsChannelGain(signalNumber));
+        regValue = 0x05;  // Set Channel 1 to test
         commands.add(AdsCommands.writeAdsRegisterCommand(regNumber, regValue));
+
 
         //5й регистр задаёт усиление в битах 4-6 для signal 1.
         signalNumber = 1;
