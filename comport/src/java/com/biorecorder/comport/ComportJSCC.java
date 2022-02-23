@@ -88,11 +88,6 @@ public class ComportJSCC implements SerialPortEventListener, Comport {
     @Override
     public boolean writeBytes(byte[] bytes) throws IllegalStateException {
         try {
-          /* System.out.println("\nwrite " + bytes.length + " bytes:");
-            for (byte aByte : bytes) {
-                System.out.println(aByte);
-            }*/
-
             return serialPort.writeBytes(bytes);
         } catch (SerialPortException ex) {
             throw new IllegalStateException("Serial Port "+ getComportName() + " was finalised and closed", ex);

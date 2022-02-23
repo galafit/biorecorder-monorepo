@@ -124,6 +124,9 @@ public class Ads {
                 if (messageType == AdsMessage.LOW_BATTERY) {
                     log.info(message);
                 }
+                if (messageType == AdsMessage.UNKNOWN) {
+                    log.info(message);
+                }
                 notifyMessageListeners(messageType, message);
             }
         });
@@ -328,15 +331,8 @@ public class Ads {
         if(adsStateAtomicReference.get() == AdsState.RECORDING) {
             stop1();
         }
-        if (!communicationPort.isOpened()) {
-            return true;
-        }
-        if (communicationPort.close()) {
-            removeDataListener();
-            removeMessageListener();
-            return true;
-        }
-        return false;
+        singleThreadExecutor.shutdown();
+        return communicationPort.close();
     }
 
 

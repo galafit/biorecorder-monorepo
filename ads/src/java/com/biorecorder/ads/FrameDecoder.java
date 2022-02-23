@@ -4,20 +4,22 @@ import com.biorecorder.comport.ComportListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 // TODO rename to InputDecoder ?
 class FrameDecoder implements ComportListener {
     private static final Log log = LogFactory.getLog(FrameDecoder.class);
-    private static final byte START_FRAME_MARKER = (byte) (0xAA & 0xFF);
-    private static final byte MESSAGE_MARKER = (byte) (0xA5 & 0xFF);
-    private static final byte COMMAND_MARKER = (byte) (0xB5 & 0xFF);
-    private static final byte STOP_FRAME_MARKER = (byte) (0x55 & 0xFF);
+    private static final byte START_FRAME_MARKER = (byte) 0xAA;
+    private static final byte MESSAGE_MARKER = (byte) 0xA5;
+    private static final byte COMMAND_MARKER = (byte) 0x5A;
+    private static final byte STOP_FRAME_MARKER = (byte) 0x55;
 
-    private static final byte MESSAGE_HARDWARE_CONFIG_MARKER = (byte) (0xA4 & 0xFF);
-    private static final byte MESSAGE_2CH_MARKER = (byte) (0x02 & 0xFF);
-    private static final byte MESSAGE_8CH_MARKER = (byte) (0x08 & 0xFF);
-    private static final byte MESSAGE_HELLO_MARKER = (byte) (0xA0 & 0xFF);
-    private static final byte MESSAGE_STOP_RECORDING_MARKER = (byte) (0xA5 & 0xFF);
-    private static final byte MESSAGE_FIRMWARE_MARKER = (byte) (0xA1 & 0xFF);
+    private static final byte MESSAGE_HARDWARE_CONFIG_MARKER = (byte) 0xA4;
+    private static final byte MESSAGE_2CH_MARKER = (byte) 0x02;
+    private static final byte MESSAGE_8CH_MARKER = (byte) 0x08;
+    private static final byte MESSAGE_HELLO_MARKER = (byte) 0xA0;
+    private static final byte MESSAGE_STOP_RECORDING_MARKER = (byte) 0xA5;
 
     private static int MAX_MESSAGE_SIZE = 8;
     private static int MAX_COMMAND_SIZE = 16;
@@ -37,7 +39,7 @@ class FrameDecoder implements ComportListener {
     private int rowFrameSizeInByte;
     private int numberOf3ByteSamples;
     private int decodedFrameSizeInInt;
-    private byte[] rawFrame;
+    private byte[] rawFrame = new byte[Math.max(MAX_COMMAND_SIZE, MAX_MESSAGE_SIZE)];;
     private int[] decodedFrame;
     private int[] accPrev = new int[3];
 
@@ -51,6 +53,7 @@ class FrameDecoder implements ComportListener {
     private volatile NumberedDataRecordListener dataListener = new NullDataListener();
     private volatile MessageListener messageListener = new NullMessageListener();
     private volatile CommandListener commandListener = new NullCommandListener();
+    private final ExecutorService threadExecutor = Executors.newFixedThreadPool(3);
 
     void config(AdsConfig adsConfig) {
         durationOfShortBlockMs = (int) (adsConfig.getDurationOfDataRecord() * 1000 * SHORT_MAX);
@@ -70,12 +73,10 @@ class FrameDecoder implements ComportListener {
         log.info("frame size: " + rowFrameSizeInByte + " bytes");
     }
 
-    void reset() {
-        rowFrameSizeInByte = 0;
-        decodedFrameSizeInInt = 0;
-        rawFrame = new byte[Math.max(MAX_COMMAND_SIZE, MAX_MESSAGE_SIZE)];
-        decodedFrame = null;
+    public void finalize() {
+        threadExecutor.shutdown();
     }
+
 
     /**
      * Frame decoder permits to add only ONE DataListener! So if a new listener added
@@ -135,9 +136,9 @@ class FrameDecoder implements ComportListener {
                 }
             } else if(rawFrame[1] == COMMAND_MARKER) { //command length
                 // create new rowFrame with length = command length
-                int cmnd_size = inByte & 0xFF;
-                if (cmnd_size <= MAX_COMMAND_SIZE) {
-                    frameSize = cmnd_size;
+                int command_size = inByte & 0xFF;
+                if (command_size <= MAX_COMMAND_SIZE) {
+                    frameSize = command_size;
 
                 } else {
                     String infoMsg = "Invalid command frame. Too big frame size. Received byte = " + byteToHexString(inByte) + ",  max command size: "+ MAX_COMMAND_SIZE + ". Frame index = " + (frameIndex - 1);
@@ -181,7 +182,10 @@ class FrameDecoder implements ComportListener {
     }
 
     private void onCommandReceived() {
-
+        int command_size = rawFrame[2] & 0xFF;
+        byte[] command = new byte[command_size];
+        System.arraycopy(rawFrame, 0, command, 0, command_size);
+        notifyCommandListeners(command);
     }
 
     private void onMessageReceived() {
@@ -210,7 +214,6 @@ class FrameDecoder implements ComportListener {
         } else {
             info = "Unknown message received";
             adsMessage = AdsMessage.UNKNOWN;
-            log.info(info);
         }
         notifyMessageListeners(adsMessage, info);
     }
@@ -262,6 +265,40 @@ class FrameDecoder implements ComportListener {
 
         int recordShortNumber = bytesToUnsignedInt(rawFrame[2], rawFrame[3]);
         notifyDataListeners(decodedFrame, recordShortNumberToInt(recordShortNumber));
+    }
+
+    private void notifyDataListeners(int[] dataRecord, int recordNumber) {
+        // чтобы не тормозить прием и обработку прилетающих по компорту байт
+        // делаем отправку и дальнейшую обработку принятых данных в отдельном потоке
+        threadExecutor.submit(new Runnable() {
+            @Override
+            public void run() {
+                dataListener.onDataRecordReceived(dataRecord, recordNumber);
+            }
+        });
+    }
+
+    private void notifyMessageListeners(AdsMessage adsMessage, String additionalInfo) {
+        // чтобы не тормозить прием и обработку прилетающих по компорту байт
+        // делаем отправку и дальнейшую обработку принятых сообщений в отдельном потоке
+        threadExecutor.submit(new Runnable() {
+            @Override
+            public void run() {
+                messageListener.onMessageReceived(adsMessage, additionalInfo);
+            }
+        });
+
+    }
+
+    private void notifyCommandListeners(byte[] command) {
+        // чтобы не тормозить прием и обработку прилетающих по компорту байт
+        // делаем отправку и дальнейшую обработку принятых комманд в отдельном потоке
+        threadExecutor.submit(new Runnable() {
+            @Override
+            public void run() {
+                commandListener.onCommandReceived(command);
+            }
+        });
     }
 
 
@@ -351,14 +388,6 @@ class FrameDecoder implements ComportListener {
         return result;
     }
 
-    private void notifyDataListeners(int[] dataRecord, int recordNumber) {
-        dataListener.onDataRecordReceived(dataRecord, recordNumber);
-
-    }
-
-    private void notifyMessageListeners(AdsMessage adsMessage, String additionalInfo) {
-        messageListener.onMessageReceived(adsMessage, additionalInfo);
-    }
 
     /* Java int BIG_ENDIAN, Byte order: LITTLE_ENDIAN  */
     private static int bytesToSignedInt(byte... b) {

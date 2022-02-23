@@ -29,6 +29,8 @@ public class CommunicationPort {
             @Override
             public void onCommandReceived(byte[] commandBytes) {
                 command_confirmed = Arrays.equals(commandBytes, commandSend) ? true : false;
+                log.info("command received: " + bytesToHex(commandBytes) + "," +
+                        "  isConfirmed: " + command_confirmed);
             }
         });
         comport.addListener(frameDecoder);
@@ -39,6 +41,7 @@ public class CommunicationPort {
     }
 
     public boolean close() {
+        frameDecoder.finalize();
         return comport.close();
     }
 
@@ -54,19 +57,25 @@ public class CommunicationPort {
         if(AdsCommands.commandNeedConfirm(command)) {
             command_confirmed = false;
             if(comport.writeBytes(command)) {
+                commandSend = command;
                 long time = System.currentTimeMillis();
+                log.info("command sent: " + bytesToHex(command));
                 // ждем что команда вернется в течении времени wait_time_ms
                 while (!command_confirmed && (System.currentTimeMillis() - time) < wait_time_ms);
                 if(command_confirmed) { // если отправленная команда "вернулась" и совпала с той что была отправлена
-                    comport.writeBytes(AdsCommands.confirmedCommand()); // посылаем подтверждение
-                    return true;
+                    if(comport.writeBytes(AdsCommands.confirmedCommand())) { ; // посылаем подтверждение
+                        log.info("command sent: " + bytesToHex(AdsCommands.confirmedCommand()));
+                        return true;
+                    }
                 }
             }
-            return false;
         } else {
-            System.out.println("send bytes "+bytesToHex(command));
-            return comport.writeBytes(command);
+            if(comport.writeBytes(command)) {
+                log.info("command sent: " + bytesToHex(command));
+                return true;
+            }
         }
+        return false;
     }
 
     /**
@@ -87,11 +96,13 @@ public class CommunicationPort {
 
     public static String bytesToHex(byte... bytes) {
         char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
-        char[] hexChars = new char[bytes.length * 2];
+        char[] hexChars = new char[bytes.length * 3];
         for (int j = 0; j < bytes.length; j++) {
             int v = bytes[j] & 0xFF;
-            hexChars[j * 2] = HEX_ARRAY[v >>> 4];
-            hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
+            hexChars[j * 3] = HEX_ARRAY[v >>> 4];
+            hexChars[j * 3 + 1] = HEX_ARRAY[v & 0x0F];
+            hexChars[j * 3 + 2] = ' ';
+
         }
         return new String(hexChars);
     }

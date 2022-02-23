@@ -2,7 +2,7 @@ package com.biorecorder.ads;
 
 
 public class AdsCommands {
-    private static final byte FRAME_START = (byte) (0xAA & 0xFF);
+    private static final byte FRAME_START = (byte) 0xAA;
     private static final byte FRAME_STOP = (byte) 0x55;
     private static final byte COMMAND_START = (byte) 0x5A;
     private static final byte COMMAND_NEED_CONFIRM = (byte) 0xCC;
@@ -14,12 +14,18 @@ public class AdsCommands {
     private static final byte PROCESSOR_REGISTER_READ = (byte) 0xA4;
     private static final byte ADS_REGISTER_WRITE = (byte) 0xA6;
     private static final byte ADS_REGISTER_READ = (byte) 0xA7;
-    private static final byte ADS_START_RECORDING = (byte) 0xA8;
-    private static final byte ADS_STOP_RECORDING = (byte) 0xA9;
+    private static final byte ADS_START = (byte) 0xA8;
+    private static final byte ADS_STOP = (byte) 0xA9;
     private static final byte HELLO_REQUEST = (byte) 0xAB;
     private static final byte HARDWARE_REQUEST = (byte) 0xAC;
     private static final byte PING = (byte) 0xAD;
     private static final byte CONFIRMED = (byte) 0xAE;
+
+    private static final byte[] HELLO_REQUEST_COMMAND =  {FRAME_START, COMMAND_START, 0x06, HELLO_REQUEST, FRAME_STOP, FRAME_STOP};
+    private static final byte[] HARDWARE_REQUEST_COMMAND = {FRAME_START, COMMAND_START, 0x06, HARDWARE_REQUEST, FRAME_STOP, FRAME_STOP};
+    private static final byte[] ADS_STOP_COMMAND = {FRAME_START, COMMAND_START, 0x06, ADS_STOP, FRAME_STOP, FRAME_STOP};
+    private static final byte[] PING_COMMAND = {FRAME_START, COMMAND_START, 0x06, PING, FRAME_STOP, FRAME_STOP};
+    private static final byte[] CONFIRMED_COMMAND = {FRAME_START, COMMAND_START, 0x06, CONFIRMED, FRAME_STOP, FRAME_STOP};
 
     /**
      * Processor register address es 16bit or 2 bytes.
@@ -51,17 +57,17 @@ public class AdsCommands {
         return new byte[] {FRAME_START, COMMAND_START, 0x07, ADS_REGISTER_READ, regAddress,  confirmByte, FRAME_STOP};
     }
 
-    public static byte[] helloRequestCommand() {
-        return new byte[] {FRAME_START, COMMAND_START, 0x06, HELLO_REQUEST, FRAME_STOP, FRAME_STOP};
+    public static byte[] hardwareRequestCommand() {
+        return HARDWARE_REQUEST_COMMAND;
     }
 
-    public static byte[] hardwareRequestCommand(boolean needConfirm) {
-        byte confirmByte = needConfirm ? COMMAND_NEED_CONFIRM : FRAME_STOP;
-        return new byte[] {FRAME_START, COMMAND_START, 0x06, HARDWARE_REQUEST, confirmByte, FRAME_STOP};
+    public static byte[] helloRequestCommand() {
+        return HELLO_REQUEST_COMMAND;
     }
 
     public static byte[] confirmedCommand() {
-        return new byte[] {FRAME_START, COMMAND_START, 0x06, CONFIRMED, FRAME_STOP, FRAME_STOP};
+        return CONFIRMED_COMMAND;
+
     }
 
     public static byte[] startRecordingCommand(byte... dividers) throws IllegalArgumentException {
@@ -74,7 +80,7 @@ public class AdsCommands {
         command[0] = FRAME_START;
         command[1] = COMMAND_START;
         command[2] = commandLength;
-        command[3] = ADS_START_RECORDING;
+        command[3] = ADS_START;
         for (int i = 0; i < dividers.length; i++) {
             command[4 + i] = dividers[i];
         }
@@ -84,12 +90,12 @@ public class AdsCommands {
     }
 
     public static byte[] stopRecordingCommand() {
-        return new byte[] {FRAME_START, COMMAND_START, 0x06, ADS_STOP_RECORDING, COMMAND_NEED_CONFIRM, FRAME_STOP};
-    }
+        return ADS_STOP_COMMAND;
+     }
 
     public static byte[] pingCommand() {
-        return new byte[] {FRAME_START, COMMAND_START, 0x06, PING, FRAME_STOP, FRAME_STOP};
-    }
+        return PING_COMMAND;
+     }
 
     public static boolean commandNeedConfirm(byte[] command) {
         if(command[command.length - 2] == COMMAND_NEED_CONFIRM) {

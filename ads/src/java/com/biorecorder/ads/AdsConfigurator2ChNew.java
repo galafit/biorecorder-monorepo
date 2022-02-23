@@ -17,7 +17,7 @@ class AdsConfigurator2ChNew implements AdsConfigurator{
 
     @Override
     public byte[] getHardwareRequestCommand() {
-        return AdsCommands.hardwareRequestCommand(false);
+        return AdsCommands.hardwareRequestCommand();
     }
 
     @Override

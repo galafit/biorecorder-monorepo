@@ -186,16 +186,14 @@ public class BioRecorder {
     }
 
     public boolean disconnect() {
-        if (ads.disconnect()) {
-            ads.removeDataListener();
-            ads.removeMessageListener();
-            removeButteryLevelListener();
-            removeLeadOffListener();
-            removeEventsListener();
-            removeDataListeners();
-            return true;
-        }
-        return false;
+        boolean returnValue = ads.disconnect();
+        ads.removeDataListener();
+        ads.removeMessageListener();
+        removeButteryLevelListener();
+        removeLeadOffListener();
+        removeEventsListener();
+        removeDataListeners();
+        return returnValue;
     }
 
     public void startMonitoring() throws IllegalStateException {
