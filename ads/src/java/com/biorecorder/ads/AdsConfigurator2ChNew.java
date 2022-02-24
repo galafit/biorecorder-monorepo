@@ -40,7 +40,7 @@ class AdsConfigurator2ChNew implements AdsConfigurator{
         }
         commands.add(AdsCommands.writeAdsRegisterCommand(regNumber, regValue));
         regValue = (byte) 0xA0;
-        regValue = (byte) 0xA3;//test enabled 
+        regValue = (byte) 0xA3;//test enabled
         commands.add(AdsCommands.writeAdsRegisterCommand((byte)0x02, regValue));
         commands.add(AdsCommands.writeAdsRegisterCommand((byte)0x03, (byte)0x10));
 

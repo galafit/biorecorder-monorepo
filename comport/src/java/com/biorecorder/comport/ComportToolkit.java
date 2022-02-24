@@ -14,18 +14,15 @@ public class ComportToolkit {
         Comport comport = null;
         if(port != null) {
             comport = connectToComport(port, COMPORT_SPEED);
-            comport.writeBytes(comportCommand);
-            System.out.println("В компорт отправлены байты:");
-            for (byte b : comportCommand) {
-                System.out.println(bytesToHex(b));
-            }
+            sendBytes(comport, comportCommand);
         }
         try {
             Thread.sleep(SLEEP_TIME_MS);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        System.out.println("Чтобы выйти введите - close: ");
+        System.out.println("Чтобы выйти введите - close");
+        System.out.println("Или байты для отправки: ");
         Scanner scan = new Scanner( System.in );
         String inData = scan.nextLine();
         if(inData.equals("close")) {
@@ -33,7 +30,14 @@ public class ComportToolkit {
                 comport.close();
             }
             System.exit(0);
+        } else {
+            sendBytes(comport, hexStringWithSpacesToBytes(inData));
         }
+    }
+
+    public static void sendBytes(Comport comport, byte[] data) {
+        comport.writeBytes(data);
+        System.out.println("Отправлены байты: " + bytesToHex(data));
     }
 
     public static String[] getAvailableComports() {
@@ -76,13 +80,37 @@ public class ComportToolkit {
 
     public static String bytesToHex(byte... bytes) {
         char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
-        char[] hexChars = new char[bytes.length * 2];
+        char[] hexChars = new char[bytes.length * 3];
         for (int j = 0; j < bytes.length; j++) {
             int v = bytes[j] & 0xFF;
-            hexChars[j * 2] = HEX_ARRAY[v >>> 4];
-            hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
+            hexChars[j * 3] = HEX_ARRAY[v >>> 4];
+            hexChars[j * 3 + 1] = HEX_ARRAY[v & 0x0F];
+            hexChars[j * 3 + 2] = ' ';
+
         }
         return new String(hexChars);
+    }
+
+    public static byte[] hexStringWithSpacesToBytes(String s) {
+        // для строки типа "00 A0 BF"
+        int len = s.length();
+        byte[] data = new byte[(len + 1) / 3];
+        for (int i = 0; i < len; i += 3) {
+            data[i / 3] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+                    + Character.digit(s.charAt(i+1), 16));
+        }
+        return data;
+    }
+
+    public static byte[] hexStringToBytes(String s) {
+        // для строки типа "00A0BF"
+        int len = s.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+                    + Character.digit(s.charAt(i+1), 16));
+        }
+        return data;
     }
 
     public static void main(String[] args) {
