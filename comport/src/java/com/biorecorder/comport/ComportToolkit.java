@@ -6,8 +6,8 @@ import java.util.Scanner;
 
 public class ComportToolkit {
     private static final int SLEEP_TIME_MS = 2000;
-    private static final int COMPORT_SPEED = 460800;
-    private static final byte[] comportCommand = {(byte)0xFD, (byte) 0xFD};
+    private static final int COMPORT_SPEED = 38400;
+    private static final byte[] comportCommand = {(byte)0x41, (byte) 0x54, (byte) 0x0D, (byte) 0x0A};
 
     public ComportToolkit() {
         String port = chooseComport();
@@ -24,14 +24,19 @@ public class ComportToolkit {
         System.out.println("Чтобы выйти введите - close");
         System.out.println("Или байты для отправки: ");
         Scanner scan = new Scanner( System.in );
-        String inData = scan.nextLine();
-        if(inData.equals("close")) {
-            if(comport != null) {
-                comport.close();
+        while(true) {
+            String inData = scan.nextLine();
+            if(inData.equals("close")) {
+                if(comport != null) {
+                    comport.close();
+                }
+                System.exit(0);
+            } else {
+                byte[] bytes = hexStringWithSpacesToBytes(inData);
+                bytes = stringToBytes(inData);
+                sendBytes(comport, bytes);
             }
-            System.exit(0);
-        } else {
-            sendBytes(comport, hexStringWithSpacesToBytes(inData));
+
         }
     }
 
@@ -72,7 +77,8 @@ public class ComportToolkit {
         comport.addListener(new ComportListener() {
             @Override
             public void onByteReceived(byte inByte) {
-                System.out.println("Получен байт: " + bytesToHex(inByte));
+                char ch = (char) (inByte & 0xFF);
+                System.out.println("Получен байт: " + bytesToHex(inByte) + "  " + ch);
             }
         });
         return comport;
@@ -89,6 +95,11 @@ public class ComportToolkit {
 
         }
         return new String(hexChars);
+    }
+
+    public static byte[] stringToBytes(String s) {
+        // для строки типа "AT\r\n"
+        return  s.getBytes();
     }
 
     public static byte[] hexStringWithSpacesToBytes(String s) {
