@@ -98,9 +98,14 @@ public class AdsCommands {
      }
 
     public static boolean commandNeedConfirm(byte[] command) {
-        if(command[command.length - 2] == COMMAND_NEED_CONFIRM) {
+       /* if(command[command.length - 2] == COMMAND_NEED_CONFIRM) {
             return true;
         }
-        return false;
+        return false;*/
+        if(command[command.length - 2] == FRAME_STOP) {
+            return false;
+        }
+        return true;
+
     }
 }

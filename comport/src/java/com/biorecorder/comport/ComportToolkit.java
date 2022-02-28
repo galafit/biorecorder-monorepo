@@ -2,12 +2,19 @@ package com.biorecorder.comport;
 
 import jssc.SerialPortList;
 
+import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class ComportToolkit {
     private static final int SLEEP_TIME_MS = 2000;
     private static final int COMPORT_SPEED = 38400;
-    private static final byte[] comportCommand = {(byte)0x41, (byte) 0x54, (byte) 0x0D, (byte) 0x0A};
+    private static final byte CR = (byte) 0x0D; //Carriage Return /r
+    private static final byte LF = (byte) 0x0A; //Line Feed /n
+    private static final byte[] comportCommand = {(byte)0x41, (byte) 0x54, CR, LF};
+    private byte[] input_buffer = new byte[32];
+    private int buffer_size = 0;
+    private boolean string_mode;
 
     public ComportToolkit() {
         String port = chooseComport();
@@ -33,7 +40,7 @@ public class ComportToolkit {
                 System.exit(0);
             } else {
                 byte[] bytes = hexStringWithSpacesToBytes(inData);
-                bytes = stringToBytes(inData);
+                bytes = stringToBytesWithLineSeparator(inData);
                 sendBytes(comport, bytes);
             }
 
@@ -97,9 +104,16 @@ public class ComportToolkit {
         return new String(hexChars);
     }
 
-    public static byte[] stringToBytes(String s) {
-        // для строки типа "AT\r\n"
-        return  s.getBytes();
+    public static byte[] stringToBytesWithLineSeparator(String s) {
+        // строка типа "AT" будет преобразована в строку  "AT\r\n"
+        Charset charset = Charset.forName("ASCII");
+        byte[] bytes = s.getBytes(charset);
+        byte[] result = new byte[bytes.length + 2];
+        System.arraycopy(bytes, 0, result, 0, bytes.length);
+        result[result.length - 2] = CR;
+        result[result.length - 1] = LF;
+        return  result;
+
     }
 
     public static byte[] hexStringWithSpacesToBytes(String s) {
@@ -124,7 +138,26 @@ public class ComportToolkit {
         return data;
     }
 
+    public static void test() {
+        System.out.println("байты для отправки: ");
+        Scanner scan = new Scanner( System.in );
+        while(true) {
+            String inData = scan.nextLine();
+            if(inData.equals("close")) {
+                System.exit(0);
+            } else {
+                byte[] bytes = hexStringWithSpacesToBytes(inData);
+                bytes = stringToBytesWithLineSeparator(inData);
+                System.out.println("Отправлены байты: " + bytesToHex(bytes));
+            }
+
+        }
+    }
+
     public static void main(String[] args) {
-        ComportToolkit comportToolkit = new ComportToolkit();
+        //ComportToolkit comportToolkit = new ComportToolkit();
+        ComportToolkit.test();
+
+
     }
 }

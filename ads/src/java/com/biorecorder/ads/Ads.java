@@ -56,7 +56,7 @@ public class Ads {
 
     private static final int PING_PERIOD_MS = 1000;
     private static final int MONITORING_PERIOD_MS = 1000;
-    private static final int SLEEP_TIME_MS = 100; //1000;
+    private static final int SLEEP_TIME_MS = 1000;
     private static final int ACTIVE_PERIOD_MS = 2000;
 
     private static final int MAX_STARTING_TIME_MS = 30 * 1000;
@@ -109,13 +109,15 @@ public class Ads {
                 if (messageType == AdsMessage.ADS_2_CHANNELS) {
                     adsType = AdsType.ADS_2;
                     lastEventTime = System.currentTimeMillis();
+                    log.info(message);
                 }
                 if (messageType == AdsMessage.ADS_8_CHANNELS) {
                     adsType = AdsType.ADS_8;
                     lastEventTime = System.currentTimeMillis();
+                    log.info(message);
                 }
                 if (messageType == AdsMessage.STOP_RECORDING) {
-                    adsStateAtomicReference.compareAndSet(AdsState.UNDEFINED, AdsState.STOPPED);
+                    adsStateAtomicReference.set(AdsState.STOPPED);
                     log.info(message);
                 }
                 if (messageType == AdsMessage.FRAME_BROKEN) {
@@ -222,20 +224,9 @@ public class Ads {
         @Override
         public Void call() throws Exception {
             long startTime = System.currentTimeMillis();
-            // 1) check that ads is connected and "active"
-            while (!isActive()) {
-                communicationPort.sendCommand(adsType.adsHelloCommand());
-                Thread.sleep(SLEEP_TIME_MS);
-
-                // if message with Hello request do not come during too long time
-                if((System.currentTimeMillis() - startTime) > MAX_STARTING_TIME_MS) {
-                    throwException(TIME_OUT_ERR_MSG);
-                }
-            }
-
-            // 2) request adsType
+            // 1) request adsType
             communicationPort.sendCommand(adsType.adsHardwareRequestCommand());
-            Thread.sleep(SLEEP_TIME_MS * 2);
+            Thread.sleep(SLEEP_TIME_MS);
 
             // if adsType is wrong
             if (adsType != config.getAdsType()) {
@@ -251,12 +242,6 @@ public class Ads {
             // 3) write ads config commands with config info to comport
             List<byte[]> configCommands = adsType.adsConfigurationCommands(config);
             for (byte[] command : configCommands) {
-                // write command bytes to log
-                StringBuilder sb = new StringBuilder("Ads configuration command:");
-                for (int i = 0; i < command.length; i++) {
-                    sb.append("\nbyte_"+(i + 1) + ":  "+String.format("%02X ", command[i]));
-                }
-                log.info(sb.toString());
                 if(!communicationPort.sendCommand(command)) {
                     // if writing start command to comport was failed
                     String errMsg = "Failed to write start command to comport";
@@ -298,10 +283,7 @@ public class Ads {
         if (executorFuture != null && !executorFuture.isDone()) {
             executorFuture.cancel(true);
         }
-        if (adsStateAtomicReference.get() == AdsState.RECORDING) {
-            adsStateAtomicReference.set(AdsState.UNDEFINED);
-        }
-
+        adsStateAtomicReference.compareAndSet(AdsState.RECORDING, AdsState.UNDEFINED);
         // send stop command
         boolean isStopOk = communicationPort.sendCommand(adsType.adsStopCommand());
         if (isStopOk) {
