@@ -1,7 +1,7 @@
 package com.biorecorder.ads;
 
 
-public class AdsCommands {
+public class Commands {
     private static final byte FRAME_START = (byte) 0xAA;
     private static final byte FRAME_STOP = (byte) 0x55;
     private static final byte COMMAND_START = (byte) 0x5A;
@@ -70,6 +70,10 @@ public class AdsCommands {
 
     }
 
+    public static byte[] stopRecordingCommand() {
+        return ADS_STOP_COMMAND;
+    }
+
     public static byte[] startRecordingCommand(byte... dividers) throws IllegalArgumentException {
         if(dividers.length != 2 && dividers.length != 8) {
             String msg = "Number of dividers can be only 2 or 8. Number of dividers = " + dividers.length;
@@ -88,10 +92,6 @@ public class AdsCommands {
         command[commandLength - 1] = FRAME_STOP;
         return command;
     }
-
-    public static byte[] stopRecordingCommand() {
-        return ADS_STOP_COMMAND;
-     }
 
     public static byte[] pingCommand() {
         return PING_COMMAND;

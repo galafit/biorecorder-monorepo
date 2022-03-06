@@ -177,7 +177,7 @@ public class Ads {
         if (!communicationPort.isOpened()) {
             throw new IllegalStateException(DISCONNECTED_MSG);
         }
-
+        System.out.println("start recording ");
         if (adsStateAtomicReference.get() == AdsState.RECORDING) {
             throw new IllegalStateException(RECORDING_MSG);
         }
@@ -237,7 +237,7 @@ public class Ads {
             // 2) if adsType is ok try to stop ads first
             communicationPort.sendCommand(adsType.adsStopCommand());
             // give the ads time to stop
-            Thread.sleep(SLEEP_TIME_MS * 2);
+            Thread.sleep(SLEEP_TIME_MS);
 
             // 3) write ads config commands with config info to comport
             List<byte[]> configCommands = adsType.adsConfigurationCommands(config);
@@ -247,12 +247,10 @@ public class Ads {
                     String errMsg = "Failed to write start command to comport";
                     throwException(errMsg);
                 }
-                Thread.sleep(25);
             }
             // 4) waiting for data
             while (!isDataReceived) {
                 Thread.sleep(SLEEP_TIME_MS);
-
                 // if data do note come during too long time
                 if((System.currentTimeMillis() - startTime) > MAX_STARTING_TIME_MS) {
                     throwException(TIME_OUT_ERR_MSG);
@@ -273,7 +271,9 @@ public class Ads {
             } catch (Exception ex) {
                 // do nothing;
             }
+            System.out.println(errMsg);
             adsStateAtomicReference.set(AdsState.UNDEFINED);
+            System.exit(0);
             throw new RuntimeException(errMsg);
         }
     }

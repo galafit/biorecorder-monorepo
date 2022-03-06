@@ -11,12 +11,13 @@ import java.util.Arrays;
 public class CommunicationPort {
     private static final Log log = LogFactory.getLog(CommunicationPort.class);
     private static final int COMPORT_SPEED = 460800;
+    private static int WAIT_TIME_MS = 2000;
+    private static int INTER_COMMAND_DELAY_MS = 20;
 
     private Comport comport;
     FrameDecoder frameDecoder;
     private byte[] commandSend;
     private volatile boolean command_confirmed;
-    private int wait_time_ms = 1000;
 
     public CommunicationPort(String comportName) throws ConnectionRuntimeException {
         try {
@@ -54,17 +55,23 @@ public class CommunicationPort {
     }
 
     public boolean sendCommand(byte[] command) {
-        if(AdsCommands.commandNeedConfirm(command)) {
+        try {
+            // just for the case. Give some time the previous command to be fully sent
+            Thread.sleep(INTER_COMMAND_DELAY_MS);
+        } catch (InterruptedException e) {
+            // do nothing
+        }
+        if(Commands.commandNeedConfirm(command)) {
             command_confirmed = false;
             if(comport.writeBytes(command)) {
                 commandSend = command;
                 long time = System.currentTimeMillis();
                 log.info("command sent: " + bytesToHex(command));
                 // ждем что команда вернется в течении времени wait_time_ms
-                while (!command_confirmed && (System.currentTimeMillis() - time) < wait_time_ms);
+                while (!command_confirmed && (System.currentTimeMillis() - time) < WAIT_TIME_MS);
                 if(command_confirmed) { // если отправленная команда "вернулась" и совпала с той что была отправлена
-                    if(comport.writeBytes(AdsCommands.confirmedCommand())) { ; // посылаем подтверждение
-                        log.info("command sent: " + bytesToHex(AdsCommands.confirmedCommand()));
+                    if(comport.writeBytes(Commands.confirmedCommand())) { ; // посылаем подтверждение
+                        log.info("command sent: " + bytesToHex(Commands.confirmedCommand()));
                         return true;
                     }
                 }

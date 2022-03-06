@@ -7,22 +7,22 @@ class AdsConfigurator2ChNew implements AdsConfigurator{
 
     @Override
     public byte[] getHelloCommand() {
-        return AdsCommands.helloRequestCommand();
+        return Commands.helloRequestCommand();
     }
 
     @Override
     public byte[] getPingCommand() {
-        return AdsCommands.pingCommand();
+        return Commands.pingCommand();
     }
 
     @Override
     public byte[] getHardwareRequestCommand() {
-        return AdsCommands.hardwareRequestCommand();
+        return Commands.hardwareRequestCommand();
     }
 
     @Override
     public byte[] getStopCommand() {
-        return AdsCommands.stopRecordingCommand();
+        return Commands.stopRecordingCommand();
     }
 
     @Override
@@ -38,35 +38,35 @@ class AdsConfigurator2ChNew implements AdsConfigurator{
             case S2000: regValue = 0x04; break;
             case S4000: regValue = 0x05; break;
         }
-        commands.add(AdsCommands.writeAdsRegisterCommand(regNumber, regValue));
+        commands.add(Commands.writeAdsRegisterCommand(regNumber, regValue));
         regValue = (byte) 0xA0;
         regValue = (byte) 0xA3;//test enabled
-        commands.add(AdsCommands.writeAdsRegisterCommand((byte)0x02, regValue));
-        commands.add(AdsCommands.writeAdsRegisterCommand((byte)0x03, (byte)0x10));
+        commands.add(Commands.writeAdsRegisterCommand((byte)0x02, regValue));
+        commands.add(Commands.writeAdsRegisterCommand((byte)0x03, (byte)0x10));
 
         //4й регистр задаёт усиление в битах 4-6 для signal 0.
         int signalNumber = 0;
         regNumber = 0x04;
         regValue = getGainByte(adsConfiguration.getAdsChannelGain(signalNumber));
         regValue = 0x05;  // Set Channel 1 to test
-        commands.add(AdsCommands.writeAdsRegisterCommand(regNumber, regValue));
+        commands.add(Commands.writeAdsRegisterCommand(regNumber, regValue));
 
 
         //5й регистр задаёт усиление в битах 4-6 для signal 1.
         signalNumber = 1;
         regNumber = 0x05;
         regValue = getGainByte(adsConfiguration.getAdsChannelGain(signalNumber));
-        commands.add(AdsCommands.writeAdsRegisterCommand(regNumber, regValue));
-        commands.add(AdsCommands.writeAdsRegisterCommand((byte)0x06, (byte)0x00));
-        commands.add(AdsCommands.writeAdsRegisterCommand((byte)0x07, (byte)0x00));
-        commands.add(AdsCommands.writeAdsRegisterCommand((byte)0x08, (byte)0x40));
-        commands.add(AdsCommands.writeAdsRegisterCommand((byte)0x09, (byte)0x02));
-        commands.add(AdsCommands.writeAdsRegisterCommand((byte)0x0A, (byte)0x03));
+        commands.add(Commands.writeAdsRegisterCommand(regNumber, regValue));
+        commands.add(Commands.writeAdsRegisterCommand((byte)0x06, (byte)0x00));
+        commands.add(Commands.writeAdsRegisterCommand((byte)0x07, (byte)0x00));
+        commands.add(Commands.writeAdsRegisterCommand((byte)0x08, (byte)0x40));
+        commands.add(Commands.writeAdsRegisterCommand((byte)0x09, (byte)0x02));
+        commands.add(Commands.writeAdsRegisterCommand((byte)0x0A, (byte)0x03));
 
 
         byte divider0 = (byte) adsConfiguration.getAdsChannelDivider(0);
         byte divider1 = (byte) adsConfiguration.getAdsChannelDivider(1);
-        commands.add(AdsCommands.startRecordingCommand(divider0, divider1));
+        commands.add(Commands.startRecordingCommand(divider0, divider1));
         return commands;
     }
 
