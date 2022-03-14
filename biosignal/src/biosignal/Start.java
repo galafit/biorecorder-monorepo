@@ -1,11 +1,7 @@
 package biosignal;
 
-import biosignal.application.ConfiguratorECG;
-import biosignal.application.ConfiguratorTest;
-import biosignal.application.MainFacade;
-import biosignal.application.TestFacade;
+import biosignal.application.*;
 import biosignal.gui.BiosignalFrame;
-import biosignal.gui.TestFrame;
 
 import java.io.File;
 
@@ -15,7 +11,7 @@ public class Start {
         File recordsDir = new File(System.getProperty("user.dir"), "records");
         File originalFile = new File(recordsDir, originalFilename);
         //new TestFrame(new TestFacade(new ConfiguratorECG(), false));
-        new BiosignalFrame(new MainFacade(new ConfiguratorTest(), false));
+        new BiosignalFrame(new MainFacade(new ConfiguratorTestForAdc(), false));
 
     }
 

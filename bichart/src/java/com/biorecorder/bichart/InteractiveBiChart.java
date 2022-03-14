@@ -234,6 +234,9 @@ public class InteractiveBiChart implements Interactive {
 
     @Override
     public boolean resize(int width, int height) {
+        if(width <= 0 || height <=0 ) {
+            return false;
+        }
         BRectangle bounds = biChart.getBounds();
         if(width != bounds.width || height != bounds.height) {
             biChart.setSize(width, height);
