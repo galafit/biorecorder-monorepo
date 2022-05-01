@@ -88,7 +88,7 @@ public class BiosignalFrame extends JFrame {
         Dimension d = tk.getScreenSize();
         Insets insets = tk.getScreenInsets(getGraphicsConfiguration());
         setPreferredSize(new Dimension(d.width - insets.left - insets.right, d.height - insets.top - insets.bottom));
-       // setPreferredSize(new Dimension(1300,1000 ));
+        setPreferredSize(new Dimension(1300,1000 ));
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {

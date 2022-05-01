@@ -6,11 +6,13 @@ import java.util.ArrayList;
  * Class-structure to store info about Ads configuration
  */
 public class AdsConfig {
-    private AdsType adsType = AdsType.ADS_8;
+    private boolean isTestSignal = false;
+    private boolean isRespiration = false;
+
+    private AdsType adsType = AdsType.ADS_2;
     private Sps sps = Sps.S500;     // samples per second (sample rate)
 
     private boolean isBatteryVoltageMeasureEnabled = true;
-    private int noiseDivider = 2;
 
     private boolean isAccelerometerEnabled = true;
     private boolean isAccelerometerOneChannelMode = true;
@@ -32,13 +34,20 @@ public class AdsConfig {
         adsType = configToCopy.adsType;
         sps = configToCopy.sps;
         isBatteryVoltageMeasureEnabled = configToCopy.isBatteryVoltageMeasureEnabled;
-        noiseDivider = configToCopy.noiseDivider;
         isAccelerometerEnabled = configToCopy.isAccelerometerEnabled;
         isAccelerometerOneChannelMode = configToCopy.isAccelerometerOneChannelMode;
         accelerometerDivider = configToCopy.accelerometerDivider;
         for (AdsChannelConfig adsChannel : configToCopy.adsChannels) {
             adsChannels.add(new AdsChannelConfig(adsChannel));
         }
+    }
+
+    public boolean isTestSignal() {
+        return isTestSignal;
+    }
+
+    public boolean isRespiration() {
+        return isRespiration;
     }
 
     public boolean isLeadOffEnabled() {
@@ -88,10 +97,6 @@ public class AdsConfig {
 
     public void setAdsType(AdsType adsType) {
         this.adsType = adsType;
-    }
-
-    public int getNoiseDivider() {
-        return noiseDivider;
     }
 
     public boolean isAccelerometerOneChannelMode() {

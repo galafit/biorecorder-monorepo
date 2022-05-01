@@ -4,11 +4,11 @@ import com.biorecorder.comport.ComportListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 // TODO rename to InputDecoder ?
 class FrameDecoder implements ComportListener {
+    int startFrame = 0;
+    int numberOfFrames = 0;
+
     private static final Log log = LogFactory.getLog(FrameDecoder.class);
     private static final byte START_FRAME_MARKER = (byte) 0xAA;
     private static final byte MESSAGE_MARKER = (byte) 0xA5;
@@ -48,14 +48,18 @@ class FrameDecoder implements ComportListener {
     boolean isBatteryVoltageMeasureEnabled;
     boolean isLeadOffEnabled;
     int adsChannelsCount;
-    int noiseDivider = 1;
 
     private volatile NumberedDataRecordListener dataListener = new NullDataListener();
     private volatile MessageListener messageListener = new NullMessageListener();
     private volatile CommandListener commandListener = new NullCommandListener();
-    private final ExecutorService threadExecutor = Executors.newFixedThreadPool(3);
 
     void config(AdsConfig adsConfig) {
+        previousRecordShortNumber = -1;
+        previousRecordTime = 0;
+        startRecordNumber = 0;
+        shortBlocksCount = 0;
+        frameIndex = 0;
+
         durationOfShortBlockMs = (int) (adsConfig.getDurationOfDataRecord() * 1000 * SHORT_MAX);
         numberOf3ByteSamples = getNumberOf3ByteSamples(adsConfig);
         rowFrameSizeInByte = getRawFrameSize(adsConfig);
@@ -69,12 +73,11 @@ class FrameDecoder implements ComportListener {
         isBatteryVoltageMeasureEnabled = adsConfig.isBatteryVoltageMeasureEnabled();
         isLeadOffEnabled = adsConfig.isLeadOffEnabled();
         adsChannelsCount = adsConfig.getAdsChannelsCount();
-        noiseDivider = adsConfig.getNoiseDivider();
         log.info("frame size: " + rowFrameSizeInByte + " bytes");
     }
 
     public void finalize() {
-        threadExecutor.shutdown();
+        // at the moment nothing
     }
 
 
@@ -174,6 +177,7 @@ class FrameDecoder implements ComportListener {
         } else {
             String infoMsg = "Unrecognized byte received: " + byteToHexString(inByte);
             notifyMessageListeners(AdsMessage.FRAME_BROKEN, infoMsg);
+            System.out.println("byte "+bytesToHex(inByte));
             frameIndex = 0;
         }
     }
@@ -229,7 +233,7 @@ class FrameDecoder implements ComportListener {
         int rawFrameOffset = 4;
         int decodedFrameOffset = 0;
         for (int i = 0; i < numberOf3ByteSamples; i++) {
-            decodedFrame[decodedFrameOffset++] = bytesToSignedInt(rawFrame[rawFrameOffset], rawFrame[rawFrameOffset + 1], rawFrame[rawFrameOffset + 2]) / noiseDivider;
+            decodedFrame[decodedFrameOffset++] = bytesToSignedInt(rawFrame[rawFrameOffset], rawFrame[rawFrameOffset + 1], rawFrame[rawFrameOffset + 2]);
             rawFrameOffset += 3;
         }
         if (isAccelerometerEnabled) {
@@ -237,7 +241,7 @@ class FrameDecoder implements ComportListener {
             int accSum = 0;
             for (int i = 0; i < 3; i++) {
 //                decodedFrame[decodedFrameOffset++] = AdsUtils.littleEndianBytesToInt(rawFrame[rawFrameOffset], rawFrame[rawFrameOffset + 1]);
-                accVal[i] = bytesToSignedInt(rawFrame[rawFrameOffset], rawFrame[rawFrameOffset + 1]);
+                accVal[i] = bytesToUnsignedInt(rawFrame[rawFrameOffset], rawFrame[rawFrameOffset + 1]);
                 rawFrameOffset += 2;
             }
             if (isAccelerometerOneChannelMode) {
@@ -254,14 +258,14 @@ class FrameDecoder implements ComportListener {
         }
 
         if (isBatteryVoltageMeasureEnabled) {
-            decodedFrame[decodedFrameOffset++] = bytesToSignedInt(rawFrame[rawFrameOffset], rawFrame[rawFrameOffset + 1]);
+            decodedFrame[decodedFrameOffset++] = bytesToUnsignedInt(rawFrame[rawFrameOffset], rawFrame[rawFrameOffset + 1]);
             rawFrameOffset += 2;
         }
 
         if (isLeadOffEnabled) {
             if (adsChannelsCount == 8) {
                 // 2 bytes for 8 channels
-                decodedFrame[decodedFrameOffset++] = bytesToSignedInt(rawFrame[rawFrameOffset], rawFrame[rawFrameOffset + 1]);
+                decodedFrame[decodedFrameOffset++] = bytesToUnsignedInt(rawFrame[rawFrameOffset], rawFrame[rawFrameOffset + 1]);
                 rawFrameOffset += 2;
             } else {
                 // 1 byte for 2 channels
@@ -271,41 +275,23 @@ class FrameDecoder implements ComportListener {
         }
 
         int recordShortNumber = bytesToUnsignedInt(rawFrame[2], rawFrame[3]);
-        notifyDataListeners(decodedFrame, recordShortNumberToInt(recordShortNumber));
+        int recordNumber =  recordShortNumberToInt(recordShortNumber);
+        if(recordNumber >= startFrame && recordNumber < startFrame + numberOfFrames) {
+            System.out.println(recordNumber + "  " +bytesToHex(rawFrame));
+        }
+        notifyDataListeners(decodedFrame, recordNumber);
     }
 
     private void notifyDataListeners(int[] dataRecord, int recordNumber) {
-        // чтобы не тормозить прием и обработку прилетающих по компорту байт
-        // делаем отправку и дальнейшую обработку принятых данных в отдельном потоке
-        threadExecutor.submit(new Runnable() {
-            @Override
-            public void run() {
-                dataListener.onDataRecordReceived(dataRecord, recordNumber);
-            }
-        });
+        dataListener.onDataRecordReceived(dataRecord, recordNumber);
     }
 
     private void notifyMessageListeners(AdsMessage adsMessage, String additionalInfo) {
-        // чтобы не тормозить прием и обработку прилетающих по компорту байт
-        // делаем отправку и дальнейшую обработку принятых сообщений в отдельном потоке
-        threadExecutor.submit(new Runnable() {
-            @Override
-            public void run() {
-                messageListener.onMessageReceived(adsMessage, additionalInfo);
-            }
-        });
-
+        messageListener.onMessageReceived(adsMessage, additionalInfo);
     }
 
     private void notifyCommandListeners(byte[] command) {
-        // чтобы не тормозить прием и обработку прилетающих по компорту байт
-        // делаем отправку и дальнейшую обработку принятых комманд в отдельном потоке
-        threadExecutor.submit(new Runnable() {
-            @Override
-            public void run() {
-                commandListener.onCommandReceived(command);
-            }
-        });
+        commandListener.onCommandReceived(command);
     }
 
 
@@ -397,28 +383,7 @@ class FrameDecoder implements ComportListener {
 
 
     /* Java int BIG_ENDIAN, Byte order: LITTLE_ENDIAN  */
-    private static int bytesToSignedInt(byte... b) {
-        switch (b.length) {
-            case 1:
-                return b[0];
-            case 2:
-                return (b[1] << 8) | (b[0] & 0xFF);
-            case 3:
-                return (b[2] << 16) | (b[1] & 0xFF) << 8 | (b[0] & 0xFF);
-            default:
-                return (b[3] << 24) | (b[2] & 0xFF) << 16 | (b[1] & 0xFF) << 8 | (b[0] & 0xFF);
-        }
-    }
-
-    /**
-     * Convert given LITTLE_ENDIAN ordered bytes to BIG_ENDIAN 32-bit UNSIGNED int.
-     * Available number of input bytes: 4, 3, 2 or 1.
-     *
-     * @param bytes 4, 3, 2 or 1 bytes (LITTLE_ENDIAN ordered) to be converted to int
-     * @return 32-bit UNSIGNED int (BIG_ENDIAN)
-     */
-
-    public static int bytesToUnsignedInt(byte... bytes) {
+    private static int bytesToUnsignedInt(byte... bytes) {
         switch (bytes.length) {
             case 1:
                 return (bytes[0] & 0xFF);
@@ -432,6 +397,20 @@ class FrameDecoder implements ComportListener {
                 String errMsg = "Wrong «number of bytes» = " + bytes.length +
                         "! Available «number of bytes per int»: 4, 3, 2 or 1.";
                 throw new IllegalArgumentException(errMsg);
+        }
+    }
+
+    /* Java int BIG_ENDIAN, Byte order: LITTLE_ENDIAN  */
+    private static int bytesToSignedInt(byte... b) {
+        switch (b.length) {
+            case 1:
+                return b[0];
+            case 2:
+                return (b[1] << 8) | (b[0] & 0xFF);
+            case 3:
+                return (b[2] << 16) | (b[1] & 0xFF) << 8 | (b[0] & 0xFF);
+            default:
+                return (b[3] << 24) | (b[2] & 0xFF) << 16 | (b[1] & 0xFF) << 8 | (b[0] & 0xFF);
         }
     }
 
@@ -473,5 +452,14 @@ class FrameDecoder implements ComportListener {
         public void onCommandReceived(byte[] commandBytes) {
             // do nothing;
         }
+    }
+
+    public static void main (String[] args)
+    {
+        //byte[] bytes = {(byte)0xFF, (byte)0xFF, (byte)0xFF};
+       // byte[] bytes = { (byte)0xE8,(byte) 0xFD, (byte)0x88};
+        byte[] bytes = { (byte)0xAB,(byte) 0xAA, (byte)0xAB};
+        System.out.println(bytesToUnsignedInt(bytes));
+        System.out.println(bytesToSignedInt(bytes));
     }
 }

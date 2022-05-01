@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 class AdsConfigurator2ChNew implements AdsConfigurator{
-
     @Override
     public byte[] getHelloCommand() {
         return Commands.helloRequestCommand();
@@ -48,7 +47,9 @@ class AdsConfigurator2ChNew implements AdsConfigurator{
         int signalNumber = 0;
         regNumber = 0x04;
         regValue = getGainByte(adsConfiguration.getAdsChannelGain(signalNumber));
-        regValue = 0x05;  // Set Channel 1 to test
+        if(adsConfiguration.isTestSignal()) {
+            regValue = 0x05;  // Set Channel 1 to test
+        }
         commands.add(Commands.writeAdsRegisterCommand(regNumber, regValue));
 
 
@@ -56,16 +57,23 @@ class AdsConfigurator2ChNew implements AdsConfigurator{
         signalNumber = 1;
         regNumber = 0x05;
         regValue = getGainByte(adsConfiguration.getAdsChannelGain(signalNumber));
+        if(adsConfiguration.isTestSignal()) {
+            regValue = 0x05;  // Set Channel 2 to test
+        }
         commands.add(Commands.writeAdsRegisterCommand(regNumber, regValue));
         commands.add(Commands.writeAdsRegisterCommand((byte)0x06, (byte)0x00));
         commands.add(Commands.writeAdsRegisterCommand((byte)0x07, (byte)0x00));
         commands.add(Commands.writeAdsRegisterCommand((byte)0x08, (byte)0x40));
-        commands.add(Commands.writeAdsRegisterCommand((byte)0x09, (byte)0x02));
-        commands.add(Commands.writeAdsRegisterCommand((byte)0x0A, (byte)0x03));
-
-
+        if(adsConfiguration.isRespiration()) {
+            commands.add(Commands.writeAdsRegisterCommand((byte)0x09, (byte)0xDE));
+            commands.add(Commands.writeAdsRegisterCommand((byte)0x0A, (byte)0x07));
+        } else {
+            commands.add(Commands.writeAdsRegisterCommand((byte)0x09, (byte)0x02));
+            commands.add(Commands.writeAdsRegisterCommand((byte)0x0A, (byte)0x03));
+        }
         byte divider0 = (byte) adsConfiguration.getAdsChannelDivider(0);
         byte divider1 = (byte) adsConfiguration.getAdsChannelDivider(1);
+       // commands = new ArrayList<>(1);
         commands.add(Commands.startRecordingCommand(divider0, divider1));
         return commands;
     }

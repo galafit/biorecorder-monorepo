@@ -260,7 +260,7 @@ public class Ads {
             // 5) startRecording ping timer
             // ping timer permits Ads to detect bluetooth connection problems
             // and restart connection when it is necessary
-            executorFuture = singleThreadExecutor.submit(new PingTask(), PING_PERIOD_MS);
+           // executorFuture = singleThreadExecutor.submit(new PingTask(), PING_PERIOD_MS);
             return null;
         }
 
@@ -370,7 +370,6 @@ public class Ads {
 
     private void notifyDataListeners(int[] dataRecord, int recordNumber) {
         dataListener.onDataRecordReceived(dataRecord, recordNumber);
-
     }
 
     private void notifyMessageListeners(AdsMessage adsMessage, String additionalInfo) {
@@ -403,7 +402,7 @@ public class Ads {
                 edfConfig.setTransducer(signalNumber, "Unknown");
                 edfConfig.setPhysicalDimension(signalNumber, getAdsChannelsPhysicalDimension());
                 edfConfig.setPhysicalRange(signalNumber, getAdsChannelPhysicalMin(adsConfig.getAdsChannelGain(i)), getAdsChannelPhysicalMax(adsConfig.getAdsChannelGain(i)));
-                edfConfig.setDigitalRange(signalNumber, getAdsChannelsDigitalMin(adsConfig.getNoiseDivider()), getAdsChannelsDigitalMax(adsConfig.getNoiseDivider()));
+                edfConfig.setDigitalRange(signalNumber, getAdsChannelsDigitalMin(), getAdsChannelsDigitalMax());
                 edfConfig.setLabel(signalNumber, adsConfig.getAdsChannelName(i));
             }
         }
@@ -531,11 +530,8 @@ public class Ads {
                     }
                 }
             }
-
-
             return bm;
         }
-
         String msg = "Invalid Ads channels count: " + adsConfig.getAdsChannelsCount() + ". Number of Ads channels should be 2 or 8";
         throw new IllegalArgumentException(msg);
     }
@@ -590,14 +586,13 @@ public class Ads {
         return - getAdsChannelPhysicalMax(channelGain);
     }
 
-    public static int getAdsChannelsDigitalMax(int noiseDivider) {
-        return Math.round(8388607 / noiseDivider);
+    public static int getAdsChannelsDigitalMax() {
+        return 8388607; //7FFFFFh from ads datasheet page 29
     }
 
-    public static int getAdsChannelsDigitalMin(int noiseDivider) {
-        return Math.round(-8388608 / noiseDivider);
+    public static int getAdsChannelsDigitalMin() {
+        return -8388608; //800000h from ads datasheet page 29
     }
-
 
     public String getAdsChannelsPhysicalDimension() {
         return "uV";
@@ -612,17 +607,19 @@ public class Ads {
     }
 
     public static int getAccelerometerDigitalMax(boolean isAccelerometerOneChannelMode) {
-        if(isAccelerometerOneChannelMode) {
+        return 8388607; // 24bit (3 bytes) maximum
+       /* if(isAccelerometerOneChannelMode) {
             return 2000;
         }
-        return 9610;
+        return 9610;*/
     }
 
     public static int getAccelerometerDigitalMin(boolean isAccelerometerOneChannelMode) {
-        if(isAccelerometerOneChannelMode) {
+        return -8388608; // 24bit (3 bytes) minimum
+       /* if(isAccelerometerOneChannelMode) {
             return -2000;
         }
-        return 4190;
+        return 4190;*/
     }
 
 
